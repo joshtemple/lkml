@@ -18,3 +18,8 @@ def test_block_with_single_quoted_field():
 def test_block_with_multiple_quoted_fields():
     parsed = load("block_with_multiple_quoted_fields.view.lkml")
     assert parsed
+
+
+def test_block_with_nested_block():
+    parsed = load("block_with_nested_block.view.lkml")
+    assert parsed
