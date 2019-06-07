@@ -19,6 +19,11 @@ def test_block_with_single_unquoted_field():
     assert parsed == [{"view_name": {"hidden": True}}]
 
 
+def test_block_with_single_sql_block():
+    parsed = load("block_with_single_sql_block.view.lkml")
+    assert parsed == [{"view_name": {"sql": "cast(column_name as string)"}}]
+
+
 def test_block_with_multiple_quoted_fields():
     parsed = load("block_with_multiple_quoted_fields.view.lkml")
     assert parsed == [

@@ -55,6 +55,10 @@ class LookMlVisitor(NodeVisitor):
         else:
             return text
 
+    def visit_sql_block(self, node, visited_children):
+        literal, *_ = visited_children
+        return literal.text.rstrip()
+
     def generic_visit(self, node, visited_children):
         return visited_children or node
 
@@ -64,11 +68,12 @@ class Parser(object):
         r"""
         expression = _ (block / field)*
         block = field_type field_name "{" expression "}" _
-        field = field_type (quoted_literal / literal)
+        field = field_type (quoted_literal / sql_block / literal)
         field_type = ~r"[a-z_]+" ":" _
         field_name = ~r"[a-z_]+" _
         quoted_literal = '"' ~"[^\"]+" '"' _
         literal = ("yes" / "no") _
+        sql_block = ~"[^;]+" ";;" _
         whitespace = ~r"\s+"
         _ = whitespace*
     """
