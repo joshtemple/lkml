@@ -68,7 +68,8 @@ class Parser(object):
         r"""
         expression = _ (block / field)*
         block = field_type field_name "{" expression "}" _
-        field = field_type (quoted_literal / sql_block / literal)
+        field = field_type attribute
+        attribute = quoted_literal / sql_block / literal
         field_type = ~r"[a-z_]+" ":" _
         field_name = ~r"[a-z_]+" _
         quoted_literal = '"' ~"[^\"]+" '"' _
