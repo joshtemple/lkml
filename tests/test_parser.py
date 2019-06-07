@@ -17,7 +17,13 @@ def test_block_with_single_quoted_field():
 def test_block_with_multiple_quoted_fields():
     parsed = load("block_with_multiple_quoted_fields.view.lkml")
     assert parsed == [
-        {"view_name": {"sql_table_name": "schema.table_name", "label": "View Label"}}
+        {
+            "view_name": {
+                "sql_table_name": "schema.table_name",
+                "label": "View Label",
+                "group_label": "Group Label",
+            }
+        }
     ]
 
 
