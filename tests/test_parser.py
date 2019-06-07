@@ -11,14 +11,23 @@ def load(filename):
 
 def test_block_with_single_quoted_field():
     parsed = load("block_with_single_quoted_field.view.lkml")
-    assert parsed
+    assert parsed == [{"view_name": {"sql_table_name": "schema.table_name"}}]
 
 
 def test_block_with_multiple_quoted_fields():
     parsed = load("block_with_multiple_quoted_fields.view.lkml")
-    assert parsed
+    assert parsed == [
+        {"view_name": {"sql_table_name": "schema.table_name", "label": "View Label"}}
+    ]
 
 
 def test_block_with_nested_block():
     parsed = load("block_with_nested_block.view.lkml")
-    assert parsed
+    assert parsed == [
+        {
+            "view_name": {
+                "sql_table_name": "schema.table_name",
+                "dimension_name": {"label": "Dimension Label"},
+            }
+        }
+    ]
