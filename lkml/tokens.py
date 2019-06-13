@@ -1,5 +1,7 @@
 class Token(object):
-    pass
+    def __repr__(self):
+        value = getattr(self, "value", "")
+        return f"{self.__class__.__name__}({value})"
 
 
 class StreamStartToken(Token):

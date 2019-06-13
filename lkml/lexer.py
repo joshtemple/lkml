@@ -12,13 +12,13 @@ class Lexer:
     def peek(self, length=0):
         return self.text[self.index : self.index + length + 1]
 
-    def consume(self):
-        ch = self.peek()
-        self.index += 1
-        return ch
-
     def advance(self, length=1):
         self.index += length
+
+    def consume(self):
+        ch = self.peek()
+        self.advance()
+        return ch
 
     def scan_until_token(self):
         found = False
@@ -34,7 +34,6 @@ class Lexer:
     def scan(self):
         self.tokens.append(tokens.StreamStartToken())
         while True:
-            print(f"'{self.peek()}'", end=", ")
             self.scan_until_token()
             ch = self.peek()
             if ch == "\0":
@@ -66,6 +65,7 @@ class Lexer:
         chars = ""
         while self.peek() != '"':
             chars += self.consume()
+        self.advance()
         return tokens.QuotedLiteralToken(chars)
 
 
