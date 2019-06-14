@@ -40,6 +40,18 @@ class DotToken(Token):
     id = "."
 
 
+class CommaToken(Token):
+    id = ","
+
+
+class SetStartToken(Token):
+    id = "["
+
+
+class SetEndToken(Token):
+    id = "]"
+
+
 class LiteralToken(Token):
     id = "<literal>"
 
