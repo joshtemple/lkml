@@ -43,6 +43,9 @@ class Lexer:
                 if self.peek(2) == "${":
                     self.advance(2)
                     self.tokens.append(tokens.ReferenceStartToken())
+                    self.tokens.append(self.scan_literal())
+                    self.advance()
+                    self.tokens.append(tokens.ReferenceEndToken())
             elif ch == "{":
                 self.advance()
                 self.tokens.append(tokens.BlockStartToken())
@@ -52,6 +55,9 @@ class Lexer:
             elif ch == ":":
                 self.advance()
                 self.tokens.append(tokens.ValueToken())
+            elif ch == ".":
+                self.advance()
+                self.tokens.append(tokens.DotToken())
             elif ch == ";":
                 if self.peek(2) == ";;":
                     self.advance(2)
@@ -62,13 +68,6 @@ class Lexer:
             else:
                 self.tokens.append(self.scan_literal())
         self.scanned = True
-
-    def scan_reference(self):
-        chars = ""
-        while self.peek() != "}":
-            chars += self.consume()
-        self.advance()
-        return tokens.LiteralToken(chars)
 
     def scan_literal(self):
         chars = ""

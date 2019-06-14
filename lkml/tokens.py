@@ -32,6 +32,14 @@ class ReferenceStartToken(Token):
     id = "${"
 
 
+class ReferenceEndToken(Token):
+    id = "}"
+
+
+class DotToken(Token):
+    id = "."
+
+
 class LiteralToken(Token):
     id = "<literal>"
 
