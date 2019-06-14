@@ -24,6 +24,14 @@ class ValueToken(Token):
     id = ":"
 
 
+class SqlEndToken(Token):
+    id = ";;"
+
+
+class ReferenceStartToken(Token):
+    id = "${"
+
+
 class LiteralToken(Token):
     id = "<literal>"
 
