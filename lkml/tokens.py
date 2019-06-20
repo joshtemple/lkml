@@ -44,11 +44,11 @@ class CommaToken(Token):
     id = ","
 
 
-class SetStartToken(Token):
+class ListStartToken(Token):
     id = "["
 
 
-class SetEndToken(Token):
+class ListEndToken(Token):
     id = "]"
 
 

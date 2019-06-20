@@ -53,10 +53,10 @@ class Lexer:
                 self.tokens.append(tokens.BlockEndToken())
             elif ch == "[":
                 self.advance()
-                self.tokens.append(tokens.SetStartToken())
+                self.tokens.append(tokens.ListStartToken())
             elif ch == "]":
                 self.advance()
-                self.tokens.append(tokens.SetEndToken())
+                self.tokens.append(tokens.ListEndToken())
             elif ch == ",":
                 self.advance()
                 self.tokens.append(tokens.CommaToken())
