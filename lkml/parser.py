@@ -86,11 +86,9 @@ class Parser:
             if tokens.BlockStartToken in [type(token) for token in self.peek(4)]:
                 block = self.parse_block()
                 expression.append(block)
-                continue
-            if self.check(tokens.LiteralToken):
+            elif self.check(tokens.LiteralToken):
                 pair = self.parse_pair()
                 expression.append(pair)
-                continue
             else:
                 raise Exception("Syntax error.")
 
