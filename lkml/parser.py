@@ -14,7 +14,9 @@ block = key key_name? "{" expression "}"
 
 pair = key ":" value
 
-list = key key_name? "[" ((literal / quoted_literal) ","?)+ "]"
+list = key key_name? "[" csv "]"
+
+csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
 
 value = quoted_literal / (literal sql_block_end?)
 
