@@ -16,8 +16,6 @@ formatter = logging.Formatter("%(name)s: %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-logger.error("Initialized logger")
-
 
 def load(file_object):
     text = file_object.read()
