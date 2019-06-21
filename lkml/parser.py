@@ -111,7 +111,7 @@ class Parser:
                         self.advance()
 
         block = {key: {"name": key_name, "expression": expression}}
-        logger.debug(f"Returning {block} from expression parser")
+        logger.debug(f"Returning {block} from block parser")
         return block
 
     def parse_pair(self):
