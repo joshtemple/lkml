@@ -251,3 +251,35 @@ def test_parse_list_with_literals(parser):
             "view_name.field_three",
         ]
     }
+
+
+def test_parse_list_with_trailing_comma(parser):
+    stream = (
+        tokens.LiteralToken("drill_fields"),
+        tokens.ValueToken(),
+        tokens.ListStartToken(),
+        tokens.LiteralToken("view_name.field_one"),
+        tokens.CommaToken(),
+        tokens.ListEndToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result is None
+
+
+def test_parse_list_with_missing_comma(parser):
+    stream = (
+        tokens.LiteralToken("drill_fields"),
+        tokens.ValueToken(),
+        tokens.ListStartToken(),
+        tokens.LiteralToken("view_name.field_one"),
+        tokens.CommaToken(),
+        tokens.LiteralToken("view_name.field_two"),
+        tokens.LiteralToken("view_name.field_three"),
+        tokens.ListEndToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result is None

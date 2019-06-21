@@ -157,9 +157,12 @@ class Parser:
                     self.advance()
                     csv = self.parse_csv()
 
-        list = {key: csv}
-        logger.debug(f"Returning {list} from list parser")
-        return list
+        if csv is None:
+            return None
+        else:
+            list = {key: csv}
+            logger.debug(f"Returning {list} from list parser")
+            return list
 
     def parse_csv(self) -> Optional[list]:
         """csv = (literal / quoted_literal) ("," (literal / quoted_literal))*"""
