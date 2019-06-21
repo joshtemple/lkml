@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Sequence, Type
 import lkml.tokens as tokens
 
 logger = logging.getLogger(f"{__name__}.parser")
@@ -32,7 +32,7 @@ literal = [0-9A-Za-z_]+
 
 
 class Parser:
-    def __init__(self, stream):
+    def __init__(self, stream: Sequence[tokens.Token]):
         for token in stream:
             if not isinstance(token, tokens.Token):
                 raise TypeError(
@@ -42,13 +42,13 @@ class Parser:
         logger.debug(tokens)
         self.index = 0
 
-    def peek(self, length=1):
+    def peek(self, length: int = 1):
         if length > 1:
             return self.tokens[self.index : self.index + length]
         else:
             return self.tokens[self.index]
 
-    def advance(self, length=1):
+    def advance(self, length: int = 1):
         logger.debug("\t" + str(self.tokens[self.index]))
         self.index += length
 
@@ -61,7 +61,7 @@ class Parser:
         token = self.consume()
         return token.value
 
-    def check(self, *token_types: tokens.Token):
+    def check(self, *token_types: Type[tokens.Token]):
         logger.debug(f"Checking {self.peek()} against {token_types}")
         for token_type in token_types:
             if not issubclass(token_type, tokens.Token):
