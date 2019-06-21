@@ -126,6 +126,8 @@ class Parser:
                 logger.debug(f"Returning {pair} from pair parser")
                 return pair
 
+        return None
+
     def parse_value(self) -> Optional[str]:
         """value = quoted_literal / (literal sql_block_end?)"""
         logger.debug("Entering value parser")
@@ -140,5 +142,4 @@ class Parser:
             logger.debug(f"Returning {value} from expression parser")
             return value
 
-    def parse_list(self):
-        pass
+        return None
