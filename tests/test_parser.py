@@ -151,3 +151,16 @@ def test_parse_value_bad_tokens(parser):
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
     assert result is None
+def test_parse_value_quoted_literal_with_leftovers(parser):
+    quoted_literal = "This is a quoted literal."
+    literal = "Some other tokens following."
+    stream = (
+        tokens.QuotedLiteralToken(quoted_literal),
+        tokens.LiteralToken(literal),
+        tokens.ValueToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_value()
+    assert result == quoted_literal
+    assert parser.index == 1
