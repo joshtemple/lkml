@@ -1,3 +1,4 @@
+from typing import Sequence
 import pytest
 import lkml
 import lkml.tokens as tokens
@@ -5,7 +6,7 @@ import lkml.tokens as tokens
 
 @pytest.fixture
 def parser():
-    stream = [
+    stream = (
         tokens.StreamStartToken(),
         tokens.LiteralToken("view"),
         tokens.ValueToken(),
@@ -17,7 +18,7 @@ def parser():
         tokens.SqlEndToken(),
         tokens.BlockEndToken(),
         tokens.StreamEndToken(),
-    ]
+    )
     return lkml.parser.Parser(stream)
 
 
@@ -31,7 +32,7 @@ def test_init_parser_has_tokens(parser):
 
 def test_init_all_tokens_must_be_tokens():
     with pytest.raises(TypeError):
-        lkml.parser.Parser(["a", "b", "c", "d", 1, 2, 3, 4])
+        lkml.parser.Parser(("a", "b", "c", "d", 1, 2, 3, 4))
 
 
 def test_peek_does_not_advance_index(parser):
@@ -47,12 +48,12 @@ def test_peek_default_returns_one_token(parser):
 
 def test_peek_length_greater_than_one_returns_list_of_tokens(parser):
     result = parser.peek(2)
-    assert isinstance(result, list)
+    assert isinstance(result, Sequence)
     assert all(isinstance(token, tokens.Token) for token in result)
     assert len(result) == 2
 
     result = parser.peek(5)
-    assert isinstance(result, list)
+    assert isinstance(result, Sequence)
     assert all(isinstance(token, tokens.Token) for token in result)
     assert len(result) == 5
 
@@ -115,3 +116,38 @@ def test_check_returns_false_for_all_invalid_types(parser):
 def test_check_raises_if_token_types_arg_is_not_a_token(parser):
     with pytest.raises(TypeError):
         parser.check(str)
+
+
+def test_parse_value_quoted_literal():
+    quoted_literal = "This is a quoted literal."
+    stream = (tokens.QuotedLiteralToken(quoted_literal), tokens.StreamEndToken())
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_value()
+    assert result == quoted_literal
+
+
+def test_parse_value_literal(parser):
+    literal = "This is an unquoted literal"
+    stream = (tokens.LiteralToken(literal), tokens.StreamEndToken())
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_value()
+    assert result == literal
+
+
+def test_parse_value_literal_with_sql_block(parser):
+    literal = "This is a SQL block"
+    stream = (
+        tokens.LiteralToken(literal),
+        tokens.SqlEndToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_value()
+    assert result == literal
+
+
+def test_parse_value_bad_tokens(parser):
+    stream = (tokens.ValueToken(), tokens.StreamEndToken())
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_value()
+    assert result is None
