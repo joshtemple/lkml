@@ -166,3 +166,64 @@ def test_parse_value_quoted_literal_with_leftovers(parser):
     result = parser.parse_value()
     assert result == quoted_literal
     assert parser.index == 1
+
+
+def test_parse_pair_with_literal(parser):
+    stream = (
+        tokens.LiteralToken("hidden"),
+        tokens.ValueToken(),
+        tokens.LiteralToken("yes"),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_pair()
+    assert result == {"hidden": "yes"}
+
+
+def test_parse_pair_with_quoted_literal(parser):
+    stream = (
+        tokens.LiteralToken("view_label"),
+        tokens.ValueToken(),
+        tokens.QuotedLiteralToken("View Label"),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_pair()
+    assert result == {"view_label": "View Label"}
+
+
+def test_parse_pair_with_sql_block(parser):
+    sql = "SELECT * FROM schema.table"
+    stream = (
+        tokens.LiteralToken("sql"),
+        tokens.ValueToken(),
+        tokens.LiteralToken(sql),
+        tokens.SqlEndToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_pair()
+    assert result == {"sql": sql}
+
+
+def test_parse_pair_with_bad_key(parser):
+    stream = (
+        tokens.QuotedLiteralToken("hidden"),
+        tokens.ValueToken(),
+        tokens.LiteralToken("yes"),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_pair()
+    assert result is None
+
+
+def test_parse_pair_without_value_token(parser):
+    stream = (
+        tokens.LiteralToken("hidden"),
+        tokens.LiteralToken("yes"),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_pair()
+    assert result is None
