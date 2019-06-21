@@ -29,6 +29,11 @@ def test_init_parser_has_tokens(parser):
     assert len(parser.tokens) > 0
 
 
+def test_init_all_tokens_must_be_tokens():
+    with pytest.raises(TypeError):
+        lkml.parser.Parser(["a", "b", "c", "d", 1, 2, 3, 4])
+
+
 def test_peek_does_not_advance_index(parser):
     index = parser.index
     parser.peek()

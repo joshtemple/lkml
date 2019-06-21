@@ -32,8 +32,13 @@ literal = [0-9A-Za-z_]+
 
 
 class Parser:
-    def __init__(self, tokens):
-        self.tokens = tokens
+    def __init__(self, stream):
+        for token in stream:
+            if not isinstance(token, tokens.Token):
+                raise TypeError(
+                    f"Type {type(token)} for {token} is not a valid token type."
+                )
+        self.tokens = stream
         logger.debug(tokens)
         self.index = 0
 
