@@ -1,5 +1,5 @@
 import logging
-from typing import List, Sequence, Type
+from typing import List, Sequence, Type, Optional
 import lkml.tokens as tokens
 
 logger = logging.getLogger(f"{__name__}.parser")
@@ -95,7 +95,7 @@ class Parser:
         logger.debug(f"Returning {expression} from expression parser")
         return expression
 
-    def parse_block(self):
+    def parse_block(self) -> Optional[dict]:
         """key key_name? '{' expression '}'"""
         logger.debug("Entering block parser")
         if self.check(tokens.LiteralToken):
@@ -114,7 +114,7 @@ class Parser:
         logger.debug(f"Returning {block} from block parser")
         return block
 
-    def parse_pair(self):
+    def parse_pair(self) -> Optional[dict]:
         """pair = key ':' value"""
         logger.debug("Entering pair parser")
         if self.check(tokens.LiteralToken):
@@ -126,7 +126,7 @@ class Parser:
                 logger.debug(f"Returning {pair} from pair parser")
                 return pair
 
-    def parse_value(self):
+    def parse_value(self) -> Optional[str]:
         """value = quoted_literal / (literal sql_block_end?)"""
         logger.debug("Entering value parser")
         if self.check(tokens.QuotedLiteralToken):
