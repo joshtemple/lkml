@@ -63,9 +63,6 @@ class Lexer:
             elif ch == ":":
                 self.advance()
                 self.tokens.append(tokens.ValueToken())
-            elif ch == ".":
-                self.advance()
-                self.tokens.append(tokens.DotToken())
             elif ch == ";":
                 if self.peek(2) == ";;":
                     self.advance(2)
@@ -78,9 +75,11 @@ class Lexer:
                 # and throw an error if it doesn't match
                 self.tokens.append(self.scan_literal())
 
+        return self.tokens
+
     def scan_literal(self):
         chars = ""
-        while self.peek() not in "\0 \r\n\t:},.]":
+        while self.peek() not in "\0 \r\n\t:},]":
             chars += self.consume()
         return tokens.LiteralToken(chars)
 
@@ -91,53 +90,3 @@ class Lexer:
             chars += self.consume()
         self.advance()
         return tokens.QuotedLiteralToken(chars)
-
-
-if __name__ == "__main__":
-    string = """view: orders {
-  sql_table_name: dbt_dev.orders ;;
-
-  set: ordered_date_fields {
-    fields: [
-      ordered_time, ordered_hour_of_day, ordered_date,
-      ordered_day_of_week, ordered_week, ordered_month,
-      ordered_quarter, ordered_year, ordered_raw]
-  }
-
-  dimension: order_id {
-    primary_key: yes
-    type: string
-    sql: ${TABLE}.order_id ;;
-    link: {
-      label: "View on Shopifiy"
-      url: "https://milk-bar-development.myshopify.com/admin/orders/{{ source_order_id }}"
-      icon_url: "https://cdn.shopify.com/shopify-marketing_assets/static/shopify-favicon.png"
-    }
-    link: {
-      label: "View on Brink"
-      url: "https://admin3.brinkpos.net/Orders/Order/{{ source_order_id }}"
-      icon_url: "https://admin3.brinkpos.net/assets/ico/favicon.png"
-    }
-  }
-
-  dimension: source_order_id {
-    description: "Order identifier in the original system (see the Source dimension)"
-    type: string
-    sql: ${TABLE}.source_order_id ;;
-  }
-
-  dimension: customer_id {
-    type: string
-    sql: ${TABLE}.customer_id ;;
-  }
-
-  dimension: store_id {
-    hidden: yes
-    type: string
-    sql: ${TABLE}.store_id ;;
-  }
-    """
-    print(string)
-    l = Lexer(string)
-    l.scan()
-    print(l.tokens)
