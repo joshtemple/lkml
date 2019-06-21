@@ -127,7 +127,7 @@ def test_parse_value_quoted_literal():
 
 
 def test_parse_value_literal(parser):
-    literal = "This is an unquoted literal"
+    literal = "This is an unquoted literal."
     stream = (tokens.LiteralToken(literal), tokens.StreamEndToken())
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
@@ -135,7 +135,7 @@ def test_parse_value_literal(parser):
 
 
 def test_parse_value_literal_with_sql_block(parser):
-    literal = "This is a SQL block"
+    literal = "SELECT * FROM tablename"
     stream = (
         tokens.LiteralToken(literal),
         tokens.SqlEndToken(),
@@ -146,11 +146,13 @@ def test_parse_value_literal_with_sql_block(parser):
     assert result == literal
 
 
-def test_parse_value_bad_tokens(parser):
+def test_parse_value_invalid_tokens(parser):
     stream = (tokens.ValueToken(), tokens.StreamEndToken())
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
     assert result is None
+
+
 def test_parse_value_quoted_literal_with_leftovers(parser):
     quoted_literal = "This is a quoted literal."
     literal = "Some other tokens following."
