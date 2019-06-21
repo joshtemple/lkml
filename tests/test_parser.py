@@ -227,3 +227,27 @@ def test_parse_pair_without_value_token(parser):
     parser = lkml.parser.Parser(stream)
     result = parser.parse_pair()
     assert result is None
+
+
+def test_parse_list_with_literals(parser):
+    stream = (
+        tokens.LiteralToken("drill_fields"),
+        tokens.ValueToken(),
+        tokens.ListStartToken(),
+        tokens.LiteralToken("view_name.field_one"),
+        tokens.CommaToken(),
+        tokens.LiteralToken("view_name.field_two"),
+        tokens.CommaToken(),
+        tokens.LiteralToken("view_name.field_three"),
+        tokens.ListEndToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == {
+        "drill_fields": [
+            "view_name.field_one",
+            "view_name.field_two",
+            "view_name.field_three",
+        ]
+    }

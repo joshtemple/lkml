@@ -143,3 +143,49 @@ class Parser:
             return value
 
         return None
+
+    def parse_list(self) -> Optional[dict]:
+        """list = key key_name? '[' csv ']'"""
+        logger.debug("Entering list parser")
+        if self.check(tokens.LiteralToken):
+            key = self.consume_token_value()
+            if self.check(tokens.ValueToken):
+                self.advance()
+                if self.check(tokens.LiteralToken):
+                    key_name = self.consume_token_value()
+                if self.check(tokens.ListStartToken):
+                    self.advance()
+                    csv = self.parse_csv()
+
+        list = {key: csv}
+        logger.debug(f"Returning {list} from list parser")
+        return list
+
+    def parse_csv(self) -> Optional[list]:
+        """csv = (literal / quoted_literal) ("," (literal / quoted_literal))*"""
+        logger.debug("Entering comma-separated value parser")
+        values = []
+
+        if self.check(tokens.LiteralToken):
+            values.append(self.consume_token_value())
+        elif self.check(tokens.QuotedLiteralToken):
+            values.append(self.consume_token_value())
+        else:
+            return None
+
+        while not self.check(tokens.ListEndToken):
+            if self.check(tokens.CommaToken):
+                self.advance()
+            else:
+                return None
+
+            if self.check(tokens.LiteralToken):
+                values.append(self.consume_token_value())
+            elif self.check(tokens.QuotedLiteralToken):
+                values.append(self.consume_token_value())
+            else:
+                return None
+
+        self.advance()
+        logger.debug(f"Returning {values} from csv parser")
+        return values
