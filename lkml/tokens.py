@@ -1,6 +1,5 @@
 class Token:
-    def __init__(self):
-        self.value = None
+    value: str
 
     def __repr__(self):
         value = getattr(self, "value", "")
