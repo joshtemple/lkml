@@ -39,7 +39,6 @@ class Parser:
                     f"Type {type(token)} for {token} is not a valid token type."
                 )
         self.tokens = stream
-        logger.debug(tokens)
         self.index = 0
         self.mark = 0
 
