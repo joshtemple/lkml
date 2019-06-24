@@ -91,12 +91,10 @@ class Parser:
         key = keys[0]
         if key in ["view", "measure", "dimension", "dimension_group", "set"]:
             plural_key = key + "s"
-            name = update[key].pop("name")
-            update = {name: update[key]}
             if plural_key in target.keys():
-                target[plural_key].append(update)
+                target[plural_key].append(update[key])
             else:
-                target[plural_key] = [update]
+                target[plural_key] = [update[key]]
         elif key in target.keys():
             raise KeyError(
                 f"Key {key} already exists in tree "
