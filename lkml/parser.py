@@ -103,7 +103,7 @@ class Parser:
                 "and would overwrite the existing value."
             )
         else:
-            target[key] = update
+            target[key] = update[key]
 
     @backtrack_if_none
     def parse_expression(self) -> List:
