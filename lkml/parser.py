@@ -18,9 +18,9 @@ list = key "[" csv "]"
 
 csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
 
-value = quoted_literal / (literal sql_block_end?)
+value = literal / quoted_literal / sql_block
 
-sql_block_end = ;;
+sql_block = [^;]* ";;"
 
 key = literal ":"
 
@@ -169,7 +169,7 @@ class Parser:
     def parse_key(self) -> Optional[str]:
         """key = literal ':'"""
         if self.check(tokens.LiteralToken):
-            value = self.consume_token_value()
+            key = self.consume_token_value()
         else:
             return None
 
@@ -178,21 +178,24 @@ class Parser:
         else:
             return None
 
-        return value
+        logger.debug(f"Returning {key} from key parser")
+        return key
 
     @backtrack_if_none
     def parse_value(self) -> Optional[str]:
         """value = quoted_literal / (literal sql_block_end?)"""
         logger.debug("Entering value parser")
-        if self.check(tokens.QuotedLiteralToken):
+        if self.check(tokens.QuotedLiteralToken, tokens.LiteralToken):
             value = self.consume_token_value()
-            logger.debug(f"Returning {value} from expression parser")
+            logger.debug(f"Returning {value} from value parser")
             return value
-        elif self.check(tokens.LiteralToken):
+        elif self.check(tokens.SqlBlockToken):
             value = self.consume_token_value()
-            if self.check(tokens.SqlEndToken):
+            if self.check(tokens.SqlBlockEndToken):
                 self.advance()
-            logger.debug(f"Returning {value} from expression parser")
+            else:
+                return None
+            logger.debug(f"Returning {value} from value parser")
             return value
         else:
             return None
