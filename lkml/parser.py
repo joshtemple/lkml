@@ -20,9 +20,9 @@ csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
 
 value = literal / quoted_literal / sql_block
 
-sql_block = [^;]* ";;"
-
 key = literal ":"
+
+sql_block = [^;]* ";;"
 
 quoted_literal = '"' [^\"]+ '"'
 
