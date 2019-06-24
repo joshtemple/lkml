@@ -46,18 +46,6 @@ def test_peek_default_returns_one_token(parser):
     assert isinstance(result, tokens.Token)
 
 
-def test_peek_length_greater_than_one_returns_list_of_tokens(parser):
-    result = parser.peek(2)
-    assert isinstance(result, Sequence)
-    assert all(isinstance(token, tokens.Token) for token in result)
-    assert len(result) == 2
-
-    result = parser.peek(5)
-    assert isinstance(result, Sequence)
-    assert all(isinstance(token, tokens.Token) for token in result)
-    assert len(result) == 5
-
-
 def test_advance_does_not_return_a_token(parser):
     result = parser.advance()
     assert result is None
