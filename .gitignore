@@ -41,3 +41,6 @@ output/
 
 # Pyenv
 *.python-version
+
+# mypy
+.mypy_cache/
