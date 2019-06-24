@@ -40,20 +40,16 @@ class Parser:
                 )
         self.tokens = stream
         self.index = 0
-        self.mark = 0
 
-    def set_mark(self):
-        self.mark = self.index
-
-    def jump_to_mark(self):
-        self.index = self.mark
+    def jump_to_index(self, index: int):
+        self.index = index
 
     def backtrack_if_none(method):
         def wrapper(self, *args, **kwargs):
-            self.set_mark()
+            mark = self.index
             result = method(self, *args, **kwargs)
             if result is None:
-                self.jump_to_mark()
+                self.jump_to_index(mark)
             return result
 
         return wrapper
