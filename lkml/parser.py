@@ -123,7 +123,7 @@ class Parser:
                 expression.update(list)
                 continue
 
-            raise Exception("Syntax error.")
+            raise SyntaxError("Unable to find a matching production.")
 
         logger.debug(f"Returning {expression} from expression parser")
         return expression
