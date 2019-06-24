@@ -1,4 +1,4 @@
-from typing import List
+from typing import Tuple, List
 import lkml.tokens as tokens
 
 
@@ -8,13 +8,16 @@ class Lexer:
         self.index = 0
         self.tokens = []
 
-    def peek(self, length=1):
-        return self.text[self.index : self.index + length]
+    def peek(self, length: int = 1) -> str:
+        if length > 1:
+            return self.text[self.index : self.index + length]
+        else:
+            return self.text[self.index]
 
-    def advance(self, length=1):
+    def advance(self, length: int = 1):
         self.index += length
 
-    def consume(self):
+    def consume(self) -> str:
         ch = self.peek()
         self.advance()
         return ch
@@ -30,7 +33,7 @@ class Lexer:
             else:
                 found = True
 
-    def scan(self):
+    def scan(self) -> Tuple[tokens.Token]:
         self.tokens.append(tokens.StreamStartToken())
         while True:
             self.scan_until_token()
@@ -66,7 +69,14 @@ class Lexer:
             elif ch == ";":
                 if self.peek(2) == ";;":
                     self.advance(2)
-                    self.tokens.append(tokens.SqlEndToken())
+                    self.tokens.append(tokens.SqlBlockEndToken())
+            elif self.peek(3) == "sql":
+                self.tokens.append(self.scan_literal())
+                self.scan_until_token()
+                self.advance()
+                self.tokens.append(tokens.ValueToken())
+                self.scan_until_token()
+                self.tokens.append(self.scan_sql_block())
             elif ch == '"':
                 self.advance()
                 self.tokens.append(self.scan_quoted_literal())
@@ -75,15 +85,24 @@ class Lexer:
                 # and throw an error if it doesn't match
                 self.tokens.append(self.scan_literal())
 
-        return self.tokens
+        return tuple(self.tokens)
 
-    def scan_literal(self):
+    def scan_sql_block(self) -> tokens.SqlBlockToken:
+        chars = ""
+        while self.peek(2) != ";;":
+            chars += self.consume()
+        # Strip any trailing whitespace from the SQL statement
+        # Usually there is an extra space before the ;;
+        chars = chars.rstrip()
+        return tokens.SqlBlockToken(chars)
+
+    def scan_literal(self) -> tokens.LiteralToken:
         chars = ""
         while self.peek() not in "\0 \r\n\t:},]":
             chars += self.consume()
         return tokens.LiteralToken(chars)
 
-    def scan_quoted_literal(self):
+    def scan_quoted_literal(self) -> tokens.QuotedLiteralToken:
         # TODO: Check and see if literals can be single-quoted
         chars = ""
         while self.peek() != '"':

@@ -29,7 +29,7 @@ class ValueToken(Token):
     id = ":"
 
 
-class SqlEndToken(Token):
+class SqlBlockEndToken(Token):
     id = ";;"
 
 
@@ -55,6 +55,16 @@ class ListStartToken(Token):
 
 class ListEndToken(Token):
     id = "]"
+
+
+class SqlBlockToken(Token):
+    id = "<sql block>"
+
+    def __init__(self, value):
+        self.value = value
+
+    def __eq__(self, other):
+        return self.id == other.id and self.value == other.value
 
 
 class LiteralToken(Token):
