@@ -89,7 +89,17 @@ class Parser:
         if len(keys) > 1:
             raise ValueError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
-        if key in ["view", "measure", "dimension", "dimension_group", "set"]:
+        if key in [
+            "view",
+            "measure",
+            "dimension",
+            "dimension_group",
+            "set",
+            "column",
+            "derived_column",
+            "include",
+            "explore",
+        ]:
             plural_key = key + "s"
             if plural_key in target.keys():
                 target[plural_key].append(update[key])
