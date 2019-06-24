@@ -122,6 +122,8 @@ class Parser:
 
         if self.check(tokens.LiteralToken):
             literal = self.consume_token_value()
+        else:
+            literal = None
 
         if self.check(tokens.BlockStartToken):
             self.advance()
