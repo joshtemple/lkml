@@ -83,27 +83,44 @@ class Parser:
     def parse(self) -> List:
         return self.parse_expression()
 
+    @staticmethod
+    def update_tree(target, update):
+        keys = tuple(update.keys())
+        if len(keys) > 1:
+            raise ValueError("Dictionary to update with cannot have multiple keys.")
+        key = keys[0]
+        if key in ["view", "measure", "dimension", "dimension_group"]:
+            plural_key = key + "s"
+            name = update[key].pop("name")
+            update = {name: update[key]}
+            if plural_key in target.keys():
+                target[plural_key].append(update)
+            else:
+                target[plural_key] = [update]
+        else:
+            target[key] = update
+
     @backtrack_if_none
     def parse_expression(self) -> List:
         """expression = (block / pair / list)*"""
         logger.debug("Entering expression parser")
-        expression = []
+        expression = {}
         if self.check(tokens.StreamStartToken):
             self.advance()
         while not self.check(tokens.StreamEndToken, tokens.BlockEndToken):
             block = self.parse_block()
             if block is not None:
-                expression.append(block)
+                self.update_tree(expression, block)
                 continue
 
             pair = self.parse_pair()
             if pair is not None:
-                expression.append(pair)
+                expression.update(pair)
                 continue
 
             list = self.parse_list()
             if list is not None:
-                expression.append(list)
+                expression.update(list)
                 continue
 
             raise Exception("Syntax error.")
@@ -136,15 +153,15 @@ class Parser:
 
         if self.check(tokens.BlockEndToken):
             self.advance()
+
+            block = {key: expression}
+            if literal:
+                block[key]["name"] = literal
+
+            logger.debug(f"Returning {block} from block parser")
+            return block
         else:
             return None
-
-        block = {key: {"expression": expression}}
-        if literal:
-            block[key]["name"] = literal
-
-        logger.debug(f"Returning {block} from block parser")
-        return block
 
     @backtrack_if_none
     def parse_pair(self) -> Optional[dict]:
