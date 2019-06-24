@@ -1,6 +1,9 @@
 class Token:
     value: str
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__
+
     def __repr__(self):
         value = getattr(self, "value", "")
         return f"{self.__class__.__name__}({value})"
@@ -60,9 +63,15 @@ class LiteralToken(Token):
     def __init__(self, value):
         self.value = value
 
+    def __eq__(self, other):
+        return self.id == other.id and self.value == other.value
+
 
 class QuotedLiteralToken(Token):
     id = "<quoted literal>"
 
     def __init__(self, value):
         self.value = value
+
+    def __eq__(self, other):
+        return self.id == other.id and self.value == other.value
