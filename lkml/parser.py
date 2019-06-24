@@ -89,7 +89,7 @@ class Parser:
         if len(keys) > 1:
             raise ValueError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
-        if key in ["view", "measure", "dimension", "dimension_group"]:
+        if key in ["view", "measure", "dimension", "dimension_group", "set"]:
             plural_key = key + "s"
             name = update[key].pop("name")
             update = {name: update[key]}
