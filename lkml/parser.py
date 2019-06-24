@@ -10,11 +10,11 @@ LookML grammar
 ---
 expression = (block / pair / list)*
 
-block = key key_name? "{" expression "}"
+block = key literal? "{" expression "}"
 
-pair = key ":" value
+pair = key value
 
-list = key key_name? "[" csv "]"
+list = key literal? "[" csv "]"
 
 csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
 
@@ -22,9 +22,7 @@ value = quoted_literal / (literal sql_block_end?)
 
 sql_block_end = ;;
 
-key = literal
-
-key_name = literal
+key = literal ":"
 
 quoted_literal = '"' [^\"]+ '"'
 
@@ -43,6 +41,23 @@ class Parser:
         self.tokens = stream
         logger.debug(tokens)
         self.index = 0
+        self.mark: int = None
+
+    def set_mark(self):
+        self.mark = self.index
+
+    def jump_to_mark(self):
+        self.index = self.mark
+
+    def backtrack_if_none(method):
+        def wrapper(self, *args, **kwargs):
+            self.set_mark()
+            result = method(self, *args, **kwargs)
+            if result is None:
+                self.jump_to_mark()
+            return result
+
+        return wrapper
 
     def peek(self, length: int = 1):
         if length > 1:
@@ -76,6 +91,7 @@ class Parser:
     def parse(self) -> List:
         return self.parse_expression()
 
+    @backtrack_if_none
     def parse_expression(self) -> List:
         """expression = (block / pair / list)*"""
         logger.debug("Entering expression parser")
@@ -83,51 +99,92 @@ class Parser:
         if self.check(tokens.StreamStartToken):
             self.advance()
         while not self.check(tokens.StreamEndToken, tokens.BlockEndToken):
-            if tokens.BlockStartToken in [type(token) for token in self.peek(4)]:
-                block = self.parse_block()
+            block = self.parse_block()
+            if block is not None:
                 expression.append(block)
-            elif self.check(tokens.LiteralToken):
-                pair = self.parse_pair()
+                continue
+
+            pair = self.parse_pair()
+            if pair is not None:
                 expression.append(pair)
-            else:
-                raise Exception("Syntax error.")
+                continue
+
+            list = self.parse_list()
+            if list is not None:
+                expression.append(list)
+                continue
+
+            raise Exception("Syntax error.")
 
         logger.debug(f"Returning {expression} from expression parser")
         return expression
 
+    @backtrack_if_none
     def parse_block(self) -> Optional[dict]:
-        """key key_name? '{' expression '}'"""
+        """key literal? '{' expression '}'"""
         logger.debug("Entering block parser")
-        if self.check(tokens.LiteralToken):
-            key = self.consume_token_value()
-            if self.check(tokens.ValueToken):
-                self.advance()
-                if self.check(tokens.LiteralToken):
-                    key_name = self.consume_token_value()
-                if self.check(tokens.BlockStartToken):
-                    self.advance()
-                    expression = self.parse_expression()
-                    if self.check(tokens.BlockEndToken):
-                        self.advance()
 
-        block = {key: {"name": key_name, "expression": expression}}
+        key = self.parse_key()
+        if key is None:
+            return key
+
+        if self.check(tokens.LiteralToken):
+            literal = self.consume_token_value()
+
+        if self.check(tokens.BlockStartToken):
+            self.advance()
+        else:
+            return None
+
+        expression = self.parse_expression()
+        if expression is None:
+            return expression
+
+        if self.check(tokens.BlockEndToken):
+            self.advance()
+        else:
+            return None
+
+        block = {key: {"expression": expression}}
+        if literal:
+            block[key]["name"] = literal
+
         logger.debug(f"Returning {block} from block parser")
         return block
 
+    @backtrack_if_none
     def parse_pair(self) -> Optional[dict]:
-        """pair = key ':' value"""
+        """pair = key value"""
         logger.debug("Entering pair parser")
+
+        key = self.parse_key()
+        if key is None:
+            return key
+
+        value = self.parse_value()
+        if value is None:
+            return value
+
+        pair = {key: value}
+        logger.debug(f"Returning {pair} from pair parser")
+        return pair
+
+    @backtrack_if_none
+    def parse_key(self) -> Optional[str]:
+        """key = literal ':'"""
         if self.check(tokens.LiteralToken):
-            key = self.consume_token_value()
-            if self.check(tokens.ValueToken):
-                self.advance()
-                value = self.parse_value()
-                pair = {key: value}
-                logger.debug(f"Returning {pair} from pair parser")
-                return pair
+            value = self.consume_token_value()
+        else:
+            return None
 
-        return None
+        if self.check(tokens.ValueToken):
+            self.advance()
+        else:
+            return None
 
+        return value
+
+    @backtrack_if_none
     def parse_value(self) -> Optional[str]:
         """value = quoted_literal / (literal sql_block_end?)"""
         logger.debug("Entering value parser")
@@ -141,29 +198,40 @@ class Parser:
                 self.advance()
             logger.debug(f"Returning {value} from expression parser")
             return value
-
-        return None
-
-    def parse_list(self) -> Optional[dict]:
-        """list = key key_name? '[' csv ']'"""
-        logger.debug("Entering list parser")
-        if self.check(tokens.LiteralToken):
-            key = self.consume_token_value()
-            if self.check(tokens.ValueToken):
-                self.advance()
-                if self.check(tokens.LiteralToken):
-                    key_name = self.consume_token_value()
-                if self.check(tokens.ListStartToken):
-                    self.advance()
-                    csv = self.parse_csv()
-
-        if csv is None:
-            return None
         else:
+            return None
+
+    @backtrack_if_none
+    def parse_list(self) -> Optional[dict]:
+        """list = key literal? '[' csv ']'"""
+        logger.debug("Entering list parser")
+
+        key = self.parse_key()
+        if key is None:
+            return key
+
+        if self.check(tokens.LiteralToken):
+            literal = self.consume_token_value()
+
+        if self.check(tokens.ListStartToken):
+            self.advance()
+        else:
+            return None
+
+        csv = self.parse_csv()
+        if csv is None:
+            return csv
+
+        if self.check(tokens.ListEndToken):
+            self.advance()
+            # TODO: Return key name as well
             list = {key: csv}
             logger.debug(f"Returning {list} from list parser")
             return list
+        else:
+            return None
 
+    @backtrack_if_none
     def parse_csv(self) -> Optional[list]:
         """csv = (literal / quoted_literal) ("," (literal / quoted_literal))*"""
         logger.debug("Entering comma-separated value parser")
@@ -189,6 +257,5 @@ class Parser:
             else:
                 return None
 
-        self.advance()
         logger.debug(f"Returning {values} from csv parser")
         return values
