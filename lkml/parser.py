@@ -1,5 +1,5 @@
 import logging
-from typing import List, Sequence, Type, Optional
+from typing import List, Sequence, Type, Optional, Any, Union
 import lkml.tokens as tokens
 
 logger = logging.getLogger(f"{__name__}.parser")
@@ -41,7 +41,7 @@ class Parser:
         self.tokens = stream
         logger.debug(tokens)
         self.index = 0
-        self.mark: int = None
+        self.mark = 0
 
     def set_mark(self):
         self.mark = self.index
@@ -59,26 +59,23 @@ class Parser:
 
         return wrapper
 
-    def peek(self, length: int = 1):
-        if length > 1:
-            return self.tokens[self.index : self.index + length]
-        else:
-            return self.tokens[self.index]
+    def peek(self) -> tokens.Token:
+        return self.tokens[self.index]
 
     def advance(self, length: int = 1):
         logger.debug("\t" + str(self.tokens[self.index]))
         self.index += length
 
-    def consume(self):
+    def consume(self) -> tokens.Token:
         token = self.peek()
         self.advance()
         return token
 
-    def consume_token_value(self):
+    def consume_token_value(self) -> Any:
         token = self.consume()
         return token.value
 
-    def check(self, *token_types: Type[tokens.Token]):
+    def check(self, *token_types: Type[tokens.Token]) -> bool:
         logger.debug(f"Checking {self.peek()} against {token_types}")
         for token_type in token_types:
             if not issubclass(token_type, tokens.Token):

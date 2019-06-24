@@ -1,4 +1,7 @@
-class Token(object):
+class Token:
+    def __init__(self):
+        self.value = None
+
     def __repr__(self):
         value = getattr(self, "value", "")
         return f"{self.__class__.__name__}({value})"
