@@ -28,6 +28,21 @@ def test_peek_with_more_than_one_returns_correct_characters(lexer):
     assert len(result) == 3
 
 
+def test_advance_does_not_return_a_character(lexer):
+    result = lexer.advance()
+    assert result is None
+
+
+def test_advance_increases_index_by_length(lexer):
+    index = lexer.index
+    lexer.advance()
+    assert lexer.index == index + 1
+
+    index = lexer.index
+    lexer.advance(3)
+    assert lexer.index == index + 3
+
+
 def test_scan_quoted_literal():
     text = '"This is quoted text."'
     lexer = lkml.Lexer(text)
