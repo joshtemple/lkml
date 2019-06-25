@@ -35,7 +35,7 @@ jobs:
           command: |
             . venv/bin/activate
             mkdir test-reports
-            pytest --junitxml=test-reports/junit.xml --cov-report term-missing --cov=lkml tests
+            python -m pytest --junitxml=test-reports/junit.xml --cov-report term-missing --cov=lkml tests
             coverage xml
 
       - store_test_results:
