@@ -71,6 +71,26 @@ def test_scan_until_token_skips_comments():
     assert result == "S"
 
 
+params = [
+    ("\0", tokens.StreamEndToken()),
+    ("{", tokens.BlockStartToken()),
+    ("}", tokens.BlockEndToken()),
+    ("[", tokens.ListStartToken()),
+    ("]", tokens.ListEndToken()),
+    (",", tokens.CommaToken()),
+    (":", tokens.ValueToken()),
+    (";;", tokens.SqlBlockEndToken()),
+]
+
+
+@pytest.mark.parametrize("text,expected", params)
+def test_scan_all_simple_tokens(text, expected):
+    lexer = lkml.Lexer(text)
+    result = lexer.scan()
+    # Skip stream start token appended at the beginning
+    assert result[1] == expected
+
+
 def test_scan_quoted_literal():
     text = '"This is quoted text."'
     lexer = lkml.Lexer(text)
