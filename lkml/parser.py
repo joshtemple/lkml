@@ -97,6 +97,7 @@ class Parser:
             "filter",
             "access_filter",
             "bind_filters",
+            "map_layer",
             "parameter",
             "set",
             "column",
