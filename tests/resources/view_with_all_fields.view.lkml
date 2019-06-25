@@ -53,9 +53,7 @@ required_access_grants: [access_grant_name, access_grant_name]
     create_process: {
       sql_step: SQL query ;;
     }
-    sql_create: {
-      SQL query ;;
-    }
+    sql_create: SQL query ;;
   }
 
   set: set_name {
