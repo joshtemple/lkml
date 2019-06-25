@@ -44,3 +44,9 @@ output/
 
 # mypy
 .mypy_cache/
+
+# Project-specific
+github/
+
+# Mac
+.DS_Store
