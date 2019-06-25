@@ -103,6 +103,9 @@ class Lexer:
         # TODO: Check and see if literals can be single-quoted
         chars = ""
         while self.peek() != '"':
-            chars += self.consume()
+            if self.peek() == "\\":
+                chars += self.consume() + self.consume()
+            else:
+                chars += self.consume()
         self.advance()
         return tokens.QuotedLiteralToken(chars)

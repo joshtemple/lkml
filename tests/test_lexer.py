@@ -107,6 +107,14 @@ def test_scan_quoted_literal_with_otherwise_illegal_chars():
     assert token == tokens.QuotedLiteralToken("This: is {quoted} \n text.")
 
 
+def test_scan_quoted_literal_with_escaped_quotes():
+    text = r'"#.### \"M\""'
+    lexer = lkml.Lexer(text)
+    lexer.index = 1
+    token = lexer.scan_quoted_literal()
+    assert token == tokens.QuotedLiteralToken(r"#.### \"M\"")
+
+
 def test_scan_literal():
     text = "unquoted_literal"
     token = lkml.Lexer(text).scan_literal()
