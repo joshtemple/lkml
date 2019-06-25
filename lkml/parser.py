@@ -105,6 +105,10 @@ class Parser:
             "link",
             "when",
             "allowed_value",
+            "named_value_format",
+            "join",
+            "datagroup",
+            "access_grant",
         ]:
             plural_key = key.rstrip("s") + "s"
             if plural_key in target.keys():

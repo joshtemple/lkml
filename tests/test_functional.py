@@ -27,3 +27,8 @@ def test_block_with_nested_block():
 def test_view_with_all_fields():
     lookml = load("view_with_all_fields.view.lkml")
     assert lookml is not None
+
+
+def test_model_with_all_fields():
+    lookml = load("model_with_all_fields.model.lkml")
+    assert lookml is not None
