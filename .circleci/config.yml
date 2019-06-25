@@ -31,6 +31,12 @@ jobs:
           key: v1-dependencies-{{ checksum "requirements.txt" }}
 
       - run:
+          name: Check types
+          command: |
+            . venv/bin/activate
+            mypy lkml
+
+      - run:
           name: Test
           command: |
             . venv/bin/activate
