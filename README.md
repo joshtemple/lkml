@@ -7,10 +7,39 @@ A blazing fast LookML parser implemented in pure Python.
 
 ## How do I install it?
 
-lkml is a currently a WIP project. When it's finished, it will be available to install on pip via the following command:
+`lkml` is a currently a WIP project. When it's finished, it will be available to install on pip via the following command:
 
 ```
 pip install lkml
+```
+
+## How do I run it?
+
+You can run `lkml` from the command line or import it as a Python package.
+
+**From the command line**, `lkml` accepts a single positional argument: the path to the LookML file you wish to parse. It returns the parsed result to the console as a JSON string.
+
+Here's an example:
+
+```
+lkml path/to/file.view.lkml
+```
+
+If you would like to save the result to a file, you can use the following approach:
+
+```
+lkml path/to/file.view.lkml > path/to/result.json
+```
+
+**As a Python package**, `lkml` uses a similar interface as the `json` and `yaml` packages. The package has a single function, `load`, which accepts a file object and returns a dictionary with the parsed result.
+
+Here's an example:
+
+```
+import lkml
+
+with open('path/to/file.view.lkml', 'r') as file:
+    result = lkml.load(file)
 ```
 
 ## What does the parsed LookML look like?
@@ -61,4 +90,4 @@ would be broken into the tuple:
 - [ ] Performance benchmarking and profiling
 - [x] Test with funky derived table syntax
 - [ ] Support HTML blocks
-- [ ] Support CLI invocation
+- [x] Support CLI invocation
