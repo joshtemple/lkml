@@ -1,4 +1,4 @@
-[![CircleCI](https://img.shields.io/circleci/build/github/joshtemple/lkml.svg)](https://circleci.com/gh/joshtemple/lkml/tree/master)
+[![CircleCI](https://circleci.com/gh/joshtemple/lkml.svg?style=svg)](https://circleci.com/gh/joshtemple/lkml)
 
 # lkml
 
