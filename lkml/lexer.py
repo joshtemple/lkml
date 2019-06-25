@@ -41,13 +41,6 @@ class Lexer:
             if ch == "\0":
                 self.tokens.append(tokens.StreamEndToken())
                 break
-            elif ch == "$":
-                if self.peek(2) == "${":
-                    self.advance(2)
-                    self.tokens.append(tokens.ReferenceStartToken())
-                    self.tokens.append(self.scan_literal())
-                    self.advance()
-                    self.tokens.append(tokens.ReferenceEndToken())
             elif ch == "{":
                 self.advance()
                 self.tokens.append(tokens.BlockStartToken())
