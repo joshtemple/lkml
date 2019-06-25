@@ -63,7 +63,11 @@ class Lexer:
                 if self.peek(2) == ";;":
                     self.advance(2)
                     self.tokens.append(tokens.ExpressionBlockEndToken())
-            elif self.peek(3) == "sql" or self.peek(4) == "html":
+            elif (
+                self.peek(3) == "sql"
+                or self.peek(4) == "html"
+                or self.peek(24) == "expression_custom_filter"
+            ):
                 self.tokens.append(self.scan_literal())
                 self.scan_until_token()
                 self.advance()

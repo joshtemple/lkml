@@ -24,7 +24,7 @@ required_access_grants: [access_grant_name, access_grant_name]
       derived_column: column_name {
         sql: SQL query ;;
       }
-      # expression_custom_filter: custom_filter_expression ;;
+      expression_custom_filter: custom_filter_expression ;;
       filters: {
         field: field_name
         value: filter_value
