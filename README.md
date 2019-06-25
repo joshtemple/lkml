@@ -1,3 +1,5 @@
+[![CircleCI](https://img.shields.io/circleci/build/github/joshtemple/lkml.svg)](https://circleci.com/gh/joshtemple/lkml/tree/master)
+
 # lkml
 
 A blazing fast LookML parser implemented in pure Python.
