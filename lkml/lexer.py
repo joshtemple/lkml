@@ -95,7 +95,7 @@ class Lexer:
 
     def scan_literal(self) -> tokens.LiteralToken:
         chars = ""
-        while self.peek() not in "\0 \r\n\t:},]":
+        while self.peek() not in "\0 \r\n\t:}{,]":
             chars += self.consume()
         return tokens.LiteralToken(chars)
 
