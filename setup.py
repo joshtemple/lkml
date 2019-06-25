@@ -24,6 +24,7 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     keywords="",
+    entry_points={"console_scripts": ["lkml = lkml.__init__:cli"]},
     packages=find_packages(exclude=["docs", "tests*"]),
     include_package_data=True,
     author="Josh Temple",

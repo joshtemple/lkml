@@ -1,5 +1,6 @@
+import argparse
+import json
 from pathlib import Path
-from pprint import pformat
 from lkml.lexer import Lexer
 from lkml.parser import Parser
 import logging
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.ERROR)
 
 formatter = logging.Formatter("%(name)s: %(message)s")
 
@@ -23,5 +24,25 @@ def load(file_object):
     tokens = lexer.scan()
     parser = Parser(tokens)
     result = parser.parse()
-    logger.debug("\n" + pformat(result, indent=2) + "\n")
     return result
+
+
+def cli():
+    parser = argparse.ArgumentParser(
+        description=(
+            "A blazing fast LookML parser, implemented in pure Python. "
+            "When invoked from the command line, "
+            "returns the parsed output as a JSON string."
+        )
+    )
+    parser.add_argument("file", help="path to the LookML file to parse")
+    args = parser.parse_args()
+    filepath = Path(args.file)
+    with filepath.open("r") as file:
+        lookml = load(file)
+
+    print(json.dumps(lookml, indent=2))
+
+
+if __name__ == "__main__":
+    cli()
