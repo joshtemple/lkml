@@ -18,11 +18,11 @@ list = key "[" csv "]"
 
 csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
 
-value = literal / quoted_literal / sql_block
+value = literal / quoted_literal / expression_block
 
 key = literal ":"
 
-sql_block = [^;]* ";;"
+expression_block = [^;]* ";;"
 
 quoted_literal = '"' [^\"]+ '"'
 
@@ -221,15 +221,15 @@ class Parser:
 
     @backtrack_if_none
     def parse_value(self) -> Optional[str]:
-        """value = quoted_literal / (literal sql_block_end?)"""
+        """value = literal / quoted_literal / expression_block"""
         logger.debug("Entering value parser")
         if self.check(tokens.QuotedLiteralToken, tokens.LiteralToken):
             value = self.consume_token_value()
             logger.debug(f"Returning {value} from value parser")
             return value
-        elif self.check(tokens.SqlBlockToken):
+        elif self.check(tokens.ExpressionBlockToken):
             value = self.consume_token_value()
-            if self.check(tokens.SqlBlockEndToken):
+            if self.check(tokens.ExpressionBlockEndToken):
                 self.advance()
             else:
                 return None

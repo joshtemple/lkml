@@ -29,7 +29,7 @@ class ValueToken(Token):
     id = ":"
 
 
-class SqlBlockEndToken(Token):
+class ExpressionBlockEndToken(Token):
     id = ";;"
 
 
@@ -49,7 +49,7 @@ class ListEndToken(Token):
     id = "]"
 
 
-class SqlBlockToken(Token):
+class ExpressionBlockToken(Token):
     id = "<sql block>"
 
     def __init__(self, value):

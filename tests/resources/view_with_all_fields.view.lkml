@@ -71,7 +71,7 @@ required_access_grants: [access_grant_name, access_grant_name]
     alias: [old_field_name, old_field_name]
     value_format: "excel-style formatting string"
     value_format_name: format_name
-    # html: HTML expression using Liquid template elements ;;
+    html: HTML expression using Liquid template elements ;;
     sql: SQL expression to generate the field value ;;
     required_fields: [field_name, field_name]
     drill_fields: [field_or_set, field_or_set]
