@@ -111,7 +111,7 @@ class Parser:
                 target[plural_key] = [update[key]]
         elif key in target.keys():
             raise KeyError(
-                f"Key {key} already exists in tree "
+                f'Key "{key}" already exists in tree '
                 "and would overwrite the existing value."
             )
         else:
