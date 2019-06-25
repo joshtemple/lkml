@@ -119,9 +119,9 @@ def test_scan_literal_with_following_whitespace():
     assert token == tokens.LiteralToken("unquoted_literal")
 
 
-def test_scan_sql_block_with_complex_sql_block():
+def test_scan_expression_block_with_complex_sql_block():
     text = "concat(${orders.order_id}, '|', ${orders__items.primary_key}) ;;"
-    token = lkml.Lexer(text).scan_sql_block()
+    token = lkml.Lexer(text).scan_expression_block()
     token == tokens.ExpressionBlockToken(
         "concat(${orders.order_id}, '|', ${orders__items.primary_key})"
     )
