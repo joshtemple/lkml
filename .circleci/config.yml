@@ -16,11 +16,10 @@ jobs:
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "requirements.txt" }}
-            # Fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
       - run:
-          name: install dependencies
+          name: Install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
@@ -32,11 +31,11 @@ jobs:
           key: v1-dependencies-{{ checksum "requirements.txt" }}
 
       - run:
-          name: test
+          name: Test
           command: |
             . venv/bin/activate
             mkdir test-reports
-            pytest --junitxml=test-reports/junit.xml --cov-report term-missing --cov=lkml tests
+            python -m pytest --junitxml=test-reports/junit.xml --cov-report term-missing --cov=lkml tests
             coverage xml
 
       - store_test_results:
