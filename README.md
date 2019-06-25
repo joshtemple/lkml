@@ -48,16 +48,16 @@ would be broken into the tuple:
 
 ## TODO:
 
-- [] Reach 100% coverage for parser.py and lexer.py
-- [] Add CI for mypy and pytest
-- [] Add repo badges
-- [] Test with code comments
+- [ ] Reach 100% coverage for parser.py and lexer.py
+- [ ] Add CI for mypy and pytest
+- [ ] Add repo badges
+- [ ] Test with code comments
 - [x] Adjust dimensions, measures, etc. to be dicts instead of lists
-- [] Improve error handling to return the location of the syntax error
-- [] Implement checking for scanning literals to make sure they're valid
-- [] Test with more LookML, consider GitHub for a larger sample
-- [] Add docstrings
-- [] Performance benchmarking and profiling
-- [] Test with funky derived table syntax
-- [] Support HTML blocks
-- [] Support CLI invocation
+- [ ] Improve error handling to return the location of the syntax error
+- [ ] Implement checking for scanning literals to make sure they're valid
+- [ ] Test with more LookML, consider GitHub for a larger sample
+- [ ] Add docstrings
+- [ ] Performance benchmarking and profiling
+- [ ] Test with funky derived table syntax
+- [ ] Support HTML blocks
+- [ ] Support CLI invocation
