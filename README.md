@@ -49,7 +49,7 @@ would be broken into the tuple:
 ## TODO:
 
 - [ ] Reach 100% coverage for parser.py and lexer.py
-- [ ] Implement models and explores
+- [x] Implement models and explores
 - [x] Add CI for mypy and pytest
 - [x] Add repo badges
 - [x] Test with code comments
@@ -59,6 +59,6 @@ would be broken into the tuple:
 - [ ] Test with more LookML, consider GitHub for a larger sample
 - [ ] Add docstrings
 - [ ] Performance benchmarking and profiling
-- [ ] Test with funky derived table syntax
+- [x] Test with funky derived table syntax
 - [ ] Support HTML blocks
 - [ ] Support CLI invocation
