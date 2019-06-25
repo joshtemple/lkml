@@ -95,6 +95,7 @@ class Parser:
             "dimension",
             "dimension_group",
             "filters",
+            "bind_filters",
             "parameter",
             "set",
             "column",
@@ -103,6 +104,7 @@ class Parser:
             "explore",
             "link",
             "when",
+            "allowed_value",
         ]:
             plural_key = key.rstrip("s") + "s"
             if plural_key in target.keys():
