@@ -95,6 +95,7 @@ class Parser:
             "dimension",
             "dimension_group",
             "filter",
+            "access_filter",
             "bind_filters",
             "parameter",
             "set",
