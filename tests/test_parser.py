@@ -15,7 +15,7 @@ def parser():
         tokens.LiteralToken("sql_table_name"),
         tokens.ValueToken(),
         tokens.LiteralToken("schema.table_name"),
-        tokens.SqlBlockEndToken(),
+        tokens.ExpressionBlockEndToken(),
         tokens.BlockEndToken(),
         tokens.StreamEndToken(),
     )
@@ -126,7 +126,7 @@ def test_parse_value_literal_with_sql_block(parser):
     literal = "SELECT * FROM tablename"
     stream = (
         tokens.LiteralToken(literal),
-        tokens.SqlBlockEndToken(),
+        tokens.ExpressionBlockEndToken(),
         tokens.StreamEndToken(),
     )
     parser = lkml.parser.Parser(stream)
@@ -186,7 +186,7 @@ def test_parse_pair_with_sql_block(parser):
         tokens.LiteralToken("sql"),
         tokens.ValueToken(),
         tokens.LiteralToken(sql),
-        tokens.SqlBlockEndToken(),
+        tokens.ExpressionBlockEndToken(),
         tokens.StreamEndToken(),
     )
     parser = lkml.parser.Parser(stream)

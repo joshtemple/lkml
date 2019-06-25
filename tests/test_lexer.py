@@ -79,7 +79,7 @@ params = [
     ("]", tokens.ListEndToken()),
     (",", tokens.CommaToken()),
     (":", tokens.ValueToken()),
-    (";;", tokens.SqlBlockEndToken()),
+    (";;", tokens.ExpressionBlockEndToken()),
 ]
 
 
@@ -122,7 +122,7 @@ def test_scan_literal_with_following_whitespace():
 def test_scan_sql_block_with_complex_sql_block():
     text = "concat(${orders.order_id}, '|', ${orders__items.primary_key}) ;;"
     token = lkml.Lexer(text).scan_sql_block()
-    token == tokens.SqlBlockToken(
+    token == tokens.ExpressionBlockToken(
         "concat(${orders.order_id}, '|', ${orders__items.primary_key})"
     )
 
@@ -137,9 +137,9 @@ def test_scan_with_complex_sql_block():
         tokens.StreamStartToken(),
         tokens.LiteralToken("sql_distinct_key"),
         tokens.ValueToken(),
-        tokens.SqlBlockToken(
+        tokens.ExpressionBlockToken(
             "concat(${orders.order_id}, '|', ${orders__items.primary_key})"
         ),
-        tokens.SqlBlockEndToken(),
+        tokens.ExpressionBlockEndToken(),
         tokens.StreamEndToken(),
     )
