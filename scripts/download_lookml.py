@@ -47,7 +47,11 @@ with requests.Session() as session:
             encoded = response_json["content"]
             content = b64decode(encoded).decode("utf-8")
 
-            if content.startswith("-") or "- view" in content:
+            if (
+                name.endswith(".lookml")
+                or content.startswith("-")
+                or "- view" in content
+            ):
                 continue
 
             file_path = directory / name
