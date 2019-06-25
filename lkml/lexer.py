@@ -33,7 +33,7 @@ class Lexer:
             else:
                 found = True
 
-    def scan(self) -> Tuple[tokens.Token]:
+    def scan(self) -> Tuple[tokens.Token, ...]:
         self.tokens.append(tokens.StreamStartToken())
         while True:
             self.scan_until_token()
