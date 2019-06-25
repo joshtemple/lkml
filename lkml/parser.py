@@ -94,11 +94,15 @@ class Parser:
             "measure",
             "dimension",
             "dimension_group",
+            "filter",
+            "parameter",
             "set",
             "column",
             "derived_column",
             "include",
             "explore",
+            "link",
+            "when",
         ]:
             plural_key = key + "s"
             if plural_key in target.keys():
