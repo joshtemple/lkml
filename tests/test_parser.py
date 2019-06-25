@@ -114,7 +114,7 @@ def test_parse_value_quoted_literal():
     assert result == quoted_literal
 
 
-def test_parse_value_literal(parser):
+def test_parse_value_literal():
     literal = "This is an unquoted literal."
     stream = (tokens.LiteralToken(literal), tokens.StreamEndToken())
     parser = lkml.parser.Parser(stream)
@@ -122,7 +122,7 @@ def test_parse_value_literal(parser):
     assert result == literal
 
 
-def test_parse_value_literal_with_sql_block(parser):
+def test_parse_value_literal_with_sql_block():
     literal = "SELECT * FROM tablename"
     stream = (
         tokens.LiteralToken(literal),
@@ -134,14 +134,14 @@ def test_parse_value_literal_with_sql_block(parser):
     assert result == literal
 
 
-def test_parse_value_invalid_tokens(parser):
+def test_parse_value_invalid_tokens():
     stream = (tokens.ValueToken(), tokens.StreamEndToken())
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
     assert result is None
 
 
-def test_parse_value_quoted_literal_with_leftovers(parser):
+def test_parse_value_quoted_literal_with_leftovers():
     quoted_literal = "This is a quoted literal."
     literal = "Some other tokens following."
     stream = (
@@ -156,7 +156,7 @@ def test_parse_value_quoted_literal_with_leftovers(parser):
     assert parser.index == 1
 
 
-def test_parse_pair_with_literal(parser):
+def test_parse_pair_with_literal():
     stream = (
         tokens.LiteralToken("hidden"),
         tokens.ValueToken(),
@@ -168,7 +168,7 @@ def test_parse_pair_with_literal(parser):
     assert result == {"hidden": "yes"}
 
 
-def test_parse_pair_with_quoted_literal(parser):
+def test_parse_pair_with_quoted_literal():
     stream = (
         tokens.LiteralToken("view_label"),
         tokens.ValueToken(),
@@ -180,7 +180,7 @@ def test_parse_pair_with_quoted_literal(parser):
     assert result == {"view_label": "View Label"}
 
 
-def test_parse_pair_with_sql_block(parser):
+def test_parse_pair_with_sql_block():
     sql = "SELECT * FROM schema.table"
     stream = (
         tokens.LiteralToken("sql"),
@@ -194,7 +194,7 @@ def test_parse_pair_with_sql_block(parser):
     assert result == {"sql": sql}
 
 
-def test_parse_pair_with_bad_key(parser):
+def test_parse_pair_with_bad_key():
     stream = (
         tokens.QuotedLiteralToken("hidden"),
         tokens.ValueToken(),
@@ -206,7 +206,7 @@ def test_parse_pair_with_bad_key(parser):
     assert result is None
 
 
-def test_parse_pair_without_value_token(parser):
+def test_parse_pair_without_value_token():
     stream = (
         tokens.LiteralToken("hidden"),
         tokens.LiteralToken("yes"),
@@ -217,7 +217,7 @@ def test_parse_pair_without_value_token(parser):
     assert result is None
 
 
-def test_parse_list_with_literals(parser):
+def test_parse_list_with_literals():
     stream = (
         tokens.LiteralToken("drill_fields"),
         tokens.ValueToken(),
@@ -241,7 +241,7 @@ def test_parse_list_with_literals(parser):
     }
 
 
-def test_parse_list_with_trailing_comma(parser):
+def test_parse_list_with_trailing_comma():
     stream = (
         tokens.LiteralToken("drill_fields"),
         tokens.ValueToken(),
@@ -256,7 +256,7 @@ def test_parse_list_with_trailing_comma(parser):
     assert result is None
 
 
-def test_parse_list_with_missing_comma(parser):
+def test_parse_list_with_missing_comma():
     stream = (
         tokens.LiteralToken("drill_fields"),
         tokens.ValueToken(),
@@ -271,3 +271,30 @@ def test_parse_list_with_missing_comma(parser):
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result is None
+
+
+def test_parse_list_with_no_contents():
+    stream = (
+        tokens.LiteralToken("drill_fields"),
+        tokens.ValueToken(),
+        tokens.ListStartToken(),
+        tokens.ListEndToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == {"drill_fields": []}
+
+
+def test_parse_block_with_no_expression():
+    stream = (
+        tokens.LiteralToken("dimension"),
+        tokens.ValueToken(),
+        tokens.LiteralToken("dimension_name"),
+        tokens.BlockStartToken(),
+        tokens.BlockEndToken(),
+        tokens.StreamEndToken(),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_block()
+    assert result == {"dimension": {"name": "dimension_name"}}

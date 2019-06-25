@@ -14,7 +14,7 @@ block = key literal? "{" expression "}"
 
 pair = key value
 
-list = key "[" csv "]"
+list = key "[" csv? "]"
 
 csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
 
@@ -240,7 +240,7 @@ class Parser:
 
     @backtrack_if_none
     def parse_list(self) -> Optional[dict]:
-        """list = key '[' csv ']'"""
+        """list = key '[' csv? ']'"""
         logger.debug("Entering list parser")
 
         key = self.parse_key()
@@ -253,8 +253,7 @@ class Parser:
             return None
 
         csv = self.parse_csv()
-        if csv is None:
-            return csv
+        csv = csv if csv else []
 
         if self.check(tokens.ListEndToken):
             self.advance()
