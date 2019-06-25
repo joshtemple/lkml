@@ -55,6 +55,22 @@ def test_consume_returns_current_character(lexer):
     assert char == current_char
 
 
+def test_scan_until_token_skips_whitespace():
+    text = "\n\t   \n  Start here"
+    lexer = lkml.Lexer(text)
+    lexer.scan_until_token()
+    result = lexer.peek()
+    assert result == "S"
+
+
+def test_scan_until_token_skips_comments():
+    text = "# This is a comment\nStart here"
+    lexer = lkml.Lexer(text)
+    lexer.scan_until_token()
+    result = lexer.peek()
+    assert result == "S"
+
+
 def test_scan_quoted_literal():
     text = '"This is quoted text."'
     lexer = lkml.Lexer(text)
