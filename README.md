@@ -89,5 +89,5 @@ would be broken into the tuple:
 - [ ] Add docstrings
 - [ ] Performance benchmarking and profiling
 - [x] Test with funky derived table syntax
-- [ ] Support HTML blocks
+- [x] Support HTML blocks
 - [x] Support CLI invocation
