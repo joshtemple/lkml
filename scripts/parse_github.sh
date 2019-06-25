@@ -1,5 +1,6 @@
 #! /bin/bash
 
+rm -rf github/errored
 mkdir github/errored
 
 for file in github/*
