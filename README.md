@@ -85,8 +85,10 @@ would be broken into the tuple:
 - [x] Test with funky derived table syntax
 - [x] Support HTML blocks
 - [x] Support CLI invocation
+- [x] Support value formats with escaped quotes
+- [x] Support blank lists
 - [ ] Improve error handling to return the location of the syntax error
-- [ ] Test with more LookML, consider GitHub for a larger sample
+- [x] Test with more LookML, consider GitHub for a larger sample
 - [ ] Performance benchmarking and profiling
 - [ ] Reach 100% coverage for `parser.py` and `lexer.py`
 - [ ] Implement checking for scanning literals to make sure they're valid
