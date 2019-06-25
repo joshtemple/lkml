@@ -43,6 +43,18 @@ def test_advance_increases_index_by_length(lexer):
     assert lexer.index == index + 3
 
 
+def test_consume_advances_index_by_one(lexer):
+    index = lexer.index
+    lexer.consume()
+    assert lexer.index == index + 1
+
+
+def test_consume_returns_current_character(lexer):
+    current_char = lexer.text[lexer.index]
+    char = lexer.consume()
+    assert char == current_char
+
+
 def test_scan_quoted_literal():
     text = '"This is quoted text."'
     lexer = lkml.Lexer(text)
