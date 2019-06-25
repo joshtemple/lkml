@@ -1,5 +1,31 @@
+import pytest
 import lkml
 import lkml.tokens as tokens
+
+
+@pytest.fixture
+def lexer():
+    text = "Some sample text for testing."
+    return lkml.Lexer(text)
+
+
+def test_peek_does_not_advance_index(lexer):
+    index = lexer.index
+    lexer.peek()
+    assert lexer.index == index
+
+
+def test_peek_default_returns_one_character(lexer):
+    result = lexer.peek()
+    assert len(result) == 1
+    assert isinstance(result, str)
+
+
+def test_peek_with_more_than_one_returns_correct_characters(lexer):
+    result = lexer.peek(2)
+    assert len(result) == 2
+    result = lexer.peek(3)
+    assert len(result) == 3
 
 
 def test_scan_quoted_literal():
