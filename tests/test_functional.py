@@ -22,3 +22,8 @@ def test_block_with_multiple_quoted_fields():
 def test_block_with_nested_block():
     lookml = load("block_with_multiple_quoted_fields.view.lkml")
     assert lookml is not None
+
+
+def test_view_with_all_fields():
+    lookml = load("view_with_all_fields.view.lkml")
+    assert lookml is not None
