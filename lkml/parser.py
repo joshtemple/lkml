@@ -89,12 +89,12 @@ class Parser:
         if len(keys) > 1:
             raise ValueError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
-        if key in [
+        if key.rstrip("s") in [
             "view",
             "measure",
             "dimension",
             "dimension_group",
-            "filters",
+            "filter",
             "bind_filters",
             "parameter",
             "set",
