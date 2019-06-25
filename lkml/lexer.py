@@ -73,7 +73,7 @@ class Lexer:
                 self.advance()
                 self.tokens.append(tokens.ValueToken())
                 self.scan_until_token()
-                self.tokens.append(self.scan_sql_block())
+                self.tokens.append(self.scan_expression_block())
             elif ch == '"':
                 self.advance()
                 self.tokens.append(self.scan_quoted_literal())
@@ -84,11 +84,11 @@ class Lexer:
 
         return tuple(self.tokens)
 
-    def scan_sql_block(self) -> tokens.ExpressionBlockToken:
+    def scan_expression_block(self) -> tokens.ExpressionBlockToken:
         chars = ""
         while self.peek(2) != ";;":
             chars += self.consume()
-        # Strip any trailing whitespace from the SQL statement
+        # Strip any trailing whitespace from the expression
         # Usually there is an extra space before the ;;
         chars = chars.rstrip()
         return tokens.ExpressionBlockToken(chars)
