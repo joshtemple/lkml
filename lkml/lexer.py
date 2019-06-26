@@ -8,19 +8,18 @@ class Lexer:
         self.index = 0
         self.tokens = []
 
-    def peek(self, length: int = 1) -> str:
-        if length > 1:
-            return self.text[self.index : self.index + length]
-        else:
-            return self.text[self.index]
+    def peek(self) -> str:
+        return self.text[self.index]
+
+    def peek_multiple(self, length: int) -> str:
+        return self.text[self.index : self.index + length]
 
     def advance(self, length: int = 1):
         self.index += length
 
     def consume(self) -> str:
-        ch = self.peek()
         self.advance()
-        return ch
+        return self.text[self.index - 1]
 
     def scan_until_token(self):
         found = False
@@ -60,13 +59,16 @@ class Lexer:
                 self.advance()
                 self.tokens.append(tokens.ValueToken())
             elif ch == ";":
-                if self.peek(2) == ";;":
+                if self.peek_multiple(2) == ";;":
                     self.advance(2)
                     self.tokens.append(tokens.ExpressionBlockEndToken())
+            elif ch == '"':
+                self.advance()
+                self.tokens.append(self.scan_quoted_literal())
             elif (
-                self.peek(3) == "sql"
-                or self.peek(4) == "html"
-                or self.peek(24) == "expression_custom_filter"
+                self.peek_multiple(3) == "sql"
+                or self.peek_multiple(4) == "html"
+                or self.peek_multiple(24) == "expression_custom_filter"
             ):
                 self.tokens.append(self.scan_literal())
                 self.scan_until_token()
@@ -74,9 +76,6 @@ class Lexer:
                 self.tokens.append(tokens.ValueToken())
                 self.scan_until_token()
                 self.tokens.append(self.scan_expression_block())
-            elif ch == '"':
-                self.advance()
-                self.tokens.append(self.scan_quoted_literal())
             else:
                 # TODO: This should actually check for valid literals first
                 # and throw an error if it doesn't match
@@ -86,7 +85,7 @@ class Lexer:
 
     def scan_expression_block(self) -> tokens.ExpressionBlockToken:
         chars = ""
-        while self.peek(2) != ";;":
+        while self.peek_multiple(2) != ";;":
             chars += self.consume()
         # Strip any trailing whitespace from the expression
         # Usually there is an extra space before the ;;
@@ -102,8 +101,11 @@ class Lexer:
     def scan_quoted_literal(self) -> tokens.QuotedLiteralToken:
         # TODO: Check and see if literals can be single-quoted
         chars = ""
-        while self.peek() != '"':
-            if self.peek() == "\\":
+        while True:
+            ch = self.peek()
+            if ch == '"':
+                break
+            elif ch == "\\":
                 chars += self.consume() + self.consume()
             else:
                 chars += self.consume()
