@@ -152,7 +152,7 @@ class Parser:
 
             pair = self.parse_pair()
             if pair is not None:
-                expression.update(pair)
+                self.update_tree(expression, pair)
                 continue
 
             list = self.parse_list()
