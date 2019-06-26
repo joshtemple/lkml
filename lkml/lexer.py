@@ -7,6 +7,7 @@ class Lexer:
         self.text = text + "\0"
         self.index = 0
         self.tokens = []
+        self.line_number = 1
 
     def peek(self) -> str:
         return self.text[self.index]
@@ -24,44 +25,46 @@ class Lexer:
     def scan_until_token(self):
         found = False
         while not found:
-            while self.peek() in "\r\n\t ":
+            while self.peek() in "\n\t ":
+                if self.peek() == "\n":
+                    self.line_number += 1
                 self.advance()
             if self.peek() == "#":
-                while self.peek() not in "\0\r\n":
+                while self.peek() not in "\0\n":
                     self.advance()
             else:
                 found = True
 
     def scan(self) -> Tuple[tokens.Token, ...]:
-        self.tokens.append(tokens.StreamStartToken())
+        self.tokens.append(tokens.StreamStartToken(self.line_number))
         while True:
             self.scan_until_token()
             ch = self.peek()
             if ch == "\0":
-                self.tokens.append(tokens.StreamEndToken())
+                self.tokens.append(tokens.StreamEndToken(self.line_number))
                 break
             elif ch == "{":
                 self.advance()
-                self.tokens.append(tokens.BlockStartToken())
+                self.tokens.append(tokens.BlockStartToken(self.line_number))
             elif ch == "}":
                 self.advance()
-                self.tokens.append(tokens.BlockEndToken())
+                self.tokens.append(tokens.BlockEndToken(self.line_number))
             elif ch == "[":
                 self.advance()
-                self.tokens.append(tokens.ListStartToken())
+                self.tokens.append(tokens.ListStartToken(self.line_number))
             elif ch == "]":
                 self.advance()
-                self.tokens.append(tokens.ListEndToken())
+                self.tokens.append(tokens.ListEndToken(self.line_number))
             elif ch == ",":
                 self.advance()
-                self.tokens.append(tokens.CommaToken())
+                self.tokens.append(tokens.CommaToken(self.line_number))
             elif ch == ":":
                 self.advance()
-                self.tokens.append(tokens.ValueToken())
+                self.tokens.append(tokens.ValueToken(self.line_number))
             elif ch == ";":
                 if self.peek_multiple(2) == ";;":
                     self.advance(2)
-                    self.tokens.append(tokens.ExpressionBlockEndToken())
+                    self.tokens.append(tokens.ExpressionBlockEndToken(self.line_number))
             elif ch == '"':
                 self.advance()
                 self.tokens.append(self.scan_quoted_literal())
@@ -73,7 +76,7 @@ class Lexer:
                 self.tokens.append(self.scan_literal())
                 self.scan_until_token()
                 self.advance()
-                self.tokens.append(tokens.ValueToken())
+                self.tokens.append(tokens.ValueToken(self.line_number))
                 self.scan_until_token()
                 self.tokens.append(self.scan_expression_block())
             else:
@@ -86,17 +89,19 @@ class Lexer:
     def scan_expression_block(self) -> tokens.ExpressionBlockToken:
         chars = ""
         while self.peek_multiple(2) != ";;":
+            if self.peek() == "\n":
+                self.line_number += 1
             chars += self.consume()
         # Strip any trailing whitespace from the expression
         # Usually there is an extra space before the ;;
         chars = chars.rstrip()
-        return tokens.ExpressionBlockToken(chars)
+        return tokens.ExpressionBlockToken(chars, self.line_number)
 
     def scan_literal(self) -> tokens.LiteralToken:
         chars = ""
-        while self.peek() not in "\0 \r\n\t:}{,]":
+        while self.peek() not in "\0 \n\t:}{,]":
             chars += self.consume()
-        return tokens.LiteralToken(chars)
+        return tokens.LiteralToken(chars, self.line_number)
 
     def scan_quoted_literal(self) -> tokens.QuotedLiteralToken:
         # TODO: Check and see if literals can be single-quoted
@@ -106,8 +111,9 @@ class Lexer:
             if ch == '"':
                 break
             elif ch == "\\":
-                chars += self.consume() + self.consume()
-            else:
-                chars += self.consume()
+                chars += self.consume()  # Extra consume to skip the escaped character
+            elif ch == "\n":
+                self.line_number += 1
+            chars += self.consume()
         self.advance()
-        return tokens.QuotedLiteralToken(chars)
+        return tokens.QuotedLiteralToken(chars, self.line_number)

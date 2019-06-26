@@ -1,6 +1,9 @@
 class Token:
     value: str
 
+    def __init__(self, line_number: int):
+        self.line_number = line_number
+
     def __eq__(self, other):
         return self.__class__ == other.__class__
 
@@ -53,8 +56,9 @@ class ListEndToken(Token):
 class ExpressionBlockToken(Token):
     id = "<sql block>"
 
-    def __init__(self, value):
+    def __init__(self, value, line_number):
         self.value = value
+        self.line_number = line_number
 
     def __eq__(self, other):
         return self.id == other.id and self.value == other.value
@@ -63,8 +67,9 @@ class ExpressionBlockToken(Token):
 class LiteralToken(Token):
     id = "<literal>"
 
-    def __init__(self, value):
+    def __init__(self, value, line_number):
         self.value = value
+        self.line_number = line_number
 
     def __eq__(self, other):
         return self.id == other.id and self.value == other.value
@@ -73,8 +78,9 @@ class LiteralToken(Token):
 class QuotedLiteralToken(Token):
     id = "<quoted literal>"
 
-    def __init__(self, value):
+    def __init__(self, value, line_number):
         self.value = value
+        self.line_number = line_number
 
     def __eq__(self, other):
         return self.id == other.id and self.value == other.value
