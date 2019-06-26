@@ -67,9 +67,8 @@ class Parser:
         self.index += length
 
     def consume(self) -> tokens.Token:
-        token = self.peek()
         self.advance()
-        return token
+        return self.tokens[self.index - 1]
 
     def consume_token_value(self) -> Any:
         token = self.consume()
