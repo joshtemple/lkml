@@ -1,4 +1,5 @@
 class Token:
+    id = "<base token>"
     value: str
 
     def __init__(self, line_number: int):
