@@ -1,10 +1,10 @@
+import logging
+import sys
 import argparse
 import json
 from pathlib import Path
 from lkml.lexer import Lexer
 from lkml.parser import Parser
-import logging
-import sys
 
 
 def load(file_object):
