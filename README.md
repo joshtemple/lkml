@@ -142,7 +142,7 @@ would be broken into the tuple:
 - [ ] Improve error handling to return the location of the syntax error
 - [x] Test with more LookML, consider GitHub for a larger sample
 - [x] Improve debug logging and add a command line flag
-- [ ] Performance benchmarking and profiling
+- [x] Performance benchmarking and profiling
 - [ ] Reach 100% coverage for `parser.py` and `lexer.py`
 - [ ] Implement checking for scanning literals to make sure they're valid
 - [ ] Handle plural keys outside of blocks
