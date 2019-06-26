@@ -37,6 +37,26 @@ If you would like to save the result to a file, you can use the following approa
 lkml path/to/file.view.lkml > path/to/result.json
 ```
 
+When running from the command line, you can pass the debug flag (`-d` or `--debug`) to observe how the parser is attempting to navigate and parse the file.
+
+```
+lkml path/to/file.view.lkml --debug
+```
+
+The debug statements indicate how the parser is descending through the LookML, expecting certain grammar (e.g. `[pair] = key value`), and checking tokens against the expected grammar.
+
+```
+lkml.parser . Try to parse [pair] = key value
+lkml.parser . . Try to parse [key] = literal ':'
+lkml.parser . . . Check LiteralToken(type) == LiteralToken
+lkml.parser . . . Check ValueToken() == ValueToken
+lkml.parser . . Successfully parsed key.
+lkml.parser . . Try to parse [value] = literal / quoted_literal / expression_block
+lkml.parser . . . Check LiteralToken(full_outer) == QuotedLiteralToken or LiteralToken
+lkml.parser . . Successfully parsed value.
+lkml.parser . Successfully parsed pair.
+```
+
 **As a Python package**, `lkml` uses a similar interface as the `json` and `yaml` packages. The package has a single function, `load`, which accepts a file object and returns a dictionary with the parsed result.
 
 Here's an example:
