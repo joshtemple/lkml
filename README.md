@@ -31,13 +31,13 @@ Here's an example:
 lkml path/to/file.view.lkml
 ```
 
-If you would like to save the result to a file, you can use the following approach:
+If you would like to save the result to a file, use the following approach:
 
 ```
 lkml path/to/file.view.lkml > path/to/result.json
 ```
 
-When running from the command line, you can pass the debug flag (`-d` or `--debug`) to observe how the parser is attempting to navigate and parse the file.
+When running from the command line, pass the debug flag (`-d` or `--debug`) to observe how the parser is attempting to navigate and parse the file.
 
 ```
 lkml path/to/file.view.lkml --debug
