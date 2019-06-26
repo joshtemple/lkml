@@ -5,7 +5,8 @@ class Token:
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        value = getattr(self, "value", "")
+        value = getattr(self, "value", "").strip()
+        value = (value[:25].rstrip() + " ...") if len(value) > 25 else value
         return f"{self.__class__.__name__}({value})"
 
 
