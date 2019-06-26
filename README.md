@@ -92,8 +92,8 @@ would be broken into the tuple:
  (
      LiteralToken(sql),
      ValueToken(),
-     SqlBlockToken(${TABLE}.order_date),
-     SqlBlockEndToken()
+     ExpressionBlockToken(${TABLE}.order_date),
+     ExpressionBlockEndToken()
  )
  ```
 
