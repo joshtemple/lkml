@@ -35,7 +35,9 @@ def cli():
             "returns the parsed output as a JSON string."
         )
     )
-    parser.add_argument("file", help="path to the LookML file to parse")
+    parser.add_argument(
+        "file", type=argparse.FileType("r"), help="path to the LookML file to parse"
+    )
     parser.add_argument(
         "-d",
         "--debug",
@@ -46,11 +48,11 @@ def cli():
         help="increase logging verbosity",
     )
     args = parser.parse_args()
-    logging.getLogger().setLevel(args.log_level)
-    filepath = Path(args.file)
-    with filepath.open("r") as file:
-        lookml = load(file)
 
+    logging.getLogger().setLevel(args.log_level)
+
+    lookml = load(args.file)
+    args.file.close()
     print(json.dumps(lookml, indent=2))
 
 
