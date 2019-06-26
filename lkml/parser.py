@@ -76,7 +76,7 @@ class Parser:
 
     def check(self, *token_types: Type[tokens.Token]) -> bool:
         self.logger.debug(
-            self.depth * DELIMITER + f"Check {self.peek()} == "
+            (1 + self.depth) * DELIMITER + f"Check {self.peek()} == "
             f"{' or '.join(t.__name__ for t in token_types)}"
         )
         for token_type in token_types:
