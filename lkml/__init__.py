@@ -54,7 +54,8 @@ def cli():
     lookml = load(args.file)
     args.file.close()
 
-    return json.dumps(lookml, indent=2)
+    json_string = json.dumps(lookml, indent=2)
+    print(json_string)
 
 
 if __name__ == "__main__":
