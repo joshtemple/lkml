@@ -120,3 +120,4 @@ would be broken into the tuple:
 - [ ] Reach 100% coverage for `parser.py` and `lexer.py`
 - [ ] Implement checking for scanning literals to make sure they're valid
 - [ ] Add docstrings
+- [ ] Support parsing from a Unicode string instead of a file
