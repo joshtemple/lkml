@@ -27,19 +27,19 @@ You can run `lkml` from the command line or import it as a Python package.
 
 Here's an example:
 
-```
+```bash
 lkml path/to/file.view.lkml
 ```
 
 If you would like to save the result to a file, use the following approach:
 
-```
+```bash
 lkml path/to/file.view.lkml > path/to/result.json
 ```
 
 When running from the command line, pass the debug flag (`-d` or `--debug`) to observe how the parser is attempting to navigate and parse the file.
 
-```
+```bash
 lkml path/to/file.view.lkml --debug
 ```
 
@@ -61,7 +61,7 @@ lkml.parser . Successfully parsed pair.
 
 Here's an example:
 
-```
+```python
 import lkml
 
 with open('path/to/file.view.lkml', 'r') as file:
@@ -70,9 +70,35 @@ with open('path/to/file.view.lkml', 'r') as file:
 
 ## What does the parsed LookML look like?
 
-`lkml` returns the parsed LookML as a Python dictionary.
+**From the command line**, `lkml` returns the parsed result as a JSON string. **As a Python package**, `lkml` returns a dictionary with the parsed result.
 
-LookML parameters that can be repeated, like `dimension` or `view`, are collected into lists.
+A number of LookML parameters can be repeated, like `dimension`, `include`, or `view`. `lkml` collects these parameters into lists with a plural key (e.g. `dimensions`).
+
+```json
+{
+  "connection": "connection_name",
+  "explores": [
+    {
+      "label": "Explore",
+      "joins": [
+        {
+          "relationship": "many_to_one",
+          "type": "inner",
+          "sql_on": "${view_one.dimension} = ${view_two.dimension}",
+          "name": "view_two"
+        },
+        {
+          "relationship": "one_to_many",
+          "type": "inner",
+          "sql_on": "${view_one.dimension} = ${view_three.dimension}",
+          "name": "view_three"
+        }
+      ],
+      "name": "view_one"
+    },
+  ]
+}
+```
 
 ## How does it work?
 
@@ -119,5 +145,6 @@ would be broken into the tuple:
 - [ ] Performance benchmarking and profiling
 - [ ] Reach 100% coverage for `parser.py` and `lexer.py`
 - [ ] Implement checking for scanning literals to make sure they're valid
+- [ ] Handle plural keys outside of blocks
 - [ ] Add docstrings
 - [ ] Support parsing from a Unicode string instead of a file
