@@ -54,7 +54,7 @@ class ListEndToken(Token):
 
 
 class ExpressionBlockToken(Token):
-    id = "<sql block>"
+    id = "<expression block>"
 
     def __init__(self, value, line_number):
         self.value = value
