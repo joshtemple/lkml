@@ -21,10 +21,10 @@ def test_peek_default_returns_one_character(lexer):
     assert isinstance(result, str)
 
 
-def test_peek_with_more_than_one_returns_correct_characters(lexer):
-    result = lexer.peek(2)
+def test_peek_multiple_with_more_than_one_returns_correct_characters(lexer):
+    result = lexer.peek_multiple(2)
     assert len(result) == 2
-    result = lexer.peek(3)
+    result = lexer.peek_multiple(3)
     assert len(result) == 3
 
 
