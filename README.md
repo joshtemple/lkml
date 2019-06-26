@@ -3,11 +3,11 @@
 
 # lkml
 
-A blazing fast LookML parser implemented in pure Python.
+A speedy LookML parser implemented in pure Python.
 
 Why should you use it?
 - Tested on **over 160K lines of LookML** from public repositories on GitHub
-- Parses a typical view or model file in < **15 ms**
+- Parses a typical view or model file in < **10 ms** (excludes I/O time)
 - Written in pure, modern Python 3.7 with **no external dependencies**
 - A **full unit test suite** with excellent coverage
 
