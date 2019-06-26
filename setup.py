@@ -22,7 +22,9 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Software Development",
     ],
     keywords="",
     entry_points={"console_scripts": ["lkml = lkml.__init__:cli"]},
