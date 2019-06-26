@@ -6,17 +6,6 @@ from lkml.parser import Parser
 import logging
 import sys
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler()
-handler.setLevel(logging.ERROR)
-
-formatter = logging.Formatter("%(name)s: %(message)s")
-
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
 
 def load(file_object):
     text = file_object.read()
@@ -28,6 +17,17 @@ def load(file_object):
 
 
 def cli():
+    logger = logging.getLogger()
+    logger.setLevel(logging.WARN)
+
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter("%(name)s . %(message)s")
+
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
     parser = argparse.ArgumentParser(
         description=(
             "A blazing fast LookML parser, implemented in pure Python. "
@@ -36,7 +36,17 @@ def cli():
         )
     )
     parser.add_argument("file", help="path to the LookML file to parse")
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_const",
+        dest="log_level",
+        const=logging.DEBUG,
+        default=logging.WARN,
+        help="increase logging verbosity",
+    )
     args = parser.parse_args()
+    logging.getLogger().setLevel(args.log_level)
     filepath = Path(args.file)
     with filepath.open("r") as file:
         lookml = load(file)

@@ -2,8 +2,6 @@ import logging
 from typing import List, Sequence, Type, Optional, Any, Union
 import lkml.tokens as tokens
 
-logger = logging.getLogger(f"{__name__}.parser")
-
 """
 
 LookML grammar
@@ -30,6 +28,9 @@ literal = [0-9A-Za-z_]+
 
 """
 
+# Delimiter during logging to show parse tree depth
+DELIMITER = ". "
+
 
 class Parser:
     def __init__(self, stream: Sequence[tokens.Token]):
@@ -40,6 +41,8 @@ class Parser:
                 )
         self.tokens = stream
         self.index = 0
+        self.logger = logging.getLogger(__name__)
+        self.depth = -1
 
     def jump_to_index(self, index: int):
         self.index = index
@@ -47,7 +50,9 @@ class Parser:
     def backtrack_if_none(method):
         def wrapper(self, *args, **kwargs):
             mark = self.index
+            self.depth += 1
             result = method(self, *args, **kwargs)
+            self.depth -= 1
             if result is None:
                 self.jump_to_index(mark)
             return result
@@ -58,7 +63,6 @@ class Parser:
         return self.tokens[self.index]
 
     def advance(self, length: int = 1):
-        logger.debug("\t" + str(self.tokens[self.index]))
         self.index += length
 
     def consume(self) -> tokens.Token:
@@ -71,7 +75,10 @@ class Parser:
         return token.value
 
     def check(self, *token_types: Type[tokens.Token]) -> bool:
-        logger.debug(f"Checking {self.peek()} against {token_types}")
+        self.logger.debug(
+            self.depth * DELIMITER + f"Check {self.peek()} == "
+            f"{' or '.join(t.__name__ for t in token_types)}"
+        )
         for token_type in token_types:
             if not issubclass(token_type, tokens.Token):
                 raise TypeError(f"{token_type} is not a valid token type.")
@@ -127,8 +134,8 @@ class Parser:
 
     @backtrack_if_none
     def parse_expression(self) -> dict:
-        """expression = (block / pair / list)*"""
-        logger.debug("Entering expression parser")
+        grammar = "[expression] = (block / pair / list)*"
+        self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
         expression: dict = {}
         if self.check(tokens.StreamStartToken):
             self.advance()
@@ -148,15 +155,15 @@ class Parser:
                 expression.update(list)
                 continue
 
-            raise SyntaxError("Unable to find a matching production.")
+            raise SyntaxError("Unable to find a matching expression.")
 
-        logger.debug(f"Returning {expression} from expression parser")
+        self.logger.debug(self.depth * DELIMITER + "Successfully parsed expression.")
         return expression
 
     @backtrack_if_none
     def parse_block(self) -> Optional[dict]:
-        """key literal? '{' expression '}'"""
-        logger.debug("Entering block parser")
+        grammar = "[block] = key literal? '{' expression '}'"
+        self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
 
         key = self.parse_key()
         if key is None:
@@ -183,15 +190,15 @@ class Parser:
             if literal:
                 block[key]["name"] = literal
 
-            logger.debug(f"Returning {block} from block parser")
+            self.logger.debug(self.depth * DELIMITER + "Successfully parsed block.")
             return block
         else:
             return None
 
     @backtrack_if_none
     def parse_pair(self) -> Optional[dict]:
-        """pair = key value"""
-        logger.debug("Entering pair parser")
+        grammar = "[pair] = key value"
+        self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
 
         key = self.parse_key()
         if key is None:
@@ -202,12 +209,13 @@ class Parser:
             return value
 
         pair = {key: value}
-        logger.debug(f"Returning {pair} from pair parser")
+        self.logger.debug(self.depth * DELIMITER + "Successfully parsed pair.")
         return pair
 
     @backtrack_if_none
     def parse_key(self) -> Optional[str]:
-        """key = literal ':'"""
+        grammar = "[key] = literal ':'"
+        self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
         if self.check(tokens.LiteralToken):
             key = self.consume_token_value()
         else:
@@ -218,16 +226,16 @@ class Parser:
         else:
             return None
 
-        logger.debug(f"Returning {key} from key parser")
+        self.logger.debug(self.depth * DELIMITER + "Successfully parsed key.")
         return key
 
     @backtrack_if_none
     def parse_value(self) -> Optional[str]:
-        """value = literal / quoted_literal / expression_block"""
-        logger.debug("Entering value parser")
+        grammar = "[value] = literal / quoted_literal / expression_block"
+        self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
         if self.check(tokens.QuotedLiteralToken, tokens.LiteralToken):
             value = self.consume_token_value()
-            logger.debug(f"Returning {value} from value parser")
+            self.logger.debug(self.depth * DELIMITER + "Successfully parsed value.")
             return value
         elif self.check(tokens.ExpressionBlockToken):
             value = self.consume_token_value()
@@ -235,15 +243,15 @@ class Parser:
                 self.advance()
             else:
                 return None
-            logger.debug(f"Returning {value} from value parser")
+            self.logger.debug(self.depth * DELIMITER + "Successfully parsed value.")
             return value
         else:
             return None
 
     @backtrack_if_none
     def parse_list(self) -> Optional[dict]:
-        """list = key '[' csv? ']'"""
-        logger.debug("Entering list parser")
+        grammar = "[list] = key '[' csv? ']'"
+        self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
 
         key = self.parse_key()
         if key is None:
@@ -260,15 +268,15 @@ class Parser:
         if self.check(tokens.ListEndToken):
             self.advance()
             list = {key: csv}
-            logger.debug(f"Returning {list} from list parser")
+            self.logger.debug(self.depth * DELIMITER + "Successfully parsed a list.")
             return list
         else:
             return None
 
     @backtrack_if_none
     def parse_csv(self) -> Optional[list]:
-        """csv = (literal / quoted_literal) ("," (literal / quoted_literal))*"""
-        logger.debug("Entering comma-separated value parser")
+        grammar = "[csv] = (literal / quoted_literal) (" " (literal / quoted_literal))*"
+        self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
         values = []
 
         if self.check(tokens.LiteralToken):
@@ -291,5 +299,7 @@ class Parser:
             else:
                 return None
 
-        logger.debug(f"Returning {values} from csv parser")
+        self.logger.debug(
+            self.depth * DELIMITER + "Successfully parsed comma-separated values."
+        )
         return values
