@@ -41,6 +41,7 @@ class Parser:
                 )
         self.tokens = stream
         self.index = 0
+        self.progress = 0
         self.logger = logging.getLogger(__name__)
         self.depth = -1
         self.log_debug = self.logger.isEnabledFor(logging.DEBUG)
@@ -55,6 +56,9 @@ class Parser:
             result = method(self, *args, **kwargs)
             self.depth -= 1
             if result is None:
+                self.progress = (
+                    self.index if self.index > self.progress else self.progress
+                )
                 self.jump_to_index(mark)
             return result
 
@@ -159,7 +163,11 @@ class Parser:
                 expression.update(list)
                 continue
 
-            raise SyntaxError("Unable to find a matching expression.")
+            token = self.tokens[self.progress]
+            raise SyntaxError(
+                f"Unable to find a matching expression for '{token.id}' "
+                f"on line {token.line_number}, position "
+            )
 
         if self.log_debug:
             self.logger.debug(
