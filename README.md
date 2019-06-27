@@ -139,12 +139,12 @@ would be broken into the tuple:
 - [x] Support CLI invocation
 - [x] Support value formats with escaped quotes
 - [x] Support blank lists
-- [ ] Improve error handling to return the location of the syntax error
+- [x] Improve error handling to return the location of the syntax error
 - [x] Test with more LookML, consider GitHub for a larger sample
 - [x] Improve debug logging and add a command line flag
 - [x] Performance benchmarking and profiling
 - [ ] Reach 100% coverage for `parser.py` and `lexer.py`
 - [ ] Implement checking for scanning literals to make sure they're valid
-- [ ] Handle plural keys outside of blocks
+- [x] Handle plural keys outside of blocks
 - [ ] Add docstrings
 - [ ] Support parsing from a Unicode string instead of a file
