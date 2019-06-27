@@ -3,17 +3,17 @@
 
 # lkml
 
-A blazing fast LookML parser implemented in pure Python.
+A speedy LookML parser implemented in pure Python.
 
 Why should you use it?
 - Tested on **over 160K lines of LookML** from public repositories on GitHub
-- Parses a typical view or model file in < **15 ms**
+- Parses a typical view or model file in < **10 ms** (excludes I/O time)
 - Written in pure, modern Python 3.7 with **no external dependencies**
 - A **full unit test suite** with excellent coverage
 
 ## How do I install it?
 
-`lkml` is a currently a WIP project. When it's finished, it will be available to install on pip via the following command:
+`lkml` is available to install on [pip](https://pypi.org/project/lkml/) via the following command:
 
 ```
 pip install lkml
@@ -104,7 +104,7 @@ A number of LookML parameters can be repeated, like `dimension`, `include`, or `
 
 `lkml` is made up of two main components, a [lexer](https://en.wikipedia.org/wiki/Lexical_analysis) and a parser. The parser is a [recursive descent parser](https://en.wikipedia.org/wiki/Recursive_descent_parser) with backtracking.
 
-The lexer scans through the input string character by character and generates a stream of relevant tokens. The lexer skips over whitespace when it's not relevant.
+First, the lexer scans through the input string character by character and generates a stream of relevant tokens. The lexer skips over whitespace when it's not relevant.
 
 For example, the input string:
 
@@ -112,7 +112,7 @@ For example, the input string:
 "sql: ${TABLE}.order_date ;;"
 ```
 
-would be broken into the tuple:
+would be broken into the tuple of tokens:
 
  ```
  (
@@ -123,28 +123,8 @@ would be broken into the tuple:
  )
  ```
 
- The parser scans through the stream of tokens. It attempts to identify productions in the grammar, descending recursively through a production looking for a match.
+ Next, the parser scans through the stream of tokens. It marks its position in the stream, then attempts to identify a matching rule in the grammar. If the rule is made up of other rules (this is a called a non-terminal), it descends recursively through the constituent rules looking for tokens that match.
 
- If it doesn't find a match, it backtracks to a previously marked point in the stream and tries a different production. If the parser runs out of productions to try, it raises a syntax error.
+ If it doesn't find a match for a rule, it backtracks to a previously marked point in the stream and tries the next available rule. If the parser runs out of rules to try, it raises a syntax error.
 
-## TODO:
-
-- [x] Implement models and explores
-- [x] Add CI for mypy and pytest
-- [x] Add repo badges
-- [x] Test with code comments
-- [x] Adjust dimensions, measures, etc. to be dicts instead of lists
-- [x] Test with funky derived table syntax
-- [x] Support HTML blocks
-- [x] Support CLI invocation
-- [x] Support value formats with escaped quotes
-- [x] Support blank lists
-- [ ] Improve error handling to return the location of the syntax error
-- [x] Test with more LookML, consider GitHub for a larger sample
-- [x] Improve debug logging and add a command line flag
-- [ ] Performance benchmarking and profiling
-- [ ] Reach 100% coverage for `parser.py` and `lexer.py`
-- [ ] Implement checking for scanning literals to make sure they're valid
-- [ ] Handle plural keys outside of blocks
-- [ ] Add docstrings
-- [ ] Support parsing from a Unicode string instead of a file
+ As the parser finds matches, it adds the relevant token values to its syntax tree, which is eventually returned to the user if the input parses successfully.

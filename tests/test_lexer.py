@@ -21,10 +21,10 @@ def test_peek_default_returns_one_character(lexer):
     assert isinstance(result, str)
 
 
-def test_peek_with_more_than_one_returns_correct_characters(lexer):
-    result = lexer.peek(2)
+def test_peek_multiple_with_more_than_one_returns_correct_characters(lexer):
+    result = lexer.peek_multiple(2)
     assert len(result) == 2
-    result = lexer.peek(3)
+    result = lexer.peek_multiple(3)
     assert len(result) == 3
 
 
@@ -72,14 +72,14 @@ def test_scan_until_token_skips_comments():
 
 
 params = [
-    ("\0", tokens.StreamEndToken()),
-    ("{", tokens.BlockStartToken()),
-    ("}", tokens.BlockEndToken()),
-    ("[", tokens.ListStartToken()),
-    ("]", tokens.ListEndToken()),
-    (",", tokens.CommaToken()),
-    (":", tokens.ValueToken()),
-    (";;", tokens.ExpressionBlockEndToken()),
+    ("\0", tokens.StreamEndToken(1)),
+    ("{", tokens.BlockStartToken(1)),
+    ("}", tokens.BlockEndToken(1)),
+    ("[", tokens.ListStartToken(1)),
+    ("]", tokens.ListEndToken(1)),
+    (",", tokens.CommaToken(1)),
+    (":", tokens.ValueToken(1)),
+    (";;", tokens.ExpressionBlockEndToken(1)),
 ]
 
 
@@ -96,7 +96,7 @@ def test_scan_quoted_literal():
     lexer = lkml.Lexer(text)
     lexer.index = 1
     token = lexer.scan_quoted_literal()
-    assert token == tokens.QuotedLiteralToken("This is quoted text.")
+    assert token == tokens.QuotedLiteralToken("This is quoted text.", 1)
 
 
 def test_scan_quoted_literal_with_otherwise_illegal_chars():
@@ -104,7 +104,7 @@ def test_scan_quoted_literal_with_otherwise_illegal_chars():
     lexer = lkml.Lexer(text)
     lexer.index = 1
     token = lexer.scan_quoted_literal()
-    assert token == tokens.QuotedLiteralToken("This: is {quoted} \n text.")
+    assert token == tokens.QuotedLiteralToken("This: is {quoted} \n text.", 1)
 
 
 def test_scan_quoted_literal_with_escaped_quotes():
@@ -112,26 +112,26 @@ def test_scan_quoted_literal_with_escaped_quotes():
     lexer = lkml.Lexer(text)
     lexer.index = 1
     token = lexer.scan_quoted_literal()
-    assert token == tokens.QuotedLiteralToken(r"#.### \"M\"")
+    assert token == tokens.QuotedLiteralToken(r"#.### \"M\"", 1)
 
 
 def test_scan_literal():
     text = "unquoted_literal"
     token = lkml.Lexer(text).scan_literal()
-    assert token == tokens.LiteralToken("unquoted_literal")
+    assert token == tokens.LiteralToken("unquoted_literal", 1)
 
 
 def test_scan_literal_with_following_whitespace():
     text = "unquoted_literal \n and text following whitespace"
     token = lkml.Lexer(text).scan_literal()
-    assert token == tokens.LiteralToken("unquoted_literal")
+    assert token == tokens.LiteralToken("unquoted_literal", 1)
 
 
 def test_scan_expression_block_with_complex_sql_block():
-    text = "concat(${orders.order_id}, '|', ${orders__items.primary_key}) ;;"
+    text = "concat(${orders.order_id}, '|',\n${orders__items.primary_key}) ;;"
     token = lkml.Lexer(text).scan_expression_block()
     token == tokens.ExpressionBlockToken(
-        "concat(${orders.order_id}, '|', ${orders__items.primary_key})"
+        "concat(${orders.order_id}, '|', ${orders__items.primary_key})", 1
     )
 
 
@@ -142,12 +142,12 @@ def test_scan_with_complex_sql_block():
     )
     output = lkml.Lexer(text).scan()
     assert output == (
-        tokens.StreamStartToken(),
-        tokens.LiteralToken("sql_distinct_key"),
-        tokens.ValueToken(),
+        tokens.StreamStartToken(1),
+        tokens.LiteralToken("sql_distinct_key", 1),
+        tokens.ValueToken(1),
         tokens.ExpressionBlockToken(
-            "concat(${orders.order_id}, '|', ${orders__items.primary_key})"
+            "concat(${orders.order_id}, '|', ${orders__items.primary_key})", 1
         ),
-        tokens.ExpressionBlockEndToken(),
-        tokens.StreamEndToken(),
+        tokens.ExpressionBlockEndToken(1),
+        tokens.StreamEndToken(1),
     )
