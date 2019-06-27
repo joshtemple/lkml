@@ -16,18 +16,7 @@ def load(file_object):
     return result
 
 
-def cli():
-    logger = logging.getLogger()
-    logger.setLevel(logging.WARN)
-
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter("%(name)s . %(message)s")
-
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
+def parse_args(args):
     parser = argparse.ArgumentParser(
         description=(
             "A blazing fast LookML parser, implemented in pure Python. "
@@ -47,7 +36,23 @@ def cli():
         default=logging.WARN,
         help="increase logging verbosity",
     )
-    args = parser.parse_args()
+
+    return parser.parse_args(args)
+
+
+def cli():
+    logger = logging.getLogger()
+    logger.setLevel(logging.WARN)
+
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter("%(name)s . %(message)s")
+
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+    args = parse_args(sys.argv[1:])
 
     logging.getLogger().setLevel(args.log_level)
 
