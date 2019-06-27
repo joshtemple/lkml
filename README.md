@@ -126,25 +126,3 @@ would be broken into the tuple:
  The parser scans through the stream of tokens. It attempts to identify productions in the grammar, descending recursively through a production looking for a match.
 
  If it doesn't find a match, it backtracks to a previously marked point in the stream and tries a different production. If the parser runs out of productions to try, it raises a syntax error.
-
-## TODO:
-
-- [x] Implement models and explores
-- [x] Add CI for mypy and pytest
-- [x] Add repo badges
-- [x] Test with code comments
-- [x] Adjust dimensions, measures, etc. to be dicts instead of lists
-- [x] Test with funky derived table syntax
-- [x] Support HTML blocks
-- [x] Support CLI invocation
-- [x] Support value formats with escaped quotes
-- [x] Support blank lists
-- [x] Improve error handling to return the location of the syntax error
-- [x] Test with more LookML, consider GitHub for a larger sample
-- [x] Improve debug logging and add a command line flag
-- [x] Performance benchmarking and profiling
-- [ ] Reach 100% coverage for `parser.py` and `lexer.py`
-- [ ] Implement checking for scanning literals to make sure they're valid
-- [x] Handle plural keys outside of blocks
-- [ ] Add docstrings
-- [ ] Support parsing from a Unicode string instead of a file
