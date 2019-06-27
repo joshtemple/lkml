@@ -104,7 +104,7 @@ A number of LookML parameters can be repeated, like `dimension`, `include`, or `
 
 `lkml` is made up of two main components, a [lexer](https://en.wikipedia.org/wiki/Lexical_analysis) and a parser. The parser is a [recursive descent parser](https://en.wikipedia.org/wiki/Recursive_descent_parser) with backtracking.
 
-The lexer scans through the input string character by character and generates a stream of relevant tokens. The lexer skips over whitespace when it's not relevant.
+First, the lexer scans through the input string character by character and generates a stream of relevant tokens. The lexer skips over whitespace when it's not relevant.
 
 For example, the input string:
 
@@ -112,7 +112,7 @@ For example, the input string:
 "sql: ${TABLE}.order_date ;;"
 ```
 
-would be broken into the tuple:
+would be broken into the tuple of tokens:
 
  ```
  (
@@ -123,6 +123,8 @@ would be broken into the tuple:
  )
  ```
 
- The parser scans through the stream of tokens. It attempts to identify productions in the grammar, descending recursively through a production looking for a match.
+ Next, the parser scans through the stream of tokens. It marks its position in the stream, then attempts to identify a matching rule in the grammar. If the rule is made up of other rules (this is a called a non-terminal), it descends recursively through the constituent rules looking for tokens that match.
 
- If it doesn't find a match, it backtracks to a previously marked point in the stream and tries a different production. If the parser runs out of productions to try, it raises a syntax error.
+ If it doesn't find a match for a rule, it backtracks to a previously marked point in the stream and tries the next available rule. If the parser runs out of rules to try, it raises a syntax error.
+
+ As the parser finds matches, it adds the relevant token values to its syntax tree, which is eventually returned to the user if the input parses successfully.
