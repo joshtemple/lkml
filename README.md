@@ -13,7 +13,7 @@ Why should you use it?
 
 ## How do I install it?
 
-`lkml` is a currently a WIP project. When it's finished, it will be available to install on pip via the following command:
+`lkml` is available to install on [pip](https://pypi.org/project/lkml/) via the following command:
 
 ```
 pip install lkml
