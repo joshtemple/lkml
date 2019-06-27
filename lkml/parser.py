@@ -101,7 +101,7 @@ class Parser:
     def update_tree(target, update):
         keys = tuple(update.keys())
         if len(keys) > 1:
-            raise ValueError("Dictionary to update with cannot have multiple keys.")
+            raise KeyError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
         if key.rstrip("s") in [
             "view",
@@ -196,8 +196,6 @@ class Parser:
             return None
 
         expression = self.parse_expression()
-        if expression is None:
-            return expression
 
         if self.check(tokens.BlockEndToken):
             self.advance()

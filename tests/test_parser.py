@@ -14,12 +14,24 @@ def parser():
         tokens.BlockStartToken(1),
         tokens.LiteralToken("sql_table_name", 2),
         tokens.ValueToken(2),
-        tokens.LiteralToken("schema.table_name", 2),
+        tokens.ExpressionBlockToken("schema.table_name", 2),
         tokens.ExpressionBlockEndToken(2),
-        tokens.BlockEndToken(3),
-        tokens.StreamEndToken(3),
+        tokens.LiteralToken("drill_fields", 3),
+        tokens.ValueToken(3),
+        tokens.ListStartToken(3),
+        tokens.LiteralToken("view_name.field_one", 3),
+        tokens.CommaToken(3),
+        tokens.LiteralToken("view_name.field_two", 3),
+        tokens.ListEndToken(3),
+        tokens.BlockEndToken(4),
+        tokens.StreamEndToken(4),
     )
     return lkml.parser.Parser(stream)
+
+
+def test_tokens__repr__():
+    token = tokens.ExpressionBlockToken("schema.table_name", 2)
+    repr(token) == "ExpressionBlockToken(schema.table_name)"
 
 
 def test_init_parser_index_starts_at_zero(parser):
@@ -156,6 +168,106 @@ def test_parse_value_quoted_literal_with_leftovers():
     assert parser.index == 1
 
 
+def test_parse_value_without_closing_double_semicolons():
+    stream = (
+        tokens.ExpressionBlockToken("SELECT * FROM TABLE", 1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_value()
+    assert result is None
+
+
+def test_parse_key_normal_returns_token_value():
+    stream = (tokens.LiteralToken("label", 1), tokens.ValueToken(1))
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_key()
+    assert result == "label"
+
+
+def test_parse_key_without_literal_token():
+    stream = (tokens.ValueToken(1), tokens.StreamEndToken(1))
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_key()
+    assert result is None
+
+
+def test_parse_key_without_value_token():
+    stream = (tokens.LiteralToken("label", 1), tokens.StreamEndToken(1))
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_key()
+    assert result is None
+
+
+def test_debug_logging_statements_execute_successfully(parser):
+    parser.log_debug = True
+    result = parser.parse()
+
+
+def test_update_tree_with_long_dict_raises_key_error(parser):
+    update = {"a": 1, "b": 2}
+    target = {}
+    with pytest.raises(KeyError):
+        parser.update_tree(target, update)
+
+
+def test_update_tree_with_existing_collapsed_singular_key(parser):
+    update = {"view": 2}
+    target = {"views": [1]}
+    parser.update_tree(target, update)
+    assert target == {"views": [1, 2]}
+
+
+def test_update_tree_with_existing_collapsed_plural_key(parser):
+    update = {"views": 2}
+    target = {"views": [1]}
+    parser.update_tree(target, update)
+    assert target == {"views": [1, 2]}
+
+
+def test_update_tree_with_nonexisting_collapsed_key(parser):
+    update = {"view": 1}
+    target = {}
+    parser.update_tree(target, update)
+    assert target == {"views": [1]}
+
+
+def test_update_tree_with_nonexisting_unique_key(parser):
+    update = {"a": 1}
+    target = {}
+    parser.update_tree(target, update)
+    assert target == {"a": 1}
+
+
+def test_update_tree_with_existing_unique_key_raises_key_error(parser):
+    update = {"a": 2}
+    target = {"a": 1}
+    with pytest.raises(KeyError):
+        parser.update_tree(target, update)
+
+
+def test_parse_block_without_closing_curly_brace():
+    stream = (
+        tokens.LiteralToken("view", 1),
+        tokens.ValueToken(1),
+        tokens.BlockStartToken(1),
+        tokens.LiteralToken("hidden", 2),
+        tokens.ValueToken(2),
+        tokens.LiteralToken("yes", 2),
+        tokens.StreamEndToken(3),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_block()
+    assert result is None
+
+
+def test_parse_nonmatching_expression_raises_syntax_error():
+    stream = (tokens.LiteralToken("view", 1), tokens.StreamEndToken(1))
+    parser = lkml.parser.Parser(stream)
+    with pytest.raises(SyntaxError):
+        result = parser.parse_expression()
+
+
 def test_parse_pair_with_literal():
     stream = (
         tokens.LiteralToken("hidden", 1),
@@ -284,6 +396,20 @@ def test_parse_list_with_no_contents():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == {"drill_fields": []}
+
+
+def test_parse_list_with_no_opening_bracket():
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.LiteralToken("view_name.field_one", 1),
+        tokens.CommaToken(1),
+        tokens.LiteralToken("view_name.field_two", 1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result is None
 
 
 def test_parse_block_with_no_expression():
