@@ -128,7 +128,7 @@ def test_scan_literal_with_following_whitespace():
 
 
 def test_scan_expression_block_with_complex_sql_block():
-    text = "concat(${orders.order_id}, '|', ${orders__items.primary_key}) ;;"
+    text = "concat(${orders.order_id}, '|',\n${orders__items.primary_key}) ;;"
     token = lkml.Lexer(text).scan_expression_block()
     token == tokens.ExpressionBlockToken(
         "concat(${orders.order_id}, '|', ${orders__items.primary_key})", 1
