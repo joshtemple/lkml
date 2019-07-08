@@ -33,6 +33,9 @@ DELIMITER = ". "
 
 
 class Parser:
+
+    DEFAULT_ALLOW_DUPE_MODEL_KEYS = False
+
     def __init__(self, stream: Sequence[tokens.Token]):
         for token in stream:
             if not isinstance(token, tokens.Token):
@@ -45,6 +48,11 @@ class Parser:
         self.logger = logging.getLogger(__name__)
         self.depth = -1
         self.log_debug = self.logger.isEnabledFor(logging.DEBUG)
+        self.allow_dupe_model_keys = False
+
+    def set_allow_dupe_model_keys(self, setting):
+        assert type(setting) is bool
+        self.allow_dupe_model_keys = setting
 
     def jump_to_index(self, index: int):
         self.index = index
@@ -98,7 +106,7 @@ class Parser:
         return self.parse_expression()
 
     @staticmethod
-    def update_tree(target, update):
+    def update_tree(target, update, allow_dupe_model_keys=DEFAULT_ALLOW_DUPE_MODEL_KEYS):
         keys = tuple(update.keys())
         if len(keys) > 1:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
@@ -132,10 +140,21 @@ class Parser:
             else:
                 target[plural_key] = [update[key]]
         elif key in target.keys():
-            raise KeyError(
-                f'Key "{key}" already exists in tree '
-                "and would overwrite the existing value."
-            )
+            dupe_keys = [
+                    "label",
+                    "connection",
+                    "include",
+                    "fiscal_month_offset",
+                    "persist_for",
+                    "persist_with",
+                    "case_sensitive",
+                    "week_start_day"
+                ]
+            if not allow_dupe_model_keys or (allow_dupe_model_keys and key not in dupe_keys) :
+                raise KeyError(
+                    f'Key "{key}" already exists in tree '
+                    "and would overwrite the existing value."
+                )
         else:
             target[key] = update[key]
 
@@ -150,12 +169,12 @@ class Parser:
         while not self.check(tokens.StreamEndToken, tokens.BlockEndToken):
             block = self.parse_block()
             if block is not None:
-                self.update_tree(expression, block)
+                self.update_tree(expression, block, self.allow_dupe_model_keys)
                 continue
 
             pair = self.parse_pair()
             if pair is not None:
-                self.update_tree(expression, pair)
+                self.update_tree(expression, pair, self.allow_dupe_model_keys)
                 continue
 
             list = self.parse_list()

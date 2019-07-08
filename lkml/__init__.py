@@ -7,11 +7,12 @@ from lkml.lexer import Lexer
 from lkml.parser import Parser
 
 
-def load(file_object):
+def load(file_object, allow_dupe_model_keys=False):
     text = file_object.read()
     lexer = Lexer(text)
     tokens = lexer.scan()
     parser = Parser(tokens)
+    parser.set_allow_dupe_model_keys(allow_dupe_model_keys)
     result = parser.parse()
     return result
 
@@ -36,6 +37,12 @@ def parse_args(args):
         default=logging.WARN,
         help="increase logging verbosity",
     )
+    parser.add_argument(
+        "--dupe_model_keys",
+        dest="dupe_model_keys",
+        default=False,
+        help="allow dupe model keys",
+    )
 
     return parser.parse_args(args)
 
@@ -56,7 +63,11 @@ def cli():
 
     logging.getLogger().setLevel(args.log_level)
 
-    lookml = load(args.file)
+    allow_dupe_model_keys = False
+    if args.allow_dupe_model_keys is not None:
+        allow_dupe_model_keys = args.dupe_model_keys
+
+    lookml = load(args.file, allow_dupe_model_keys)
     args.file.close()
 
     json_string = json.dumps(lookml, indent=2)
