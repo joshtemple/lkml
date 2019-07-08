@@ -14,7 +14,7 @@ pair = key value
 
 list = key "[" csv? "]"
 
-csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
+csv = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?
 
 value = literal / quoted_literal / expression_block
 
@@ -307,9 +307,7 @@ class Parser:
     @backtrack_if_none
     def parse_csv(self) -> Optional[list]:
         if self.log_debug:
-            grammar = (
-                "[csv] = (literal / quoted_literal) (" " (literal / quoted_literal))*"
-            )
+            grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         values = []
 
@@ -330,6 +328,8 @@ class Parser:
                 values.append(self.consume_token_value())
             elif self.check(tokens.QuotedLiteralToken):
                 values.append(self.consume_token_value())
+            elif self.check(tokens.ListEndToken):
+                break
             else:
                 return None
 
