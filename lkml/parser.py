@@ -97,47 +97,59 @@ class Parser:
     def parse(self) -> List:
         return self.parse_expression()
 
-    @staticmethod
-    def update_tree(target, update):
+    def update_tree(self, target, update):
+        plural_keys = frozenset(
+            (
+                "view",
+                "measure",
+                "dimension",
+                "dimension_group",
+                "filter",
+                "access_filter",
+                "bind_filters",
+                "map_layer",
+                "parameter",
+                "set",
+                "column",
+                "derived_column",
+                "include",
+                "explore",
+                "link",
+                "when",
+                "allowed_value",
+                "named_value_format",
+                "join",
+                "datagroup",
+                "access_grant",
+                "sql_step",
+                "sql_where",
+            )
+        )
+
         keys = tuple(update.keys())
         if len(keys) > 1:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
-        if key.rstrip("s") in [
-            "view",
-            "measure",
-            "dimension",
-            "dimension_group",
-            "filter",
-            "access_filter",
-            "bind_filters",
-            "map_layer",
-            "parameter",
-            "set",
-            "column",
-            "derived_column",
-            "include",
-            "explore",
-            "link",
-            "when",
-            "allowed_value",
-            "named_value_format",
-            "join",
-            "datagroup",
-            "access_grant",
-            "sql_step",
-            "sql_where",
-        ]:
-            plural_key = key.rstrip("s") + "s"
+        stripped_key = key.rstrip("s")
+        if stripped_key in plural_keys:
+            plural_key = stripped_key + "s"
             if plural_key in target.keys():
                 target[plural_key].append(update[key])
             else:
                 target[plural_key] = [update[key]]
         elif key in target.keys():
-            raise KeyError(
-                f'Key "{key}" already exists in tree '
-                "and would overwrite the existing value."
-            )
+            if self.depth == 0:
+                self.logger.warning(
+                    'Multiple declarations of top-level key "%s" found. '
+                    "Using the last-declared value.",
+                    key,
+                )
+                target[key] = update[key]
+            else:
+                raise KeyError(
+                    f'Key "{key}" already exists in tree '
+                    "and would overwrite the existing value."
+                )
         else:
             target[key] = update[key]
 

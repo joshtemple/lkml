@@ -47,7 +47,7 @@ def cli():
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
 
-    formatter = logging.Formatter("%(name)s . %(message)s")
+    formatter = logging.Formatter("%(name)s %(levelname)s: %(message)s")
 
     handler.setFormatter(formatter)
     logger.addHandler(handler)
