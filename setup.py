@@ -13,7 +13,7 @@ with (here / "README.md").open(encoding="utf-8") as file:
 setup(
     name="lkml",
     version=__version__,
-    description="A fast LookML parser.",
+    description="A speedy LookML parser implemented in pure Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/joshtemple/lkml",
