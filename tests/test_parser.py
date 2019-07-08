@@ -365,7 +365,7 @@ def test_parse_list_with_trailing_comma():
     )
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
-    assert result is None
+    assert result == {"drill_fields": ["view_name.field_one"]}
 
 
 def test_parse_list_with_missing_comma():
@@ -405,6 +405,40 @@ def test_parse_list_with_no_opening_bracket():
         tokens.LiteralToken("view_name.field_one", 1),
         tokens.CommaToken(1),
         tokens.LiteralToken("view_name.field_two", 1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result is None
+
+
+def test_parse_list_with_bad_token():
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.ListStartToken(1),
+        tokens.LiteralToken("view_name.field_one", 1),
+        tokens.CommaToken(1),
+        tokens.LiteralToken("view_name.field_two", 1),
+        tokens.CommaToken(1),
+        tokens.ValueToken(1),
+        tokens.ListEndToken(1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result is None
+
+
+def test_parse_list_with_only_commas():
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.ListStartToken(1),
+        tokens.CommaToken(1),
+        tokens.CommaToken(1),
+        tokens.CommaToken(1),
+        tokens.ListEndToken(1),
         tokens.StreamEndToken(1),
     )
     parser = lkml.parser.Parser(stream)

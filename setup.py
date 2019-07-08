@@ -2,7 +2,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 from codecs import open
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 here = Path(__file__).parent.resolve()
 
@@ -18,7 +18,6 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/joshtemple/lkml",
     download_url="https://github.com/joshtemple/lkml/tarball/" + __version__,
-    license="BSD",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -26,9 +25,9 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Topic :: Software Development",
     ],
-    keywords="",
+    keywords="lookml looker parser",
     entry_points={"console_scripts": ["lkml = lkml.__init__:cli"]},
-    packages=find_packages(exclude=["docs", "tests*"]),
+    packages=find_packages(exclude=["docs", "tests*", "scripts"]),
     include_package_data=True,
     author="Josh Temple",
     tests_require=["pytest"],

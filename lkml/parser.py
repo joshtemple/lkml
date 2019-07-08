@@ -14,7 +14,7 @@ pair = key value
 
 list = key "[" csv? "]"
 
-csv = (literal / quoted_literal) ("," (literal / quoted_literal))*
+csv = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?
 
 value = literal / quoted_literal / expression_block
 
@@ -97,45 +97,59 @@ class Parser:
     def parse(self) -> List:
         return self.parse_expression()
 
-    @staticmethod
-    def update_tree(target, update):
+    def update_tree(self, target, update):
+        plural_keys = frozenset(
+            (
+                "view",
+                "measure",
+                "dimension",
+                "dimension_group",
+                "filter",
+                "access_filter",
+                "bind_filters",
+                "map_layer",
+                "parameter",
+                "set",
+                "column",
+                "derived_column",
+                "include",
+                "explore",
+                "link",
+                "when",
+                "allowed_value",
+                "named_value_format",
+                "join",
+                "datagroup",
+                "access_grant",
+                "sql_step",
+                "sql_where",
+            )
+        )
+
         keys = tuple(update.keys())
         if len(keys) > 1:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
-        if key.rstrip("s") in [
-            "view",
-            "measure",
-            "dimension",
-            "dimension_group",
-            "filter",
-            "access_filter",
-            "bind_filters",
-            "map_layer",
-            "parameter",
-            "set",
-            "column",
-            "derived_column",
-            "include",
-            "explore",
-            "link",
-            "when",
-            "allowed_value",
-            "named_value_format",
-            "join",
-            "datagroup",
-            "access_grant",
-        ]:
-            plural_key = key.rstrip("s") + "s"
+        stripped_key = key.rstrip("s")
+        if stripped_key in plural_keys:
+            plural_key = stripped_key + "s"
             if plural_key in target.keys():
                 target[plural_key].append(update[key])
             else:
                 target[plural_key] = [update[key]]
         elif key in target.keys():
-            raise KeyError(
-                f'Key "{key}" already exists in tree '
-                "and would overwrite the existing value."
-            )
+            if self.depth == 0:
+                self.logger.warning(
+                    'Multiple declarations of top-level key "%s" found. '
+                    "Using the last-declared value.",
+                    key,
+                )
+                target[key] = update[key]
+            else:
+                raise KeyError(
+                    f'Key "{key}" already exists in tree '
+                    "and would overwrite the existing value."
+                )
         else:
             target[key] = update[key]
 
@@ -143,7 +157,7 @@ class Parser:
     def parse_expression(self) -> dict:
         if self.log_debug:
             grammar = "[expression] = (block / pair / list)*"
-            self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
+            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         expression: dict = {}
         if self.check(tokens.StreamStartToken):
             self.advance()
@@ -166,7 +180,7 @@ class Parser:
             token = self.tokens[self.progress]
             raise SyntaxError(
                 f"Unable to find a matching expression for '{token.id}' "
-                f"on line {token.line_number}, position "
+                f"on line {token.line_number}"
             )
 
         if self.log_debug:
@@ -307,9 +321,7 @@ class Parser:
     @backtrack_if_none
     def parse_csv(self) -> Optional[list]:
         if self.log_debug:
-            grammar = (
-                "[csv] = (literal / quoted_literal) (" " (literal / quoted_literal))*"
-            )
+            grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         values = []
 
@@ -330,6 +342,8 @@ class Parser:
                 values.append(self.consume_token_value())
             elif self.check(tokens.QuotedLiteralToken):
                 values.append(self.consume_token_value())
+            elif self.check(tokens.ListEndToken):
+                break
             else:
                 return None
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+import pytest
 import lkml
 
 
@@ -32,3 +33,13 @@ def test_view_with_all_fields():
 def test_model_with_all_fields():
     lookml = load("model_with_all_fields.model.lkml")
     assert lookml is not None
+
+
+def test_duplicate_top_level_keys():
+    lookml = load("duplicate_top_level_keys.view.lkml")
+    assert lookml is not None
+
+
+def test_duplicate_non_top_level_keys():
+    with pytest.raises(KeyError):
+        lookml = load("duplicate_non_top_level_keys.view.lkml")
