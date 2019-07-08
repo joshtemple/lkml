@@ -126,6 +126,7 @@ class Parser:
             "datagroup",
             "access_grant",
             "sql_step",
+            "sql_where",
         ]:
             plural_key = key.rstrip("s") + "s"
             if plural_key in target.keys():
