@@ -2,7 +2,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 from codecs import open
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 here = Path(__file__).parent.resolve()
 
