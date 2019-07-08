@@ -352,8 +352,8 @@ def test_parse_list_with_literals():
         ]
     }
 
-
 def test_parse_list_with_trailing_comma():
+    # list with trailing comma and allow_trailing_comma=False
     stream = (
         tokens.LiteralToken("drill_fields", 1),
         tokens.ValueToken(1),
@@ -367,6 +367,42 @@ def test_parse_list_with_trailing_comma():
     result = parser.parse_list()
     assert result is None
 
+def test_parse_list_with_trailing_comma2():
+    # list with trailing comma and allow_trailing_comma=True
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.ListStartToken(1),
+        tokens.LiteralToken("view_name.field_one", 1),
+        tokens.CommaToken(1),
+        tokens.ListEndToken(1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    parser.set_allow_hanging_commas(True)
+    result = parser.parse_list()
+    assert result == {
+        "drill_fields": [
+            "view_name.field_one"
+        ]
+    }
+
+def test_parse_list_with_trailing_comma3():
+    # list with double comma
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.ListStartToken(1),
+        tokens.LiteralToken("view_name.field_one", 1),
+        tokens.CommaToken(1),
+        tokens.CommaToken(1),
+        tokens.ListEndToken(1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    parser.set_allow_hanging_commas(True)
+    result = parser.parse_list()
+    assert result is None
 
 def test_parse_list_with_missing_comma():
     stream = (

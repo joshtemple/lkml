@@ -7,11 +7,12 @@ from lkml.lexer import Lexer
 from lkml.parser import Parser
 
 
-def load(file_object):
+def load(file_object, allow_hanging_commas=False):
     text = file_object.read()
     lexer = Lexer(text)
     tokens = lexer.scan()
     parser = Parser(tokens)
+    parser.set_allow_hanging_commas(allow_hanging_commas)
     result = parser.parse()
     return result
 
@@ -36,6 +37,12 @@ def parse_args(args):
         default=logging.WARN,
         help="increase logging verbosity",
     )
+    parser.add_argument(
+        "--allow_hanging_commas",
+        dest="allow_hanging_commas",
+        default=False,
+        help="allow_hanging_commas",
+    )
 
     return parser.parse_args(args)
 
@@ -56,7 +63,11 @@ def cli():
 
     logging.getLogger().setLevel(args.log_level)
 
-    lookml = load(args.file)
+    allow_hanging_commas = False
+    if args.allow_hanging_commas is not None:
+        allow_hanging_commas = args.allow_hanging_commas
+
+    lookml = load(args.file, allow_hanging_commas)
     args.file.close()
 
     json_string = json.dumps(lookml, indent=2)

@@ -45,6 +45,11 @@ class Parser:
         self.logger = logging.getLogger(__name__)
         self.depth = -1
         self.log_debug = self.logger.isEnabledFor(logging.DEBUG)
+        self.allow_hanging_commas = False
+
+    def set_allow_hanging_commas(self, setting):
+        assert type(setting) is bool
+        self.allow_hanging_commas = setting
 
     def jump_to_index(self, index: int):
         self.index = index
@@ -321,6 +326,7 @@ class Parser:
             return None
 
         while not self.check(tokens.ListEndToken):
+
             if self.check(tokens.CommaToken):
                 self.advance()
             else:
@@ -331,6 +337,8 @@ class Parser:
             elif self.check(tokens.QuotedLiteralToken):
                 values.append(self.consume_token_value())
             else:
+                if self.allow_hanging_commas and self.check(tokens.ListEndToken):
+                    break
                 return None
 
         if self.log_debug:
