@@ -145,7 +145,7 @@ class Parser:
     def parse_expression(self) -> dict:
         if self.log_debug:
             grammar = "[expression] = (block / pair / list)*"
-            self.logger.debug(self.depth * DELIMITER + f"Try to parse {grammar}")
+            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         expression: dict = {}
         if self.check(tokens.StreamStartToken):
             self.advance()
