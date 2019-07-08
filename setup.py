@@ -26,6 +26,7 @@ setup(
         "Topic :: Software Development",
     ],
     keywords="lookml looker parser",
+    license="MIT",
     entry_points={"console_scripts": ["lkml = lkml.__init__:cli"]},
     packages=find_packages(exclude=["docs", "tests*", "scripts"]),
     include_package_data=True,
