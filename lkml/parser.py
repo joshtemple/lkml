@@ -166,7 +166,7 @@ class Parser:
             token = self.tokens[self.progress]
             raise SyntaxError(
                 f"Unable to find a matching expression for '{token.id}' "
-                f"on line {token.line_number}, position "
+                f"on line {token.line_number}"
             )
 
         if self.log_debug:
