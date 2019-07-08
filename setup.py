@@ -25,7 +25,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Topic :: Software Development",
     ],
-    keywords="",
+    keywords="lookml looker parser",
     entry_points={"console_scripts": ["lkml = lkml.__init__:cli"]},
     packages=find_packages(exclude=["docs", "tests*", "scripts"]),
     include_package_data=True,
