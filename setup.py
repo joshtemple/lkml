@@ -18,7 +18,6 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/joshtemple/lkml",
     download_url="https://github.com/joshtemple/lkml/tarball/" + __version__,
-    license="BSD",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
