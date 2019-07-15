@@ -31,6 +31,34 @@ literal = [0-9A-Za-z_]+
 # Delimiter during logging to show parse tree depth
 DELIMITER = ". "
 
+PLURAL_KEYS = frozenset(
+    (
+        "view",
+        "measure",
+        "dimension",
+        "dimension_group",
+        "filter",
+        "access_filter",
+        "bind_filters",
+        "map_layer",
+        "parameter",
+        "set",
+        "column",
+        "derived_column",
+        "include",
+        "explore",
+        "link",
+        "when",
+        "allowed_value",
+        "named_value_format",
+        "join",
+        "datagroup",
+        "access_grant",
+        "sql_step",
+        "sql_where",
+    )
+)
+
 
 class Parser:
     def __init__(self, stream: Sequence[tokens.Token]):
@@ -98,40 +126,12 @@ class Parser:
         return self.parse_expression()
 
     def update_tree(self, target, update):
-        plural_keys = frozenset(
-            (
-                "view",
-                "measure",
-                "dimension",
-                "dimension_group",
-                "filter",
-                "access_filter",
-                "bind_filters",
-                "map_layer",
-                "parameter",
-                "set",
-                "column",
-                "derived_column",
-                "include",
-                "explore",
-                "link",
-                "when",
-                "allowed_value",
-                "named_value_format",
-                "join",
-                "datagroup",
-                "access_grant",
-                "sql_step",
-                "sql_where",
-            )
-        )
-
         keys = tuple(update.keys())
         if len(keys) > 1:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
         stripped_key = key.rstrip("s")
-        if stripped_key in plural_keys:
+        if stripped_key in PLURAL_KEYS:
             plural_key = stripped_key + "s"
             if plural_key in target.keys():
                 target[plural_key].append(update[key])
