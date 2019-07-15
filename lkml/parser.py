@@ -1,5 +1,5 @@
 import logging
-from typing import List, Sequence, Type, Optional, Any, Union
+from typing import List, Sequence, Type, Optional, Any
 import lkml.tokens as tokens
 
 """
