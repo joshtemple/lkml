@@ -104,7 +104,6 @@ class Lexer:
         return tokens.LiteralToken(chars, self.line_number)
 
     def scan_quoted_literal(self) -> tokens.QuotedLiteralToken:
-        # TODO: Check and see if literals can be single-quoted
         chars = ""
         while True:
             ch = self.peek()
