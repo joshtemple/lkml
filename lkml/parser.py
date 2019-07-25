@@ -60,6 +60,7 @@ PLURAL_KEYS = frozenset(
         "param",
         "form_param",
         "option",
+        "user_attribute_param",
     )
 )
 

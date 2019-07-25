@@ -62,6 +62,14 @@ view: view_name {
       url: "url"
       icon_url: "url"
       form_url: "url"
+      user_attribute_param: {
+        user_attribute: user_attribute_name
+        name: "name_for_json_payload"
+      }
+      user_attribute_param: {
+        user_attribute: user_attribute_name
+        name: "name_for_json_payload"
+      }
       param: {
         name: "name string"
         value: "value string"
