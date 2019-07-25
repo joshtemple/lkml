@@ -1,12 +1,12 @@
-from typing import Tuple
+from typing import Tuple, List
 import lkml.tokens as tokens
 
 
 class Lexer:
-    def __init__(self, text):
+    def __init__(self, text: str):
         self.text = text + "\0"
         self.index = 0
-        self.tokens = []
+        self.tokens: List[tokens.Token] = []
         self.line_number = 1
 
     def peek(self) -> str:

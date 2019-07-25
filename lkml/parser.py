@@ -130,7 +130,7 @@ class Parser:
     def parse(self) -> List:
         return self.parse_expression()
 
-    def update_tree(self, target, update):
+    def update_tree(self, target: dict, update: dict):
         keys = tuple(update.keys())
         if len(keys) > 1:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
