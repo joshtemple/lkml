@@ -56,6 +56,10 @@ PLURAL_KEYS = frozenset(
         "access_grant",
         "sql_step",
         "sql_where",
+        "action",
+        "param",
+        "form_param",
+        "option",
     )
 )
 

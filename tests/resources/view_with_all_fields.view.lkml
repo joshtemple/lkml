@@ -3,9 +3,7 @@ view: view_name {
   suggestions: no
   extends: [view_name, view_name]
   extension: required
-
-required_access_grants: [access_grant_name, access_grant_name]
-
+  required_access_grants: [access_grant_name, access_grant_name]
   derived_table: {
     explore_source: explore_name {
       bind_filters: {
@@ -55,12 +53,75 @@ required_access_grants: [access_grant_name, access_grant_name]
     }
     sql_create: SQL query ;;
   }
-
   set: set_name {
     fields: [field_or_set, field_or_set]
   }
-
   dimension: field_name {
+    action: {
+      label: "Label to Appear in Action Menu"
+      url: "url"
+      icon_url: "url"
+      form_url: "url"
+      param: {
+        name: "name string"
+        value: "value string"
+      }
+      param: {
+        name: "name string"
+        value: "value string"
+      }
+      form_param: {
+        name: "form_param_name_1"
+        type: select
+        label: "desired label name"
+        required: yes
+        default: "value string"
+        option: {
+          name: "name string"
+          value: "value string"
+        }
+        option: {
+          name: "name string"
+          value: "value string"
+        }
+      }
+      form_param: {
+        name: "title"
+        type: string
+        label: "desired label name"
+        required: no
+        default: "value string"
+        option: {
+          name: "name string"
+          value: "value string"
+        }
+        option: {
+          name: "name string"
+          value: "value string"
+        }
+      }
+    }
+    action: {
+      label: "Another Label to Appear in Action Menu"
+      url: "url"
+      icon_url: "url"
+      form_url: "url"
+      param: {
+        name: "name string"
+        value: "value string"
+      }
+      form_param: {
+        name: "form_param_name_1"
+        type: select
+        label: "desired label name"
+        required: yes
+        default: "value string"
+        option: {
+          name: "name string"
+          value: "value string"
+        }
+      }
+    }
     label: "desired label name"
     label_from_parameter: parameter_name
     view_label: "desired label name"
@@ -85,7 +146,10 @@ required_access_grants: [access_grant_name, access_grant_name]
         sql: SQL condition ;;
         label: "value"
       }
-      # Possibly more when statements
+      when: {
+        sql: SQL condition ;;
+        label: "value"
+      }
     }
     alpha_sort: no
     tiers: [N, N]
@@ -101,7 +165,10 @@ required_access_grants: [access_grant_name, access_grant_name]
       label: "desired label name"
       value: "looker filter expression"
     }
-    # Possibly more allowed_value definitions
+    allowed_value: {
+      label: "desired label name"
+      value: "looker filter expression"
+    }
     required_access_grants: [access_grant_name, access_grant_name]
     bypass_suggest_restrictions: no
     full_suggestions: no
@@ -114,8 +181,11 @@ required_access_grants: [access_grant_name, access_grant_name]
       url: "desired_url"
       icon_url: "url_of_an_ico_file"
     }
-    # Possibly more links
-
+    link: {
+      label: "desired label name;"
+      url: "desired_url"
+      icon_url: "url_of_an_ico_file"
+    }
     timeframes: [timeframe, timeframe]
     convert_tz: no
     datatype: timestamp
@@ -129,14 +199,14 @@ required_access_grants: [access_grant_name, access_grant_name]
     list_field: dimension_name
     percentile: 90
     precision: N
-
     filters: {
       field: dimension_name
       value: "looker filter expression"
     }
-    # Possibly more filters statements
-
+    filters: {
+      field: dimension_name
+      value: "looker filter expression"
+    }
     default_value: "desired default value"
   }
-  # Possibly more dimension or measure declarations
 }
