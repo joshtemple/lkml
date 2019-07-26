@@ -2,7 +2,7 @@ from pathlib import Path
 from setuptools import setup, find_packages
 from codecs import open
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 here = Path(__file__).parent.resolve()
 
@@ -13,7 +13,7 @@ with (here / "README.md").open(encoding="utf-8") as file:
 setup(
     name="lkml",
     version=__version__,
-    description="A fast LookML parser.",
+    description="A speedy LookML parser implemented in pure Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/joshtemple/lkml",
@@ -26,6 +26,7 @@ setup(
         "Topic :: Software Development",
     ],
     keywords="lookml looker parser",
+    license="MIT",
     entry_points={"console_scripts": ["lkml = lkml.__init__:cli"]},
     packages=find_packages(exclude=["docs", "tests*", "scripts"]),
     include_package_data=True,

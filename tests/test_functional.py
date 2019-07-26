@@ -43,3 +43,8 @@ def test_duplicate_top_level_keys():
 def test_duplicate_non_top_level_keys():
     with pytest.raises(KeyError):
         lookml = load("duplicate_non_top_level_keys.view.lkml")
+
+
+def test_reserved_dimension_names():
+    lookml = load("block_with_reserved_dimension_names.view.lkml")
+    assert lookml is not None
