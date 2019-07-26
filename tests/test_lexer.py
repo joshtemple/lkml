@@ -151,3 +151,27 @@ def test_scan_with_complex_sql_block():
         tokens.ExpressionBlockEndToken(1),
         tokens.StreamEndToken(1),
     )
+
+
+def test_scan_with_non_expression_block_starting_with_sql():
+    text = "sql_not_reserved_field: yes"
+    output = lkml.Lexer(text).scan()
+    assert output == (
+        tokens.StreamStartToken(1),
+        tokens.LiteralToken("sql_not_reserved_field", 1),
+        tokens.ValueToken(1),
+        tokens.LiteralToken("yes", 1),
+        tokens.StreamEndToken(1),
+    )
+
+
+def test_scan_with_non_expression_block_starting_with_html():
+    text = "html_not_reserved_field: yes"
+    output = lkml.Lexer(text).scan()
+    assert output == (
+        tokens.StreamStartToken(1),
+        tokens.LiteralToken("html_not_reserved_field", 1),
+        tokens.ValueToken(1),
+        tokens.LiteralToken("yes", 1),
+        tokens.StreamEndToken(1),
+    )

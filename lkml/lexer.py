@@ -1,6 +1,27 @@
 from typing import Tuple, List
 import lkml.tokens as tokens
 
+EXPR_BLOCK_KEYS = (
+    "expression_custom_filter",
+    "html",
+    "sql_trigger_value",
+    "sql_table_name",
+    "sql_distinct_key",
+    "sql_start",
+    "sql_always_having",
+    "sql_always_where",
+    "sql_trigger",
+    "sql_foreign_key",
+    "sql_where",
+    "sql_end",
+    "sql_create",
+    "sql_latitude",
+    "sql_longitude",
+    "sql_step",
+    "sql_on",
+    "sql",
+)
+
 
 class Lexer:
     def __init__(self, text: str):
@@ -68,11 +89,7 @@ class Lexer:
             elif ch == '"':
                 self.advance()
                 self.tokens.append(self.scan_quoted_literal())
-            elif (
-                self.peek_multiple(3) == "sql"
-                or self.peek_multiple(4) == "html"
-                or self.peek_multiple(24) == "expression_custom_filter"
-            ):
+            elif self.check_for_expression_block(self.peek_multiple(25)):
                 self.tokens.append(self.scan_literal())
                 self.scan_until_token()
                 self.advance()
@@ -85,6 +102,10 @@ class Lexer:
                 self.tokens.append(self.scan_literal())
 
         return tuple(self.tokens)
+
+    @staticmethod
+    def check_for_expression_block(string: str):
+        return any(string.startswith(key + ":") for key in EXPR_BLOCK_KEYS)
 
     def scan_expression_block(self) -> tokens.ExpressionBlockToken:
         chars = ""
