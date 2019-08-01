@@ -50,4 +50,11 @@ EXPR_BLOCK_KEYS = (
     "sql",
 )
 
-QUOTED_LITERAL_KEYS = ("label", "group_label", "description")
+QUOTED_LITERAL_KEYS = (
+    "label",
+    "group_label",
+    "description",
+    "sortkeys",
+    "indexes",
+    "partition_keys",
+)
