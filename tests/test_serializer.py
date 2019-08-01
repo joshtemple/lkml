@@ -1,8 +1,13 @@
+import pytest
 import lkml
 
 
-def test_serialize_dict_with_unquoted_literals():
-    serializer = lkml.Serializer()
+@pytest.fixture
+def serializer():
+    return lkml.Serializer()
+
+
+def test_serialize_dict_with_unquoted_literals(serializer):
     generator = serializer.serialize_dict(
         {"name": "bind_filters", "from_field": "field_name", "to_field": "field_name"}
     )
@@ -17,8 +22,7 @@ def test_serialize_dict_with_unquoted_literals():
     )
 
 
-def test_serialize_dict_with_quoted_literals():
-    serializer = lkml.Serializer()
+def test_serialize_dict_with_quoted_literals(serializer):
     generator = serializer.serialize_dict(
         {
             "name": "dimension",
