@@ -1,4 +1,4 @@
-from lkml.keys import QUOTED_LITERAL_KEYS, PLURAL_KEYS
+from lkml.keys import QUOTED_LITERAL_KEYS, EXPR_BLOCK_KEYS, PLURAL_KEYS
 
 
 class Serializer:
@@ -23,6 +23,9 @@ class Serializer:
             yield '"'
             yield obj
             yield '"'
+        elif key in EXPR_BLOCK_KEYS:
+            yield obj
+            yield " ;;"
         else:
             yield obj
 
