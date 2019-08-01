@@ -33,12 +33,14 @@ class Serializer:
             yield "{"
         else:
             yield f"{name} " + "{"
-        self.increase_indent_level()
-        for key, value in obj.items():
-            yield f"\n{self.indent}{key}: "
-            yield from self.serialize(value, key)
-        self.decrease_indent_level()
-        yield f"\n{self.indent}" + "}"
+        if obj.values():
+            self.increase_indent_level()
+            for key, value in obj.items():
+                yield f"\n{self.indent}{key}: "
+                yield from self.serialize(value, key)
+            self.decrease_indent_level()
+            yield f"\n{self.indent}"
+        yield "}"
 
     def serialize_list(self, obj: list, key: str):
         yield "["

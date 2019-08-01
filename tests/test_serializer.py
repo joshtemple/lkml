@@ -77,6 +77,18 @@ def test_serialize_nested_dict(serializer):
     )
 
 
+def test_serialize_empty_dict_with_name(serializer):
+    generator = serializer.serialize_dict({"name": "dimension_name"})
+    result = "".join(generator)
+    assert result == "dimension_name {}"
+
+
+def test_serialize_empty_dict_without_name(serializer):
+    generator = serializer.serialize_dict({})
+    result = "".join(generator)
+    assert result == "{}"
+
+
 def test_serialize_list_with_unquoted_literals(serializer):
     generator = serializer.serialize_list(
         ["dimension_one", "dimension_two", "dimension_three"], key="fields"
