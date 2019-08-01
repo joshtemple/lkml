@@ -49,3 +49,5 @@ EXPR_BLOCK_KEYS = (
     "sql_on",
     "sql",
 )
+
+QUOTED_LITERAL_KEYS = ("label", "description")
