@@ -41,3 +41,9 @@ def test_serialize_dict_with_quoted_literals(serializer):
             "}",
         )
     )
+
+
+def test_serialize_dict_with_no_name(serializer):
+    with pytest.raises(KeyError):
+        generator = serializer.serialize_dict({"label": "Dimension Name"})
+        result = "".join(generator)

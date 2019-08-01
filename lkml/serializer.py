@@ -12,7 +12,13 @@ class Serializer:
         self.indent = self.base_indent * self.indent_level
 
     def serialize_dict(self, obj: dict):
-        yield f"{obj.pop('name')}: " + "{"
+        try:
+            name = obj.pop("name")
+        except KeyError as error:
+            raise KeyError(
+                'Dictionary cannot be serialized into a block without a "name" key.'
+            ) from error
+        yield f"{name}: " + "{"
         self.increase_indent_level()
         for key, value in obj.items():
             yield f"\n{self.indent}{key}: "
