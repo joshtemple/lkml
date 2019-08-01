@@ -1,4 +1,4 @@
-from lkml.keys import QUOTED_LITERAL_KEYS
+from lkml.keys import QUOTED_LITERAL_KEYS, PLURAL_KEYS
 
 
 class Serializer:
@@ -52,9 +52,21 @@ class Serializer:
 
     def serialize(self, obj, key: str = None):
         if isinstance(obj, dict):
-            yield from self.serialize_dict(obj)
+            if self.indent_level > 0:
+                yield from self.serialize_dict(obj)
+            else:
+                for key, value in obj.items():
+                    yield from self.serialize(value, key)
         elif isinstance(obj, (list, tuple)):
-            yield from self.serialize_list(obj, key)
+            singular_key = key.rstrip("s")
+            if singular_key in PLURAL_KEYS:
+                for i, value in enumerate(obj):
+                    if i > 0:
+                        yield "\n" * 2
+                    yield f"{singular_key}: "
+                    yield from self.serialize_dict(value)
+            else:
+                yield from self.serialize_list(obj, key)
         elif isinstance(obj, str):
             yield from self.serialize_string(obj, key)
         elif isinstance(obj, bool):
