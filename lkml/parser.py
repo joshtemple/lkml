@@ -2,6 +2,10 @@ import logging
 from typing import Any, List, Optional, Sequence, Type
 
 import lkml.tokens as tokens
+from lkml.keys import PLURAL_KEYS
+
+# Delimiter during logging to show parse tree depth
+DELIMITER = ". "
 
 """
 
@@ -28,42 +32,6 @@ quoted_literal = '"' [^\"]+ '"'
 literal = [0-9A-Za-z_]+
 
 """
-
-# Delimiter during logging to show parse tree depth
-DELIMITER = ". "
-
-PLURAL_KEYS = frozenset(
-    (
-        "view",
-        "measure",
-        "dimension",
-        "dimension_group",
-        "filter",
-        "access_filter",
-        "bind_filters",
-        "map_layer",
-        "parameter",
-        "set",
-        "column",
-        "derived_column",
-        "include",
-        "explore",
-        "link",
-        "when",
-        "allowed_value",
-        "named_value_format",
-        "join",
-        "datagroup",
-        "access_grant",
-        "sql_step",
-        "sql_where",
-        "action",
-        "param",
-        "form_param",
-        "option",
-        "user_attribute_param",
-    )
-)
 
 
 class Parser:
