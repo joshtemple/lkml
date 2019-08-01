@@ -39,7 +39,9 @@ class Serializer:
         if obj.values():
             self.increase_indent_level()
             for key, value in obj.items():
-                yield f"\n{self.indent}{key}: "
+                yield "\n"
+                if key.rstrip("s") not in PLURAL_KEYS:
+                    yield f"{self.indent}{key}: "
                 yield from self.serialize(value, key)
             self.decrease_indent_level()
             yield f"\n{self.indent}"
@@ -64,9 +66,10 @@ class Serializer:
             singular_key = key.rstrip("s")
             if singular_key in PLURAL_KEYS:
                 for i, value in enumerate(obj):
+                    yield "\n"
                     if i > 0:
-                        yield "\n" * 2
-                    yield f"{singular_key}: "
+                        yield "\n"
+                    yield f"{self.indent}{singular_key}: "
                     yield from self.serialize_dict(value)
             else:
                 yield from self.serialize_list(obj, key)

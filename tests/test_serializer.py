@@ -110,4 +110,56 @@ def test_serialize_with_plural_key(serializer):
         {"dimensions": [{"name": "dimension_one"}, {"name": "dimension_two"}]}
     )
     result = "".join(generator)
+    print(result)
     assert result == "dimension: dimension_one {}\n\ndimension: dimension_two {}"
+
+
+def test_serialize_view_with_multiple_dimensions(serializer):
+    generator = serializer.serialize(
+        {
+            "views": [
+                {
+                    "sql_table_name": "schema.table_name",
+                    "dimensions": [
+                        {
+                            "type": "string",
+                            "sql": "${TABLE}.a_dimension",
+                            "name": "a_dimension",
+                        },
+                        {
+                            "type": "number",
+                            "sql": "${TABLE}.another_dimension",
+                            "name": "another_dimension",
+                        },
+                        {
+                            "type": "yesno",
+                            "sql": "${TABLE}.yet_another_dimension",
+                            "name": "yet_another_dimension",
+                        },
+                    ],
+                    "dimension_groups": [
+                        {
+                            "type": "time",
+                            "timeframes": [
+                                "raw",
+                                "time",
+                                "hour_of_day",
+                                "date",
+                                "day_of_week",
+                                "week",
+                                "month",
+                                "quarter",
+                                "year",
+                            ],
+                            "sql": "${TABLE}.a_dimension_group",
+                            "name": "a_dimension_group",
+                        }
+                    ],
+                    "name": "view_name",
+                }
+            ]
+        }
+    )
+    result = "".join(generator)
+    print(result)
+    assert False
