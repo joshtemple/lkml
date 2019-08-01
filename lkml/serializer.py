@@ -9,6 +9,13 @@ class Serializer:
 
     def increase_indent_level(self):
         self.indent_level += 1
+        self.update_indent()
+
+    def decrease_indent_level(self):
+        self.indent_level -= 1
+        self.update_indent()
+
+    def update_indent(self):
         self.indent = self.base_indent * self.indent_level
 
     def serialize_dict(self, obj: dict):
@@ -28,7 +35,8 @@ class Serializer:
                 yield '"'
             else:
                 yield from serialized
-        yield "\n}"
+        self.decrease_indent_level()
+        yield f"\n{self.indent}" + "}"
 
     def serialize(self, obj):
         if isinstance(obj, dict):

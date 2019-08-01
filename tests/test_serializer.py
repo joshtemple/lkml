@@ -43,3 +43,35 @@ def test_serialize_dict_with_name(serializer):
     )
     result = "".join(generator)
     assert result == "".join(("dimension_name {\n", '  label: "Dimension Name"\n', "}"))
+
+
+def test_serialize_nested_dict(serializer):
+    generator = serializer.serialize_dict(
+        {
+            "derived_table": {
+                "explore_source": {
+                    "bind_filters": {
+                        "from_field": "field_name",
+                        "to_field": "field_name",
+                    },
+                    "name": "explore_name",
+                }
+            }
+        }
+    )
+    result = "".join(generator)
+
+    assert result == "".join(
+        (
+            "{\n",
+            "  derived_table: {\n",
+            "    explore_source: explore_name {\n",
+            "      bind_filters: {\n",
+            "        from_field: field_name\n",
+            "        to_field: field_name\n",
+            "      }\n",
+            "    }\n",
+            "  }\n",
+            "}",
+        )
+    )
