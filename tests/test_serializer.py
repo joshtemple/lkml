@@ -27,6 +27,7 @@ def test_serialize_dict_with_quoted_literals(serializer):
         {
             "name": "dimension",
             "label": "Dimension Name",
+            "group_label": "Group Name",
             "description": "A dimension description.",
         }
     )
@@ -35,6 +36,7 @@ def test_serialize_dict_with_quoted_literals(serializer):
         (
             "dimension: {\n",
             '  label: "Dimension Name"\n',
+            '  group_label: "Group Name"\n',
             '  description: "A dimension description."\n',
             "}",
         )
