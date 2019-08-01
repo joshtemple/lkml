@@ -18,6 +18,14 @@ class Serializer:
     def update_indent(self):
         self.indent = self.base_indent * self.indent_level
 
+    def serialize_string(self, obj: str, key: str):
+        if key in QUOTED_LITERAL_KEYS:
+            yield '"'
+            yield obj
+            yield '"'
+        else:
+            yield obj
+
     def serialize_dict(self, obj: dict):
         try:
             name = obj.pop("name")
@@ -28,20 +36,24 @@ class Serializer:
         self.increase_indent_level()
         for key, value in obj.items():
             yield f"\n{self.indent}{key}: "
-            serialized = self.serialize(value)
-            if key in QUOTED_LITERAL_KEYS:
-                yield '"'
-                yield from serialized
-                yield '"'
-            else:
-                yield from serialized
+            yield from self.serialize(value, key)
         self.decrease_indent_level()
         yield f"\n{self.indent}" + "}"
 
-    def serialize(self, obj):
+    def serialize_list(self, obj: list, key: str):
+        yield "["
+        for i, value in enumerate(obj):
+            if i > 0:
+                yield ", "
+            yield from self.serialize_string(value, key)
+        yield "]"
+
+    def serialize(self, obj, key: str = None):
         if isinstance(obj, dict):
             yield from self.serialize_dict(obj)
+        elif isinstance(obj, (list, tuple)):
+            yield from self.serialize_list(obj, key)
         elif isinstance(obj, str):
-            yield obj
+            yield from self.serialize_string(obj, key)
         elif isinstance(obj, bool):
             yield "yes" if obj else "no"
