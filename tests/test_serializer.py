@@ -75,3 +75,19 @@ def test_serialize_nested_dict(serializer):
             "}",
         )
     )
+
+
+def test_serialize_list_with_unquoted_literals(serializer):
+    generator = serializer.serialize_list(
+        ["dimension_one", "dimension_two", "dimension_three"], key="fields"
+    )
+    result = "".join(generator)
+    assert result == "[dimension_one, dimension_two, dimension_three]"
+
+
+def test_serialize_list_with_quoted_literals(serializer):
+    generator = serializer.serialize_list(
+        ["column_one", "column_two", "column_three"], key="sortkeys"
+    )
+    result = "".join(generator)
+    assert result == '["column_one", "column_two", "column_three"]'
