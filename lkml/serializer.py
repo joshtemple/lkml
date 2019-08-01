@@ -33,5 +33,7 @@ class Serializer:
     def serialize(self, obj):
         if isinstance(obj, dict):
             yield from self.serialize_dict(obj)
-        if isinstance(obj, str):
+        elif isinstance(obj, str):
             yield obj
+        elif isinstance(obj, bool):
+            yield "yes" if obj else "no"
