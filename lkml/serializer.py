@@ -6,6 +6,7 @@ class Serializer:
         self.indent_level = 0
         self.base_indent = " " * 2
         self.indent = ""
+        self.newline_indent = "\n"
 
     def increase_indent_level(self):
         self.indent_level += 1
@@ -17,6 +18,7 @@ class Serializer:
 
     def update_indent(self):
         self.indent = self.base_indent * self.indent_level
+        self.newline_indent = "\n" + self.indent
 
     def serialize_string(self, obj: str, key: str):
         if key in QUOTED_LITERAL_KEYS:
@@ -44,16 +46,20 @@ class Serializer:
                     yield f"{self.indent}{key}: "
                 yield from self.serialize(value, key)
             self.decrease_indent_level()
-            yield f"\n{self.indent}"
+            yield f"{self.newline_indent}"
         yield "}"
 
     def serialize_list(self, obj: list, key: str):
         yield "["
+        self.increase_indent_level()
         for i, value in enumerate(obj):
             if i > 0:
-                yield ", "
+                yield ","
+            yield f"{self.newline_indent}"
             yield from self.serialize_string(value, key)
-        yield "]"
+        yield "\n"
+        self.decrease_indent_level()
+        yield f"{self.indent}]"
 
     def serialize(self, obj, key: str = None):
         if isinstance(obj, dict):
@@ -66,9 +72,8 @@ class Serializer:
             singular_key = key.rstrip("s")
             if singular_key in PLURAL_KEYS:
                 for i, value in enumerate(obj):
-                    yield "\n"
                     if i > 0:
-                        yield "\n"
+                        yield "\n" * 2
                     yield f"{self.indent}{singular_key}: "
                     yield from self.serialize_dict(value)
             else:
