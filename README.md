@@ -32,18 +32,76 @@ You can run `lkml` from the command line or import it as a Python package.
  - `load`, which accepts a file object and returns a dictionary with the parsed result
  - `dump`, which accepts a Python dictionary and an optional file object to write to. If no file object is provided, `dump` returns the serialized string directly.
 
-Here's how you would load LookML, modify it, and dump the modified version to a new LookML file:
+As an example, imagine we have the view below.
+
+```lookml
+view: {
+  sql_table_name: analytics.orders ;;
+
+  dimension: order_id {
+    primary_key: yes
+    type: number
+    sql: ${TABLE}.order_id ;;
+  }
+}
+```
+
+We want to change the type of the dimension `order_id` from `number` to `string`. Using `lkml`, we can parse the view into Python, modify the type, and dump it back out to LookML.
+
+First, we'll parse it into a dictionary.
 
 ```python
 import lkml
 
 with open('path/to/file.view.lkml', 'r') as file:
     parsed = lkml.load(file)
+```
 
-parsed['views'][0]['name'] = 'new_view_name'
+The `load` function returns this dictionary.
 
+```python
+{
+  "views": [
+    {
+      "sql_table_name": "analytics.orders",
+      "dimensions": [
+        {
+          "primary_key": "yes",
+          "type": "number",
+          "sql": "${TABLE}.order_id",
+          "name": "order_id",
+        }
+      ]
+    }
+  ]
+}
+```
+
+Next, we'll modify the value of `type` in the parsed result.
+
+```python
+parsed['views'][0]['dimensions'][0]['type'] = 'string'
+```
+
+Finally, we'll dump the dictionary back to LookML in a new file.
+
+```python
 with open('path/to/new.view.lkml', 'w+') as file:
     lkml.dump(parsed, file)
+```
+
+Here's the output.
+
+```lookml
+view: {
+  sql_table_name: analytics.orders ;;
+
+  dimension: order_id {
+    primary_key: yes
+    type: string
+    sql: ${TABLE}.order_id ;;
+  }
+}
 ```
 
 #### From the command line (parsing only)
