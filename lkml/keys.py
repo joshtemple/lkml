@@ -52,9 +52,15 @@ EXPR_BLOCK_KEYS = (
 
 QUOTED_LITERAL_KEYS = (
     "label",
+    "view_label",
     "group_label",
+    "value",
     "description",
     "sortkeys",
     "indexes",
     "partition_keys",
+    "connection",
+    "include",
+    "max_cache_age",
+    "allowed_values",
 )
