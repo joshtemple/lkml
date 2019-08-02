@@ -1,7 +1,6 @@
-import itertools
 from copy import deepcopy
 from typing import Iterable, Dict, Any
-from lkml.keys import QUOTED_LITERAL_KEYS, EXPR_BLOCK_KEYS
+from lkml.keys import QUOTED_LITERAL_KEYS, PLURAL_KEYS, EXPR_BLOCK_KEYS
 
 
 class Serializer:
@@ -23,11 +22,17 @@ class Serializer:
         self.indent = self.base_indent * self.indent_level
         self.newline_indent = "\n" + self.indent
 
+    @staticmethod
+    def is_plural_key(key):
+        return key.endswith("s") and key.rstrip("s") in PLURAL_KEYS
+
     def serialize(self, obj: Dict):
-        chunks = itertools.chain.from_iterable(
-            self.write_any(key, value) for key, value in deepcopy(obj).items()
-        )
-        return "".join(chunks)
+        def chain_with_newline():
+            for key, value in deepcopy(obj).items():
+                yield from self.write_any(key, value)
+                yield "\n"
+
+        return "".join(chain_with_newline())
 
     def expand_list(self, key: str, values: Iterable):
         modified_key = (
@@ -43,10 +48,10 @@ class Serializer:
             yield from self.write_pair(key, value)
 
         if isinstance(value, (list, tuple)):
-            if all(isinstance(item, str) for item in value):
-                yield from self.write_set(key, value)
-            else:
+            if self.is_plural_key(key):
                 yield from self.expand_list(key, value)
+            else:
+                yield from self.write_set(key, value)
 
         if isinstance(value, dict):
             try:

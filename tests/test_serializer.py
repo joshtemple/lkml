@@ -297,3 +297,22 @@ def test_serialize_view_with_multiple_dimensions(serializer):
             "}",
         )
     )
+
+
+def test_serialize_top_level_pairs(serializer):
+    obj = {
+        "connection": "c53-looker",
+        "includes": ["*.view"],
+        "fiscal_month_offset": "0",
+        "week_start_day": "sunday",
+    }
+    result = serializer.serialize(obj)
+    print(result)
+    assert result == "".join(
+        (
+            'connection: "c53-looker"\n',
+            'include: "*.view"\n',
+            "fiscal_month_offset: 0\n",
+            "week_start_day: sunday\n",
+        )
+    )
