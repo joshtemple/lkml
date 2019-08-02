@@ -211,7 +211,8 @@ def test_expand_list_with_pairs(serializer):
     result = "".join(generator)
     print(result)
     assert (
-        result == "include: filename_or_pattern_one\ninclude: filename_or_pattern_two"
+        result
+        == 'include: "filename_or_pattern_one"\ninclude: "filename_or_pattern_two"'
     )
 
 
