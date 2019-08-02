@@ -9,7 +9,7 @@ def serializer():
 
 def test_serialize_dict_with_unquoted_literals(serializer):
     generator = serializer.serialize_dict(
-        {"from_field": "field_name", "to_field": "field_name"}
+        key="bind_fields", obj={"from_field": "field_name", "to_field": "field_name"}
     )
     result = "".join(generator)
     print(result)
@@ -20,11 +20,12 @@ def test_serialize_dict_with_unquoted_literals(serializer):
 
 def test_serialize_dict_with_quoted_literals(serializer):
     generator = serializer.serialize_dict(
-        {
+        key="dimension",
+        obj={
             "label": "Dimension Name",
             "group_label": "Group Name",
             "description": "A dimension description.",
-        }
+        },
     )
     result = "".join(generator)
     print(result)
@@ -41,7 +42,7 @@ def test_serialize_dict_with_quoted_literals(serializer):
 
 def test_serialize_dict_with_name(serializer):
     generator = serializer.serialize_dict(
-        {"name": "dimension_name", "label": "Dimension Name"}
+        key="dimension", obj={"name": "dimension_name", "label": "Dimension Name"}
     )
     result = "".join(generator)
     print(result)
@@ -50,29 +51,23 @@ def test_serialize_dict_with_name(serializer):
 
 def test_serialize_nested_dict(serializer):
     generator = serializer.serialize_dict(
-        {
-            "derived_table": {
-                "explore_source": {
-                    "bind_filters": {
-                        "from_field": "field_name",
-                        "to_field": "field_name",
-                    },
-                    "name": "explore_name",
-                }
+        key="derived_table",
+        obj={
+            "explore_source": {
+                "bind_filters": {"from_field": "field_name", "to_field": "field_name"},
+                "name": "explore_name",
             }
-        }
+        },
     )
     result = "".join(generator)
     print(result)
     assert result == "".join(
         (
             "{\n",
-            "  derived_table: {\n",
-            "    explore_source: explore_name {\n",
-            "      bind_filters: {\n",
-            "        from_field: field_name\n",
-            "        to_field: field_name\n",
-            "      }\n",
+            "  explore_source: explore_name {\n",
+            "    bind_filters: {\n",
+            "      from_field: field_name\n",
+            "      to_field: field_name\n",
             "    }\n",
             "  }\n",
             "}",
@@ -81,14 +76,16 @@ def test_serialize_nested_dict(serializer):
 
 
 def test_serialize_empty_dict_with_name(serializer):
-    generator = serializer.serialize_dict({"name": "dimension_name"})
+    generator = serializer.serialize_dict(
+        key="dimension", obj={"name": "dimension_name"}
+    )
     result = "".join(generator)
     print(result)
     assert result == "dimension_name {}"
 
 
 def test_serialize_empty_dict_without_name(serializer):
-    generator = serializer.serialize_dict({})
+    generator = serializer.serialize_dict(key="dimension", obj={})
     result = "".join(generator)
     print(result)
     assert result == "{}"
@@ -96,7 +93,7 @@ def test_serialize_empty_dict_without_name(serializer):
 
 def test_serialize_list_with_unquoted_literals(serializer):
     generator = serializer.serialize_list(
-        ["dimension_one", "dimension_two", "dimension_three"], key="fields"
+        key="fields", obj=["dimension_one", "dimension_two", "dimension_three"]
     )
     result = "".join(generator)
     print(result)
@@ -105,7 +102,7 @@ def test_serialize_list_with_unquoted_literals(serializer):
 
 def test_serialize_list_with_quoted_literals(serializer):
     generator = serializer.serialize_list(
-        ["column_one", "column_two", "column_three"], key="sortkeys"
+        key="sortkeys", obj=["column_one", "column_two", "column_three"]
     )
     result = "".join(generator)
     print(result)
@@ -114,8 +111,10 @@ def test_serialize_list_with_quoted_literals(serializer):
 
 def test_serialize_with_plural_key(serializer):
     generator = serializer.serialize(
-        {"dimensions": [{"name": "dimension_one"}, {"name": "dimension_two"}]}
+        key=None,
+        obj={"dimensions": [{"name": "dimension_one"}, {"name": "dimension_two"}]},
     )
+    # print(list(generator))
     result = "".join(generator)
     print(result)
     assert result == "dimension: dimension_one {}\n\ndimension: dimension_two {}"
@@ -123,7 +122,8 @@ def test_serialize_with_plural_key(serializer):
 
 def test_serialize_view_with_multiple_dimensions(serializer):
     generator = serializer.serialize(
-        {
+        key=None,
+        obj={
             "views": [
                 {
                     "sql_table_name": "schema.table_name",
@@ -165,7 +165,7 @@ def test_serialize_view_with_multiple_dimensions(serializer):
                     "name": "view_name",
                 }
             ]
-        }
+        },
     )
     result = "".join(generator)
     print(result)
