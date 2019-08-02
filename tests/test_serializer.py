@@ -71,108 +71,130 @@ def test_write_set_with_no_values(serializer):
     assert result == "sortkeys: []"
 
 
-# def test_serialize_dict_with_unquoted_literals(serializer):
-#     generator = serializer.serialize_dict(
-#         key="bind_fields", obj={"from_field": "field_name", "to_field": "field_name"}
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "".join(
-#         ("{\n", "  from_field: field_name\n", "  to_field: field_name\n", "}")
-#     )
-#
-#
-# def test_serialize_dict_with_quoted_literals(serializer):
-#     generator = serializer.serialize_dict(
-#         key="dimension",
-#         obj={
-#             "label": "Dimension Name",
-#             "group_label": "Group Name",
-#             "description": "A dimension description.",
-#         },
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "".join(
-#         (
-#             "{\n",
-#             '  label: "Dimension Name"\n',
-#             '  group_label: "Group Name"\n',
-#             '  description: "A dimension description."\n',
-#             "}",
-#         )
-#     )
-#
-#
-# def test_serialize_dict_with_name(serializer):
-#     generator = serializer.serialize_dict(
-#         key="dimension", obj={"name": "dimension_name", "label": "Dimension Name"}
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "".join(("dimension_name {\n", '  label: "Dimension Name"\n', "}"))
-#
-#
-# def test_serialize_nested_dict(serializer):
-#     generator = serializer.serialize_dict(
-#         key="derived_table",
-#         obj={
-#             "explore_source": {
-#                 "bind_filters": {"from_field": "field_name", "to_field": "field_name"},
-#                 "name": "explore_name",
-#             }
-#         },
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "".join(
-#         (
-#             "{\n",
-#             "  explore_source: explore_name {\n",
-#             "    bind_filters: {\n",
-#             "      from_field: field_name\n",
-#             "      to_field: field_name\n",
-#             "    }\n",
-#             "  }\n",
-#             "}",
-#         )
-#     )
-#
-#
-# def test_serialize_empty_dict_with_name(serializer):
-#     generator = serializer.serialize_dict(
-#         key="dimension", obj={"name": "dimension_name"}
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "dimension_name {}"
-#
-#
-# def test_serialize_empty_dict_without_name(serializer):
-#     generator = serializer.serialize_dict(key="dimension", obj={})
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "{}"
-#
-#
-# def test_serialize_list_with_unquoted_literals(serializer):
-#     generator = serializer.serialize_list(
-#         key="fields", obj=["dimension_one", "dimension_two", "dimension_three"]
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "[\n  dimension_one,\n  dimension_two,\n  dimension_three\n]"
-#
-#
-# def test_serialize_list_with_quoted_literals(serializer):
-#     generator = serializer.serialize_list(
-#         key="sortkeys", obj=["column_one", "column_two", "column_three"]
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert result == '[\n  "column_one",\n  "column_two",\n  "column_three"\n]'
-#
-#
+def test_write_block_with_unquoted_literals(serializer):
+    generator = serializer.write_block(
+        key="bind_fields", fields={"from_field": "field_name", "to_field": "field_name"}
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(
+        (
+            "bind_fields: {\n",
+            "  from_field: field_name\n",
+            "  to_field: field_name\n",
+            "}",
+        )
+    )
+
+
+def test_write_block_with_quoted_literals(serializer):
+    generator = serializer.write_block(
+        key="dimension",
+        fields={
+            "label": "Dimension Name",
+            "group_label": "Group Name",
+            "description": "A dimension description.",
+        },
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(
+        (
+            "dimension: {\n",
+            '  label: "Dimension Name"\n',
+            '  group_label: "Group Name"\n',
+            '  description: "A dimension description."\n',
+            "}",
+        )
+    )
+
+
+def test_write_block_with_name(serializer):
+    generator = serializer.write_block(
+        key="dimension", fields={"label": "Dimension Name"}, name="dimension_name"
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(
+        ("dimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
+    )
+
+
+def test_write_block_with_no_fields_and_name(serializer):
+    generator = serializer.write_block(
+        key="dimension", fields={}, name="dimension_name"
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "dimension: dimension_name {}"
+
+
+def test_write_block_with_no_fields_and_no_name(serializer):
+    generator = serializer.write_block(key="dimension", fields={}, name=None)
+    result = "".join(generator)
+    print(result)
+    assert result == "dimension: {}"
+
+
+def test_write_nested_block(serializer):
+    generator = serializer.write_block(
+        key="derived_table",
+        fields={
+            "explore_source": {
+                "bind_filters": {"from_field": "field_name", "to_field": "field_name"},
+                "name": "explore_name",
+            }
+        },
+    )
+
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(
+        (
+            "derived_table: {\n",
+            "  explore_source: explore_name {\n",
+            "    bind_filters: {\n",
+            "      from_field: field_name\n",
+            "      to_field: field_name\n",
+            "    }\n",
+            "  }\n",
+            "}",
+        )
+    )
+
+
+def test_write_any_with_str_value(serializer):
+    generator = serializer.write_any(key="hidden", value="yes")
+    result = "".join(generator)
+    print(result)
+    assert result == "hidden: yes"
+
+
+def test_write_any_with_list_value(serializer):
+    generator = serializer.write_any(key="sortkeys", value=["column_one", "column_two"])
+    result = "".join(generator)
+    print(result)
+    assert result == 'sortkeys: [\n  "column_one",\n  "column_two"\n]'
+
+
+def test_write_any_with_dict_value_and_name(serializer):
+    generator = serializer.write_any(
+        key="dimension", value={"name": "dimension_name", "label": "Dimension Name"}
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(
+        ("dimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
+    )
+
+
+def test_write_any_with_dict_value_and_name(serializer):
+    generator = serializer.write_any(key="dimension", value={"label": "Dimension Name"})
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(("dimension: {\n", '  label: "Dimension Name"\n', "}"))
+
+
 # def test_serialize_with_plural_key(serializer):
 #     generator = serializer.serialize(
 #         key=None,

@@ -20,8 +20,38 @@ class Serializer:
         self.indent = self.base_indent * self.indent_level
         self.newline_indent = "\n" + self.indent
 
+    def write_any(self, key: str, value):
+        if isinstance(value, str):
+            yield from self.write_pair(key, value)
+
+        if isinstance(value, list):
+            yield from self.write_set(key, value)
+
+        if isinstance(value, dict):
+            try:
+                name = value.pop("name")
+            except KeyError:
+                name = None
+            yield from self.write_block(key, value, name)
+
     def write_block(self, key: str, fields: dict, name=None):
-        pass
+        yield from self.write_key(key)
+        if name:
+            yield f"{name} " + "{"
+        else:
+            yield "{"
+
+        if fields:
+            self.increase_indent_level()
+            yield "\n"
+            for i, (key, value) in enumerate(fields.items()):
+                if i > 0:
+                    yield "\n"
+                yield from self.write_any(key, value)
+            self.decrease_indent_level()
+            yield self.newline_indent
+
+        yield "}"
 
     def write_set(self, key: str, values: list):
         yield from self.write_key(key)
