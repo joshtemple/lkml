@@ -1,3 +1,5 @@
+import itertools
+from copy import deepcopy
 from typing import Iterable, Dict, Any
 from lkml.keys import QUOTED_LITERAL_KEYS, EXPR_BLOCK_KEYS
 
@@ -22,8 +24,10 @@ class Serializer:
         self.newline_indent = "\n" + self.indent
 
     def serialize(self, obj: Dict):
-        for key, value in obj.items():
-            yield from self.write_any(key, value)
+        chunks = itertools.chain.from_iterable(
+            self.write_any(key, value) for key, value in deepcopy(obj).items()
+        )
+        return "".join(chunks)
 
     def expand_list(self, key: str, values: Iterable):
         stripped_key = key.rstrip("s")
