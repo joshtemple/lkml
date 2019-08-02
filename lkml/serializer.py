@@ -1,4 +1,4 @@
-from lkml.keys import QUOTED_LITERAL_KEYS, EXPR_BLOCK_KEYS, PLURAL_KEYS
+from lkml.keys import QUOTED_LITERAL_KEYS, EXPR_BLOCK_KEYS
 
 
 class Serializer:
@@ -20,7 +20,7 @@ class Serializer:
         self.indent = self.base_indent * self.indent_level
         self.newline_indent = "\n" + self.indent
 
-    def serialize_string(self, obj: str, key: str):
+    def serialize_string(self, key: str, obj: str):
         if key in QUOTED_LITERAL_KEYS:
             yield '"'
             yield obj
@@ -31,54 +31,56 @@ class Serializer:
         else:
             yield obj
 
-    def serialize_dict(self, obj: dict):
+    def serialize_dict(self, key, obj):
         try:
             name = obj.pop("name")
         except KeyError as error:
             yield "{"
         else:
             yield f"{name} " + "{"
-        if obj.values():
+
+        if obj:
+            yield "\n"
             self.increase_indent_level()
             for key, value in obj.items():
+                yield from self.serialize(key, value)
                 yield "\n"
-                if key.rstrip("s") not in PLURAL_KEYS:
-                    yield f"{self.indent}{key}: "
-                yield from self.serialize(value, key)
             self.decrease_indent_level()
-            yield f"{self.newline_indent}"
-        yield "}"
 
-    def serialize_list(self, obj: list, key: str):
-        yield "["
-        self.increase_indent_level()
-        for i, value in enumerate(obj):
-            if i > 0:
-                yield ","
-            yield f"{self.newline_indent}"
-            yield from self.serialize_string(value, key)
-        yield "\n"
-        self.decrease_indent_level()
-        yield f"{self.indent}]"
+        yield f"{self.indent}" + "}\n\n"
 
-    def serialize(self, obj, key: str = None):
+    def serialize_list(self, key: str, obj: list):
+        if all(isinstance(item, str) for item in obj):
+            if key is not None:
+                yield f"{self.indent}{key}: "
+            yield "["
+            self.increase_indent_level()
+            for i, value in enumerate(obj):
+                if i > 0:
+                    yield ","
+                yield f"{self.newline_indent}"
+                yield from self.serialize_string(key, value)
+            self.decrease_indent_level()
+            yield f"{self.newline_indent}]"
+        else:
+            for item in obj:
+                yield from self.serialize(key=key.rstrip("s"), obj=item)
+
+    def serialize(self, key, obj):
         if isinstance(obj, dict):
-            if self.indent_level > 0:
-                yield from self.serialize_dict(obj)
+            if key is not None:
+                yield f"{self.indent}{key}: "
+                yield from self.serialize_dict(key, obj)
             else:
                 for key, value in obj.items():
-                    yield from self.serialize(value, key)
+                    yield from self.serialize(key, value)
         elif isinstance(obj, (list, tuple)):
-            singular_key = key.rstrip("s")
-            if singular_key in PLURAL_KEYS:
-                for i, value in enumerate(obj):
-                    if i > 0:
-                        yield "\n" * 2
-                    yield f"{self.indent}{singular_key}: "
-                    yield from self.serialize_dict(value)
-            else:
-                yield from self.serialize_list(obj, key)
+            yield from self.serialize_list(key, obj)
         elif isinstance(obj, str):
-            yield from self.serialize_string(obj, key)
+            if key is not None:
+                yield f"{self.indent}{key}: "
+            yield from self.serialize_string(key, obj)
         elif isinstance(obj, bool):
+            if key is not None:
+                yield f"{self.indent}{key}: "
             yield "yes" if obj else "no"
