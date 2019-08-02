@@ -17,6 +17,12 @@ def load(file_object):
     return result
 
 
+def dump(obj):
+    serializer = Serializer()
+    result = serializer.serialize(obj)
+    return result
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser(
         description=(
