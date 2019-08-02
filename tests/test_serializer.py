@@ -201,7 +201,7 @@ def test_expand_list_with_blocks(serializer):
     )
     result = "".join(generator)
     print(result)
-    assert result == "dimension: dimension_one {}\ndimension: dimension_two {}"
+    assert result == "dimension: dimension_one {}\n\ndimension: dimension_two {}"
 
 
 def test_expand_list_with_pairs(serializer):
@@ -266,19 +266,19 @@ def test_serialize_view_with_multiple_dimensions(serializer):
     assert result == "".join(
         (
             "view: view_name {\n",
-            "  sql_table_name: schema.table_name ;;\n",
+            "  sql_table_name: schema.table_name ;;\n\n",
             "  dimension: a_dimension {\n",
             "    type: string\n",
             "    sql: ${TABLE}.a_dimension ;;\n",
-            "  }\n",
+            "  }\n\n",
             "  dimension: another_dimension {\n",
             "    type: number\n",
             "    sql: ${TABLE}.another_dimension ;;\n",
-            "  }\n",
+            "  }\n\n",
             "  dimension: yet_another_dimension {\n",
             "    type: yesno\n",
             "    sql: ${TABLE}.yet_another_dimension ;;\n",
-            "  }\n",
+            "  }\n\n",
             "  dimension_group: a_dimension_group {\n",
             "    type: time\n",
             "    timeframes: [\n",
