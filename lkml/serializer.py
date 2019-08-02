@@ -30,11 +30,13 @@ class Serializer:
         return "".join(chunks)
 
     def expand_list(self, key: str, values: Iterable):
-        stripped_key = key.rstrip("s")
+        modified_key = (
+            key.rstrip("s") if key not in ("filters", "allowed_values") else key
+        )
         for i, value in enumerate(values):
             if i > 0:
                 yield "\n"
-            yield from self.write_any(stripped_key, value)
+            yield from self.write_any(modified_key, value)
 
     def write_any(self, key: str, value: Any):
         if isinstance(value, str):
