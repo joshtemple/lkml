@@ -12,6 +12,7 @@ def test_serialize_dict_with_unquoted_literals(serializer):
         {"from_field": "field_name", "to_field": "field_name"}
     )
     result = "".join(generator)
+    print(result)
     assert result == "".join(
         ("{\n", "  from_field: field_name\n", "  to_field: field_name\n", "}")
     )
@@ -26,6 +27,7 @@ def test_serialize_dict_with_quoted_literals(serializer):
         }
     )
     result = "".join(generator)
+    print(result)
     assert result == "".join(
         (
             "{\n",
@@ -42,6 +44,7 @@ def test_serialize_dict_with_name(serializer):
         {"name": "dimension_name", "label": "Dimension Name"}
     )
     result = "".join(generator)
+    print(result)
     assert result == "".join(("dimension_name {\n", '  label: "Dimension Name"\n', "}"))
 
 
@@ -60,7 +63,7 @@ def test_serialize_nested_dict(serializer):
         }
     )
     result = "".join(generator)
-
+    print(result)
     assert result == "".join(
         (
             "{\n",
@@ -80,12 +83,14 @@ def test_serialize_nested_dict(serializer):
 def test_serialize_empty_dict_with_name(serializer):
     generator = serializer.serialize_dict({"name": "dimension_name"})
     result = "".join(generator)
+    print(result)
     assert result == "dimension_name {}"
 
 
 def test_serialize_empty_dict_without_name(serializer):
     generator = serializer.serialize_dict({})
     result = "".join(generator)
+    print(result)
     assert result == "{}"
 
 
@@ -94,7 +99,8 @@ def test_serialize_list_with_unquoted_literals(serializer):
         ["dimension_one", "dimension_two", "dimension_three"], key="fields"
     )
     result = "".join(generator)
-    assert result == "[dimension_one, dimension_two, dimension_three]"
+    print(result)
+    assert result == "[\n  dimension_one,\n  dimension_two,\n  dimension_three\n]"
 
 
 def test_serialize_list_with_quoted_literals(serializer):
@@ -102,7 +108,8 @@ def test_serialize_list_with_quoted_literals(serializer):
         ["column_one", "column_two", "column_three"], key="sortkeys"
     )
     result = "".join(generator)
-    assert result == '["column_one", "column_two", "column_three"]'
+    print(result)
+    assert result == '[\n  "column_one",\n  "column_two",\n  "column_three"\n]'
 
 
 def test_serialize_with_plural_key(serializer):
