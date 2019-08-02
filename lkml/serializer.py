@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Iterable, Dict, Any, Optional, Iterator
+from typing import Sequence, Dict, Any, Optional, Iterator
 from lkml.keys import QUOTED_LITERAL_KEYS, PLURAL_KEYS, EXPR_BLOCK_KEYS
 
 
@@ -37,7 +37,7 @@ class Serializer:
 
         return "".join(chain_with_newline())
 
-    def expand_list(self, key: str, values: Iterable) -> Iterator[str]:
+    def expand_list(self, key: str, values: Sequence) -> Iterator[str]:
         modified_key = (
             key.rstrip("s") if key not in ("filters", "allowed_values") else key
         )
@@ -89,7 +89,7 @@ class Serializer:
 
         yield "}"
 
-    def write_set(self, key: str, values: Iterable[str]) -> Iterator[str]:
+    def write_set(self, key: str, values: Sequence[str]) -> Iterator[str]:
         yield from self.write_key(key)
         yield "["
 
