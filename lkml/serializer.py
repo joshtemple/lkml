@@ -1,6 +1,9 @@
 from copy import deepcopy
-from typing import Iterable, Dict, Any
+from typing import Iterable, Dict, Any, Optional, Iterator
 from lkml.keys import QUOTED_LITERAL_KEYS, PLURAL_KEYS, EXPR_BLOCK_KEYS
+
+# TODO: Don't expand lists if they're short
+# TODO: Add whitespace before blocks if they aren't the 1st ones
 
 
 class Serializer:
@@ -10,23 +13,23 @@ class Serializer:
         self.indent = ""
         self.newline_indent = "\n"
 
-    def increase_indent_level(self):
+    def increase_indent_level(self) -> None:
         self.indent_level += 1
         self.update_indent()
 
-    def decrease_indent_level(self):
+    def decrease_indent_level(self) -> None:
         self.indent_level -= 1
         self.update_indent()
 
-    def update_indent(self):
+    def update_indent(self) -> None:
         self.indent = self.base_indent * self.indent_level
         self.newline_indent = "\n" + self.indent
 
     @staticmethod
-    def is_plural_key(key):
+    def is_plural_key(key) -> bool:
         return key.endswith("s") and key.rstrip("s") in PLURAL_KEYS
 
-    def serialize(self, obj: Dict):
+    def serialize(self, obj: Dict) -> str:
         def chain_with_newline():
             for key, value in deepcopy(obj).items():
                 yield from self.write_any(key, value)
@@ -34,7 +37,7 @@ class Serializer:
 
         return "".join(chain_with_newline())
 
-    def expand_list(self, key: str, values: Iterable):
+    def expand_list(self, key: str, values: Iterable) -> Iterator[str]:
         modified_key = (
             key.rstrip("s") if key not in ("filters", "allowed_values") else key
         )
@@ -43,7 +46,7 @@ class Serializer:
                 yield "\n"
             yield from self.write_any(modified_key, value)
 
-    def write_any(self, key: str, value: Any):
+    def write_any(self, key: str, value: Any) -> Iterator[str]:
         if isinstance(value, str):
             yield from self.write_pair(key, value)
 
@@ -60,7 +63,9 @@ class Serializer:
                 name = None
             yield from self.write_block(key, value, name)
 
-    def write_block(self, key: str, fields: Dict[str, Any], name: str = None):
+    def write_block(
+        self, key: str, fields: Dict[str, Any], name: str = None
+    ) -> Iterator[str]:
         yield from self.write_key(key)
         if name:
             yield f"{name} " + "{"
@@ -79,7 +84,7 @@ class Serializer:
 
         yield "}"
 
-    def write_set(self, key: str, values: Iterable[str]):
+    def write_set(self, key: str, values: Iterable[str]) -> Iterator[str]:
         yield from self.write_key(key)
         yield "["
 
@@ -95,14 +100,14 @@ class Serializer:
 
         yield "]"
 
-    def write_pair(self, key: str, value: str):
+    def write_pair(self, key: str, value: str) -> Iterator[str]:
         yield from self.write_key(key)
         yield from self.write_value(key, value)
 
-    def write_key(self, key: str):
+    def write_key(self, key: str) -> Iterator[str]:
         yield f"{self.indent}{key}: "
 
-    def write_value(self, key: str, value: str):
+    def write_value(self, key: str, value: str) -> Iterator[str]:
         if key in QUOTED_LITERAL_KEYS:
             yield '"'
             yield value
