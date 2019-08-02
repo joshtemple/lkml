@@ -8,8 +8,11 @@ from lkml.parser import Parser
 from lkml.serializer import Serializer
 
 
-def load(file_object):
-    text = file_object.read()
+def load(stream):
+    try:
+        text = stream.read()
+    except AttributeError:
+        text = stream
     lexer = Lexer(text)
     tokens = lexer.scan()
     parser = Parser(tokens)
@@ -17,10 +20,13 @@ def load(file_object):
     return result
 
 
-def dump(obj):
+def dump(obj, file_object=None):
     serializer = Serializer()
     result = serializer.serialize(obj)
-    return result
+    if file_object:
+        file_object.write(result)
+    else:
+        return result
 
 
 def parse_args(args):
