@@ -42,6 +42,35 @@ def test_write_pair_with_quoted_literal(serializer):
     assert result == 'label: "Dimension Name"'
 
 
+def test_write_set_with_unquoted_literals(serializer):
+    generator = serializer.write_set(
+        key="fields", values=["dimension_one", "dimension_two", "dimension_three"]
+    )
+    result = "".join(generator)
+    print(result)
+    assert (
+        result == "fields: [\n  dimension_one,\n  dimension_two,\n  dimension_three\n]"
+    )
+
+
+def test_write_set_with_quoted_literals(serializer):
+    generator = serializer.write_set(
+        key="sortkeys", values=["column_one", "column_two", "column_three"]
+    )
+    result = "".join(generator)
+    print(result)
+    assert (
+        result == 'sortkeys: [\n  "column_one",\n  "column_two",\n  "column_three"\n]'
+    )
+
+
+def test_write_set_with_no_values(serializer):
+    generator = serializer.write_set(key="sortkeys", values=[])
+    result = "".join(generator)
+    print(result)
+    assert result == "sortkeys: []"
+
+
 # def test_serialize_dict_with_unquoted_literals(serializer):
 #     generator = serializer.serialize_dict(
 #         key="bind_fields", obj={"from_field": "field_name", "to_field": "field_name"}

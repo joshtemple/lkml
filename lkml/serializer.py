@@ -24,7 +24,20 @@ class Serializer:
         pass
 
     def write_set(self, key: str, values: list):
-        pass
+        yield from self.write_key(key)
+        yield "["
+
+        if values:
+            self.increase_indent_level()
+            yield self.newline_indent
+            for i, value in enumerate(values):
+                if i > 0:
+                    yield f",{self.newline_indent}"
+                yield from self.write_value(key, value)
+            self.decrease_indent_level()
+            yield self.newline_indent
+
+        yield "]"
 
     def write_pair(self, key: str, value: str):
         yield from self.write_key(key)
