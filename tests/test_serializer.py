@@ -48,9 +48,7 @@ def test_write_set_with_unquoted_literals(serializer):
     )
     result = "".join(generator)
     print(result)
-    assert (
-        result == "fields: [\n  dimension_one,\n  dimension_two,\n  dimension_three\n]"
-    )
+    assert result == "fields: [dimension_one, dimension_two, dimension_three]"
 
 
 def test_write_set_with_quoted_literals(serializer):
@@ -59,8 +57,40 @@ def test_write_set_with_quoted_literals(serializer):
     )
     result = "".join(generator)
     print(result)
-    assert (
-        result == 'sortkeys: [\n  "column_one",\n  "column_two",\n  "column_three"\n]'
+    assert result == 'sortkeys: ["column_one", "column_two", "column_three"]'
+
+
+def test_write_set_with_many_values(serializer):
+    generator = serializer.write_set(
+        key="timeframes",
+        values=[
+            "raw",
+            "time",
+            "hour_of_day",
+            "date",
+            "day_of_week",
+            "week",
+            "month",
+            "quarter",
+            "year",
+        ],
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(
+        (
+            "timeframes: [\n",
+            "  raw,\n",
+            "  time,\n",
+            "  hour_of_day,\n",
+            "  date,\n",
+            "  day_of_week,\n",
+            "  week,\n",
+            "  month,\n",
+            "  quarter,\n",
+            "  year\n",
+            "]",
+        )
     )
 
 
@@ -174,7 +204,7 @@ def test_write_any_with_list_value(serializer):
     generator = serializer.write_any(key="sortkeys", value=["column_one", "column_two"])
     result = "".join(generator)
     print(result)
-    assert result == 'sortkeys: [\n  "column_one",\n  "column_two"\n]'
+    assert result == 'sortkeys: ["column_one", "column_two"]'
 
 
 def test_write_any_with_dict_value_and_name(serializer):
