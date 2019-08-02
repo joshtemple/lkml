@@ -1,3 +1,4 @@
+from typing import Iterable, Dict, Any
 from lkml.keys import QUOTED_LITERAL_KEYS, EXPR_BLOCK_KEYS
 
 
@@ -20,12 +21,22 @@ class Serializer:
         self.indent = self.base_indent * self.indent_level
         self.newline_indent = "\n" + self.indent
 
-    def write_any(self, key: str, value):
+    def expand_list(self, key: str, values: Iterable):
+        stripped_key = key.rstrip("s")
+        for i, value in enumerate(values):
+            if i > 0:
+                yield "\n"
+            yield from self.write_any(stripped_key, value)
+
+    def write_any(self, key: str, value: Any):
         if isinstance(value, str):
             yield from self.write_pair(key, value)
 
-        if isinstance(value, list):
-            yield from self.write_set(key, value)
+        if isinstance(value, (list, tuple)):
+            if all(isinstance(item, str) for item in value):
+                yield from self.write_set(key, value)
+            else:
+                yield from self.expand_list(key, value)
 
         if isinstance(value, dict):
             try:
@@ -34,7 +45,7 @@ class Serializer:
                 name = None
             yield from self.write_block(key, value, name)
 
-    def write_block(self, key: str, fields: dict, name=None):
+    def write_block(self, key: str, fields: Dict[str, Any], name: str = None):
         yield from self.write_key(key)
         if name:
             yield f"{name} " + "{"
@@ -53,7 +64,7 @@ class Serializer:
 
         yield "}"
 
-    def write_set(self, key: str, values: list):
+    def write_set(self, key: str, values: Iterable[str]):
         yield from self.write_key(key)
         yield "["
 

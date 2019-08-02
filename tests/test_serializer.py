@@ -195,64 +195,104 @@ def test_write_any_with_dict_value_and_name(serializer):
     assert result == "".join(("dimension: {\n", '  label: "Dimension Name"\n', "}"))
 
 
-# def test_serialize_with_plural_key(serializer):
-#     generator = serializer.serialize(
-#         key=None,
-#         obj={"dimensions": [{"name": "dimension_one"}, {"name": "dimension_two"}]},
-#     )
-#     # print(list(generator))
-#     result = "".join(generator)
-#     print(result)
-#     assert result == "dimension: dimension_one {}\n\ndimension: dimension_two {}"
-#
-#
-# def test_serialize_view_with_multiple_dimensions(serializer):
-#     generator = serializer.serialize(
-#         key=None,
-#         obj={
-#             "views": [
-#                 {
-#                     "sql_table_name": "schema.table_name",
-#                     "dimensions": [
-#                         {
-#                             "type": "string",
-#                             "sql": "${TABLE}.a_dimension",
-#                             "name": "a_dimension",
-#                         },
-#                         {
-#                             "type": "number",
-#                             "sql": "${TABLE}.another_dimension",
-#                             "name": "another_dimension",
-#                         },
-#                         {
-#                             "type": "yesno",
-#                             "sql": "${TABLE}.yet_another_dimension",
-#                             "name": "yet_another_dimension",
-#                         },
-#                     ],
-#                     "dimension_groups": [
-#                         {
-#                             "type": "time",
-#                             "timeframes": [
-#                                 "raw",
-#                                 "time",
-#                                 "hour_of_day",
-#                                 "date",
-#                                 "day_of_week",
-#                                 "week",
-#                                 "month",
-#                                 "quarter",
-#                                 "year",
-#                             ],
-#                             "sql": "${TABLE}.a_dimension_group",
-#                             "name": "a_dimension_group",
-#                         }
-#                     ],
-#                     "name": "view_name",
-#                 }
-#             ]
-#         },
-#     )
-#     result = "".join(generator)
-#     print(result)
-#     assert False
+def test_expand_list_with_blocks(serializer):
+    generator = serializer.expand_list(
+        key="dimensions", values=[{"name": "dimension_one"}, {"name": "dimension_two"}]
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "dimension: dimension_one {}\ndimension: dimension_two {}"
+
+
+def test_expand_list_with_pairs(serializer):
+    generator = serializer.expand_list(
+        key="includes", values=["filename_or_pattern_one", "filename_or_pattern_two"]
+    )
+    result = "".join(generator)
+    print(result)
+    assert (
+        result == "include: filename_or_pattern_one\ninclude: filename_or_pattern_two"
+    )
+
+
+def test_serialize_view_with_multiple_dimensions(serializer):
+    generator = serializer.write_any(
+        key="views",
+        value=[
+            {
+                "sql_table_name": "schema.table_name",
+                "dimensions": [
+                    {
+                        "type": "string",
+                        "sql": "${TABLE}.a_dimension",
+                        "name": "a_dimension",
+                    },
+                    {
+                        "type": "number",
+                        "sql": "${TABLE}.another_dimension",
+                        "name": "another_dimension",
+                    },
+                    {
+                        "type": "yesno",
+                        "sql": "${TABLE}.yet_another_dimension",
+                        "name": "yet_another_dimension",
+                    },
+                ],
+                "dimension_groups": [
+                    {
+                        "type": "time",
+                        "timeframes": [
+                            "raw",
+                            "time",
+                            "hour_of_day",
+                            "date",
+                            "day_of_week",
+                            "week",
+                            "month",
+                            "quarter",
+                            "year",
+                        ],
+                        "sql": "${TABLE}.a_dimension_group",
+                        "name": "a_dimension_group",
+                    }
+                ],
+                "name": "view_name",
+            }
+        ],
+    )
+    result = "".join(generator)
+    print(result)
+    assert result == "".join(
+        (
+            "view: view_name {\n",
+            "  sql_table_name: schema.table_name ;;\n",
+            "  dimension: a_dimension {\n",
+            "    type: string\n",
+            "    sql: ${TABLE}.a_dimension ;;\n",
+            "  }\n",
+            "  dimension: another_dimension {\n",
+            "    type: number\n",
+            "    sql: ${TABLE}.another_dimension ;;\n",
+            "  }\n",
+            "  dimension: yet_another_dimension {\n",
+            "    type: yesno\n",
+            "    sql: ${TABLE}.yet_another_dimension ;;\n",
+            "  }\n",
+            "  dimension_group: a_dimension_group {\n",
+            "    type: time\n",
+            "    timeframes: [\n",
+            "      raw,\n",
+            "      time,\n",
+            "      hour_of_day,\n",
+            "      date,\n",
+            "      day_of_week,\n",
+            "      week,\n",
+            "      month,\n",
+            "      quarter,\n",
+            "      year\n",
+            "    ]\n",
+            "    sql: ${TABLE}.a_dimension_group ;;\n",
+            "  }\n",
+            "}",
+        )
+    )
