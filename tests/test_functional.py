@@ -13,33 +13,47 @@ def load(filename):
 
 
 def test_block_with_single_quoted_field():
-    lookml = load("block_with_single_quoted_field.view.lkml")
-    assert lookml is not None
+    parsed = load("block_with_single_quoted_field.view.lkml")
+    assert parsed is not None
 
 
 def test_block_with_multiple_quoted_fields():
-    lookml = load("block_with_multiple_quoted_fields.view.lkml")
-    assert lookml is not None
+    parsed = load("block_with_multiple_quoted_fields.view.lkml")
+    assert parsed is not None
 
 
 def test_block_with_nested_block():
-    lookml = load("block_with_multiple_quoted_fields.view.lkml")
-    assert lookml is not None
+    parsed = load("block_with_multiple_quoted_fields.view.lkml")
+    assert parsed is not None
 
 
 def test_view_with_all_fields():
-    lookml = load("view_with_all_fields.view.lkml")
-    assert lookml is not None
+    path = Path(__file__).parent / "resources" / "view_with_all_fields.view.lkml"
+    with path.open() as file:
+        raw = file.read()
+
+    parsed = lkml.load(raw)
+    assert parsed is not None
+
+    lookml = lkml.dump(parsed)
+    assert lookml.replace("\n\n", "\n") == raw.replace("\n\n", "\n")
 
 
 def test_model_with_all_fields():
-    lookml = load("model_with_all_fields.model.lkml")
-    assert lookml is not None
+    path = Path(__file__).parent / "resources" / "model_with_all_fields.model.lkml"
+    with path.open() as file:
+        raw = file.read()
+
+    parsed = lkml.load(raw)
+    assert parsed is not None
+
+    lookml = lkml.dump(parsed)
+    assert lookml.replace("\n\n", "\n") == raw.replace("\n\n", "\n")
 
 
 def test_duplicate_top_level_keys():
-    lookml = load("duplicate_top_level_keys.view.lkml")
-    assert lookml is not None
+    parsed = load("duplicate_top_level_keys.view.lkml")
+    assert parsed is not None
 
 
 def test_duplicate_non_top_level_keys():
@@ -48,5 +62,5 @@ def test_duplicate_non_top_level_keys():
 
 
 def test_reserved_dimension_names():
-    lookml = load("block_with_reserved_dimension_names.view.lkml")
-    assert lookml is not None
+    parsed = load("block_with_reserved_dimension_names.view.lkml")
+    assert parsed is not None
