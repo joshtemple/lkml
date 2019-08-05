@@ -88,7 +88,9 @@ class Serializer:
         yield "}"
 
     def write_set(self, key: str, values: Sequence[str]) -> Iterator[str]:
+        # `suggestions` is only quoted when it's a set, so override the default
         force_quote = True if key == "suggestions" else False
+
         yield from self.write_key(key)
         yield "["
 
