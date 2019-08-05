@@ -26,127 +26,25 @@ pip install lkml
 
 You can run `lkml` from the command line or import it as a Python package.
 
-#### As a Python package (parsing and serializing)
-
 `lkml` uses a similar interface as the `json` and `yaml` Python packages. The package has two functions:
  - `load`, which accepts a file object and returns a dictionary with the parsed result
  - `dump`, which accepts a Python dictionary and an optional file object to write to. If no file object is provided, `dump` returns the serialized string directly.
 
-As an example, imagine we have the view below.
+### How does `lkml` represent LookML in Python?
 
-```lookml
-view: {
-  sql_table_name: analytics.orders ;;
+`lkml` represents LookML as a nested dictionary structure in Python. Within this documentation, we'll refer to LookML field names (e.g. `sql_table_name`, `view`, `join`) as **keys**.
 
-  dimension: order_id {
-    primary_key: yes
-    type: number
-    sql: ${TABLE}.order_id ;;
-  }
-}
-```
+During parsing,
 
-We want to change the type of the dimension `order_id` from `number` to `string`. Using `lkml`, we can parse the view into Python, modify the type, and dump it back out to LookML.
+* Blocks with keys like `dimension` and `view` become dictionaries with an additional key `name`
+* Keys with literal values like `hidden: yes` become keys and values `{"hidden": "yes"}` in their parent dictionaries
+* Lists (e.g. `fields`) become lists in their parent dictionaries
 
-First, we'll parse it into a dictionary.
+A number of LookML keys can be repeated, like `dimension`, `include`, or `view`. `lkml` collects these **repeated keys** into lists with a pluralized key (e.g. `dimension` becomes `dimensions`).
+
+Here's an example of some LookML that has been parsed into a dictionary. Note that the repeated key `join` has been transformed into a plural key `joins` represented as a list of dictionaries for each join.
 
 ```python
-import lkml
-
-with open('path/to/file.view.lkml', 'r') as file:
-    parsed = lkml.load(file)
-```
-
-The `load` function returns this dictionary.
-
-```python
-{
-  "views": [
-    {
-      "sql_table_name": "analytics.orders",
-      "dimensions": [
-        {
-          "primary_key": "yes",
-          "type": "number",
-          "sql": "${TABLE}.order_id",
-          "name": "order_id",
-        }
-      ]
-    }
-  ]
-}
-```
-
-Next, we'll modify the value of `type` in the parsed result.
-
-```python
-parsed['views'][0]['dimensions'][0]['type'] = 'string'
-```
-
-Finally, we'll dump the dictionary back to LookML in a new file.
-
-```python
-with open('path/to/new.view.lkml', 'w+') as file:
-    lkml.dump(parsed, file)
-```
-
-Here's the output.
-
-```lookml
-view: {
-  sql_table_name: analytics.orders ;;
-
-  dimension: order_id {
-    primary_key: yes
-    type: string
-    sql: ${TABLE}.order_id ;;
-  }
-}
-```
-
-#### From the command line (parsing only)
-
-`lkml` accepts a single positional argument: the path to the LookML file you wish to parse. It returns the parsed result to the console as a JSON string.
-
-Here's an example:
-
-```bash
-lkml path/to/file.view.lkml
-```
-
-If you would like to save the result to a file, use the following approach:
-
-```bash
-lkml path/to/file.view.lkml > path/to/result.json
-```
-
-When running from the command line, pass the debug flag (`-d` or `--debug`) to observe how the parser is attempting to navigate and parse the file.
-
-```bash
-lkml path/to/file.view.lkml --debug
-```
-
-The debug statements indicate how the parser is descending through the LookML, expecting certain grammar (e.g. `[pair] = key value`), and checking tokens against the expected grammar.
-
-```
-lkml.parser . Try to parse [pair] = key value
-lkml.parser . . Try to parse [key] = literal ':'
-lkml.parser . . . Check LiteralToken(type) == LiteralToken
-lkml.parser . . . Check ValueToken() == ValueToken
-lkml.parser . . Successfully parsed key.
-lkml.parser . . Try to parse [value] = literal / quoted_literal / expression_block
-lkml.parser . . . Check LiteralToken(full_outer) == QuotedLiteralToken or LiteralToken
-lkml.parser . . Successfully parsed value.
-lkml.parser . Successfully parsed pair.
-```
-
-## What does the parsed LookML look like?
-
-**From the command line**, `lkml` returns the parsed result as a JSON string. **As a Python package**, `lkml` returns a dictionary with the parsed result.
-
-A number of LookML parameters can be repeated, like `dimension`, `include`, or `view`. `lkml` collects these parameters into lists with a plural key (e.g. `dimensions`).
-
-```json
 {
   "connection": "connection_name",
   "explores": [
@@ -170,6 +68,161 @@ A number of LookML parameters can be repeated, like `dimension`, `include`, or `
     },
   ]
 }
+```
+
+### Parsing LookML in Python
+
+Parsing LookML in Python is simple with `lkml`. Imagine the view below.
+
+```lookml
+view: {
+  sql_table_name: analytics.orders ;;
+
+  dimension: order_id {
+    primary_key: yes
+    type: number
+    sql: ${TABLE}.order_id ;;
+  }
+}
+```
+`lkml.load` accepts a file object or a string and returns the parsed result as a dictionary. Here we pass it a file object.
+```python
+import lkml
+
+with open('path/to/file.view.lkml', 'r') as file:
+    parsed = lkml.load(file)
+```
+
+`load`  returns this dictionary.
+
+```python
+{
+  "views": [
+    {
+      "sql_table_name": "analytics.orders",
+      "dimensions": [
+        {
+          "primary_key": "yes",
+          "type": "number",
+          "sql": "${TABLE}.order_id",
+          "name": "order_id",
+        }
+      ]
+    }
+  ]
+}
+```
+
+
+### Serializing (generating) LookML in Python
+
+`lkml.dump` accepts a Python dictionary that represents the structure of the LookML that you would like to generate and either writes the serialized LookML to file or returns a string. `lkml` descends through the dictionary, writing LookML based on the keys and values it finds.
+
+* **If the value is a dictionary**, `lkml` creates a block. Here's an example of a block of LookML.
+
+  ```lookml
+  dimension: price {
+    type: number
+    label: "Unit Price"
+    sql: ${TABLE}.price ;;
+  }
+  ```
+
+  Blocks have an optional key called `name` (in this case, the name is `price`), and a number of key/value pairs. To name a block, include the `name` key in the dictionary to be serialized.
+
+* **If the value is a list**, `lkml` checks the key against a list of repeated keys (e.g. `dimensions`, `views`, etc.). If the key is not in the list of repeated keys, `lkml` creates a list. Here's an example of a list in LookML.
+
+  ```lookml
+  fields: [orders.price, orders.ordered_date, orders.order_id]
+  ```
+
+  If `lkml` finds a repeated key, it loops through the list and creates LookML based on the type of each element in the list.
+
+  Since some LookML fields can be repeated (e.g. `dimension`), you must represent all fields of that type as a list of objects with a plural key (e.g. `dimensions` instead of `dimension`).
+
+  For example, multiple joins on an explore would be represented as follows.
+
+  ```python
+  "joins": [
+    {
+      "relationship": "many_to_one",
+      "type": "inner",
+      "sql_on": "${view_one.dimension} = ${view_two.dimension}",
+      "name": "view_two"
+    },
+    {
+      "relationship": "one_to_many",
+      "type": "inner",
+      "sql_on": "${view_one.dimension} = ${view_three.dimension}",
+      "name": "view_three"
+    }
+  ]
+  ```
+
+* **If the value is a string**, `lkml` creates a quoted or unquoted value based on the key.
+
+Let's say we've parsed the example view from **"Parsing LookML in Python"** above. We've parsed it into a dictionary and now we want to modify it. We want to change the `type` of the dimension `order_id` from `number` to `string`. Using `lkml`, it's easy to modify the value of `type` in Python and dump it back out to LookML.
+
+First, we'll modify the value of `type` in the parsed dictionary.
+```python
+parsed['views'][0]['dimensions'][0]['type'] = 'string'
+```
+
+Next, we'll dump the dictionary back to LookML in a new file.
+
+```python
+with open('path/to/new.view.lkml', 'w+') as file:
+    lkml.dump(parsed, file)
+```
+
+Here's the output.
+
+```lookml
+view: {
+  sql_table_name: analytics.orders ;;
+
+  dimension: order_id {
+    primary_key: yes
+    type: string
+    sql: ${TABLE}.order_id ;;
+  }
+}
+```
+
+### Parsing LookML from the command line
+
+At the command line, `lkml` accepts a single positional argument: the path to the LookML file to parse. It returns the parsed result to `stdout` as a JSON string.
+
+Here's an example.
+
+```bash
+lkml path/to/file.view.lkml
+```
+
+If you would like to save the result to a file, you can pipe the output as follows.
+
+```bash
+lkml path/to/file.view.lkml > path/to/result.json
+```
+
+When running from the command line, pass the debug flag (`-d` or `--debug`) to observe how the parser is attempting to navigate and parse the file.
+
+```bash
+lkml path/to/file.view.lkml --debug
+```
+
+The debug statements indicate how the parser is descending through the LookML, expecting certain grammar (e.g. `[pair] = key value`), and checking tokens against the expected grammar.
+
+```
+lkml.parser . Try to parse [pair] = key value
+lkml.parser . . Try to parse [key] = literal ':'
+lkml.parser . . . Check LiteralToken(type) == LiteralToken
+lkml.parser . . . Check ValueToken() == ValueToken
+lkml.parser . . Successfully parsed key.
+lkml.parser . . Try to parse [value] = literal / quoted_literal / expression_block
+lkml.parser . . . Check LiteralToken(full_outer) == QuotedLiteralToken or LiteralToken
+lkml.parser . . Successfully parsed value.
+lkml.parser . Successfully parsed pair.
 ```
 
 ## How does it work?
