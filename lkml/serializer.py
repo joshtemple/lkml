@@ -10,6 +10,7 @@ from lkml.keys import (
 
 class Serializer:
     def __init__(self):
+        self.parent_key: str = None
         self.level = 0
         self.field_counter = 0
         self.base_indent = " " * 2
@@ -30,9 +31,19 @@ class Serializer:
         self.indent = self.base_indent * self.level
         self.newline_indent = "\n" + self.indent
 
-    @staticmethod
-    def is_plural_key(key) -> bool:
-        return key.endswith("s") and key.rstrip("s") in PLURAL_KEYS
+    def is_plural_key(self, key) -> bool:
+        if key.endswith("s"):
+            singular_key = key.rstrip("s")
+            return (
+                singular_key in PLURAL_KEYS
+                # `allowed_values` can be a set or a plural key depending on the parent
+                and not (
+                    singular_key == "allowed_value"
+                    and self.parent_key.rstrip("s") == "access_grant"
+                )
+            )
+        else:
+            return False
 
     def serialize(self, obj: Dict) -> str:
         def chain_with_newline():
@@ -81,6 +92,7 @@ class Serializer:
             yield "{"
 
         if fields:
+            self.parent_key = key
             self.increase_level()
             yield "\n"
             for i, (key, value) in enumerate(fields.items()):
