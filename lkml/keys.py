@@ -75,4 +75,8 @@ QUOTED_LITERAL_KEYS = (
     "include",
     "max_cache_age",
     "allowed_values",
+    "timezone",
+    "persist_for",
+    "cluster_keys",
+    "distribution",
 )
