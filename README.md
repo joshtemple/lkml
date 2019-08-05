@@ -118,6 +118,8 @@ with open('path/to/file.view.lkml', 'r') as file:
 
 `lkml.dump` accepts a Python dictionary representing the LookML that you would like to generate. If you pass a file object as an input argument, it will write the serialized result to that file. If not, it returns a LookML string.
 
+`lkml` does not validate the LookML it generates. `lkml.dump`'s only standard is that the serialized output could be successfully parsed by `lkml.load`. It's entirely possible to generate invalid LookML if the input is malformed. For help representing the input object appropriately, see the section on representing LookML in Python above.
+
 `lkml` descends through the dictionary, writing LookML based on the keys and values it finds.
 
 * **If the value is a dictionary**, `lkml` creates a block. Here's an example of a block of LookML.
