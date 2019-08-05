@@ -84,3 +84,5 @@ QUOTED_LITERAL_KEYS = (
     "property_key",
     "property_label_key",
 )
+
+KEYS_WITH_NAME_FIELDS = ("user_attribute_param", "param", "form_param", "option")

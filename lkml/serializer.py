@@ -1,6 +1,11 @@
 from copy import deepcopy
 from typing import Sequence, Dict, Any, Optional, Iterator
-from lkml.keys import QUOTED_LITERAL_KEYS, PLURAL_KEYS, EXPR_BLOCK_KEYS
+from lkml.keys import (
+    QUOTED_LITERAL_KEYS,
+    PLURAL_KEYS,
+    EXPR_BLOCK_KEYS,
+    KEYS_WITH_NAME_FIELDS,
+)
 
 
 class Serializer:
@@ -55,10 +60,10 @@ class Serializer:
                 yield from self.write_set(key, value)
 
         if isinstance(value, dict):
-            try:
-                name = value.pop("name")
-            except KeyError:
+            if key in KEYS_WITH_NAME_FIELDS or "name" not in value.keys():
                 name = None
+            else:
+                name = value.pop("name")
             yield from self.write_block(key, value, name)
 
         self.field_counter += 1
