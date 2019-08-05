@@ -38,9 +38,7 @@ class Serializer:
         return "".join(chain_with_newline())
 
     def expand_list(self, key: str, values: Sequence) -> Iterator[str]:
-        modified_key = (
-            key.rstrip("s") if key not in ("filters", "allowed_values") else key
-        )
+        modified_key = key.rstrip("s") if key not in ("filters") else key
         for i, value in enumerate(values):
             if i > 0:
                 yield "\n"
