@@ -9,7 +9,7 @@ username = os.environ["GITHUB_USERNAME"]
 password = os.environ["GITHUB_PERSONAL_ACCESS_TOKEN"]
 auth = requests.auth.HTTPBasicAuth(username, password)
 
-directory = Path("github")
+directory = Path(__file__).resolve().parent.parent / "github"
 directory.mkdir(exist_ok=True)
 
 start_url = "https://api.github.com/search/code?q=view+language:lookml"
