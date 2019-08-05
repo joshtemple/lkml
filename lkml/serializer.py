@@ -88,6 +88,7 @@ class Serializer:
         yield "}"
 
     def write_set(self, key: str, values: Sequence[str]) -> Iterator[str]:
+        force_quote = True if key == "suggestions" else False
         yield from self.write_key(key)
         yield "["
 
@@ -105,7 +106,7 @@ class Serializer:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f", "
-                    yield from self.write_value(key, value)
+                    yield from self.write_value(key, value, force_quote)
         yield "]"
 
     def write_pair(self, key: str, value: str) -> Iterator[str]:
@@ -115,8 +116,10 @@ class Serializer:
     def write_key(self, key: str) -> Iterator[str]:
         yield f"{self.indent}{key}: "
 
-    def write_value(self, key: str, value: str) -> Iterator[str]:
-        if key in QUOTED_LITERAL_KEYS:
+    def write_value(
+        self, key: str, value: str, force_quote: bool = False
+    ) -> Iterator[str]:
+        if force_quote or key in QUOTED_LITERAL_KEYS:
             yield '"'
             yield value
             yield '"'
