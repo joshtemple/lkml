@@ -24,7 +24,7 @@ pip install lkml
 
 ## How do I run it?
 
-You can run `lkml` from the command line or import it as a Python package.
+You can run `lkml` from the command line (parsing only) or import it as a Python package (parsing and serializing).
 
 `lkml` uses a similar interface as the `json` and `yaml` Python packages. The package has two functions:
  - `load`, which accepts a file object and returns a dictionary with the parsed result
@@ -36,13 +36,13 @@ You can run `lkml` from the command line or import it as a Python package.
 
 During parsing,
 
-* Blocks with keys like `dimension` and `view` become dictionaries with an additional key `name`
+* Blocks with keys like `dimension` and `view` become dictionaries. `lkml` adds a key called `name` if the block has a name (e.g. the name of the dimension or view)
 * Keys with literal values like `hidden: yes` become keys and values `{"hidden": "yes"}` in their parent dictionaries
 * Lists (e.g. `fields`) become lists in their parent dictionaries
 
 A number of LookML keys can be repeated, like `dimension`, `include`, or `view`. `lkml` collects these **repeated keys** into lists with a pluralized key (e.g. `dimension` becomes `dimensions`).
 
-Here's an example of some LookML that has been parsed into a dictionary. Note that the repeated key `join` has been transformed into a plural key `joins` represented as a list of dictionaries for each join.
+Here's an example of some LookML that has been parsed into a dictionary. Note that the repeated key `join` has been transformed into a plural key `joins`: a list of dictionaries representing each join.
 
 ```python
 {
@@ -85,7 +85,7 @@ view: {
   }
 }
 ```
-`lkml.load` accepts a file object or a string and returns the parsed result as a dictionary. Here we pass it a file object.
+`lkml.load` accepts a file object or a LookML string and returns the parsed result as a dictionary. Here we pass it a file object.
 ```python
 import lkml
 
@@ -116,7 +116,9 @@ with open('path/to/file.view.lkml', 'r') as file:
 
 ### Serializing (generating) LookML in Python
 
-`lkml.dump` accepts a Python dictionary that represents the structure of the LookML that you would like to generate and either writes the serialized LookML to file or returns a string. `lkml` descends through the dictionary, writing LookML based on the keys and values it finds.
+`lkml.dump` accepts a Python dictionary representing the LookML that you would like to generate. If you pass a file object as an input argument, it will write the serialized result to that file. If not, it returns a LookML string.
+
+`lkml` descends through the dictionary, writing LookML based on the keys and values it finds.
 
 * **If the value is a dictionary**, `lkml` creates a block. Here's an example of a block of LookML.
 
@@ -128,19 +130,19 @@ with open('path/to/file.view.lkml', 'r') as file:
   }
   ```
 
-  Blocks have an optional key called `name` (in this case, the name is `price`), and a number of key/value pairs. To name a block, include the `name` key in the dictionary to be serialized.
+  Dictionaries can have an optional key called `name` (in this case, the name of this block is `price`), as well as a number of key/value pairs. To name a block, include the `name` key in the dictionary to be serialized.
 
-* **If the value is a list**, `lkml` checks the key against a list of repeated keys (e.g. `dimensions`, `views`, etc.). If the key is not in the list of repeated keys, `lkml` creates a list. Here's an example of a list in LookML.
+* **If the value is a list**, `lkml` checks the key against a list of known repeated keys (e.g. `dimensions`, `views`, etc.). If the key is not in the list of known repeated keys, `lkml` creates a list. Here's an example of a list in LookML.
 
   ```lookml
   fields: [orders.price, orders.ordered_date, orders.order_id]
   ```
 
-  If `lkml` finds a repeated key, it loops through the list and creates LookML based on the type of each element in the list.
+  If `lkml` finds a repeated key, it loops through the elements in the list and creates LookML based on the type of each element in the list (e.g. a block for each join).
 
   Since some LookML fields can be repeated (e.g. `dimension`), you must represent all fields of that type as a list of objects with a plural key (e.g. `dimensions` instead of `dimension`).
 
-  For example, multiple joins on an explore would be represented as follows.
+  For example, multiple joins on an explore should be represented as follows.
 
   ```python
   "joins": [
@@ -159,9 +161,9 @@ with open('path/to/file.view.lkml', 'r') as file:
   ]
   ```
 
-* **If the value is a string**, `lkml` creates a quoted or unquoted value based on the key.
+* **If the value is a string**, `lkml` creates a quoted or unquoted string based on the key.
 
-Let's say we've parsed the example view from **"Parsing LookML in Python"** above. We've parsed it into a dictionary and now we want to modify it. We want to change the `type` of the dimension `order_id` from `number` to `string`. Using `lkml`, it's easy to modify the value of `type` in Python and dump it back out to LookML.
+Let's say we've parsed the example view from **"Parsing LookML in Python"** above. We've parsed it into a dictionary and now we want to modify it. We want to change the `type` of the dimension `order_id` from `number` to `string`. Using `lkml`, it's easy to modify the value of `type` in Python and dump it to LookML.
 
 First, we'll modify the value of `type` in the parsed dictionary.
 ```python
