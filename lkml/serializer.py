@@ -118,7 +118,7 @@ class Serializer:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f",{self.newline_indent}"
-                    yield from self.write_value(key, value)
+                    yield from self.write_value(key, value, force_quote)
                 self.decrease_level()
                 yield self.newline_indent
             else:
