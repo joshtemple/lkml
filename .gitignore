@@ -54,3 +54,7 @@ github/
 
 # Mac
 .DS_Store
+
+# Jupyter notebook
+*.ipynb
+.ipynb_checkpoints/
