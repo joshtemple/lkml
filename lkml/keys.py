@@ -56,7 +56,6 @@ QUOTED_LITERAL_KEYS = (
     "group_label",
     "group_item_label",
     "suggest_persist_for",
-    "suggestions",
     "default_value",
     "direction",
     "value_format",
