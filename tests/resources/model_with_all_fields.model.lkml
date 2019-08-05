@@ -20,7 +20,7 @@ named_value_format: desired_format_name {
 map_layer: identifier {
   extents_json_url: "URL to JSON extents file"
   feature_key: "Name of TopoJSON object"
-  file: "TopoJSON file name" # or use the url subparameter
+  file: "TopoJSON file name"
   format: topojson
   label: "Label I want"
   max_zoom_level: 10
@@ -28,7 +28,7 @@ map_layer: identifier {
   projection: geo_projection
   property_key: "TopoJSON property"
   property_label_key: "Label for TopoJSON property"
-  url: "URL that contains map file" # or use the file subparameter
+  url: "URL that contains map file"
 }
 
 datagroup: datagroup_name {
