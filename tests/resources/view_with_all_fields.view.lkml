@@ -25,11 +25,11 @@ view: view_name {
       expression_custom_filter: custom_filter_expression ;;
       filters: {
         field: field_name
-        value: filter_value
+        value: "filter_value"
       }
       filters: {
         field: field_name
-        value: filter_value
+        value: "filter_value"
       }
       limit: number
       sort: {
