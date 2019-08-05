@@ -78,4 +78,9 @@ QUOTED_LITERAL_KEYS = (
     "persist_for",
     "cluster_keys",
     "distribution",
+    "extents_json_url",
+    "feature_key",
+    "file",
+    "property_key",
+    "property_label_key",
 )
