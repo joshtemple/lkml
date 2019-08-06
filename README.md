@@ -75,7 +75,7 @@ Here's an example of some LookML that has been parsed into a dictionary. Note th
 Parsing LookML in Python is simple with `lkml`. Imagine the view below.
 
 ```lookml
-view: {
+view: view_name {
   sql_table_name: analytics.orders ;;
 
   dimension: order_id {
@@ -107,11 +107,14 @@ with open('path/to/file.view.lkml', 'r') as file:
           "sql": "${TABLE}.order_id",
           "name": "order_id",
         }
-      ]
+      ],
+      "name": "view_name"
     }
   ]
 }
 ```
+
+Notice how the name of the dimension, `order_id`, is preserved in the `name` key of the first element of the list value of `dimensions`. Similarly, the name of the view is also preserved.
 
 
 ### Serializing (generating) LookML in Python
@@ -120,9 +123,22 @@ with open('path/to/file.view.lkml', 'r') as file:
 
 `lkml` does not validate the LookML it generates. `lkml.dump`'s only standard is that the serialized output could be successfully parsed by `lkml.load`. It's entirely possible to generate invalid LookML if the input is malformed. For help representing the input object appropriately, see the section on representing LookML in Python above.
 
-`lkml` descends through the dictionary, writing LookML based on the keys and values it finds.
+`lkml` descends through the dictionary, writing LookML based on the **keys and values** it finds.
 
-* **If the value is a dictionary**, `lkml` creates a block. Here's an example of a block of LookML.
+* **If the value is a dictionary**, `lkml` creates a block. Dictionaries can have an optional key called `name` (in this case, the name of this dimension is `price`), as well as a number of key/value pairs. To name a block, include the `name` key in the dictionary to be serialized. Here's an example of a dictionary we might provide to `lkml.dump`.
+
+  ```python
+  {
+    "dimension": {
+      "type": "number",
+      "label": "Unit Price",
+      "sql": "${TABLE}.price",
+      "name": "price"
+    }
+  }
+  ```
+
+  And here's the resulting block of LookML that is generated.
 
   ```lookml
   dimension: price {
@@ -132,17 +148,7 @@ with open('path/to/file.view.lkml', 'r') as file:
   }
   ```
 
-  Dictionaries can have an optional key called `name` (in this case, the name of this block is `price`), as well as a number of key/value pairs. To name a block, include the `name` key in the dictionary to be serialized.
-
-* **If the value is a list**, `lkml` checks the key against a list of known repeated keys (e.g. `dimensions`, `views`, etc.). If the key is not in the list of known repeated keys, `lkml` creates a list. Here's an example of a list in LookML.
-
-  ```lookml
-  fields: [orders.price, orders.ordered_date, orders.order_id]
-  ```
-
-  If `lkml` finds a repeated key, it loops through the elements in the list and creates LookML based on the type of each element in the list (e.g. a block for each join).
-
-  Since some LookML fields can be repeated (e.g. `dimension`), you must represent all fields of that type as a list of objects with a plural key (e.g. `dimensions` instead of `dimension`).
+* **If the value is a list**, `lkml` checks the key against a list of known repeatable keys. In the example above, we used a nested dictionary to represent a dimension block. However, LookML allows multiple blocks with the same key (e.g. `dimension`, `view`, `set`, etc.). Since Python dictionaries cannot have duplicate keys, we represent these repeated keys in our dictionary as a single key/value pair, where the key is a pluralized version of the original key (`dimensions` instead of `dimension`), and the value is a list of objects that represent each individual field.
 
   For example, multiple joins on an explore should be represented as follows.
 
@@ -163,7 +169,13 @@ with open('path/to/file.view.lkml', 'r') as file:
   ]
   ```
 
-* **If the value is a string**, `lkml` creates a quoted or unquoted string based on the key.
+  If the key is _not_ in the list of known repeated keys, `lkml` creates a list. Here's an example of a list in LookML.
+
+  ```lookml
+  fields: [orders.price, orders.ordered_date, orders.order_id]
+  ```
+
+* **If the value is a string**, `lkml` creates a quoted or unquoted string based on the key. For example, the value for `label` would be quoted, but the value for `hidden` would not. Values with keys like `sql_table_name` or `html` that indicate an expression automatically have a trailing space and `;;` appended.
 
 Let's say we've parsed the example view from **"Parsing LookML in Python"** above. We've parsed it into a dictionary and now we want to modify it. We want to change the `type` of the dimension `order_id` from `number` to `string`. Using `lkml`, it's easy to modify the value of `type` in Python and dump it to LookML.
 
