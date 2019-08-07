@@ -30,8 +30,8 @@ pip-log.txt
 .tox
 nosetests.xml
 coverage.xml
-test-reports
-.pytest_cache
+test-reports/
+.pytest_cache/
 
 # Complexity
 output/*.html

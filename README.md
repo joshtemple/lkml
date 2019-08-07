@@ -131,8 +131,26 @@ would be broken into the tuple of tokens:
 
 ## Testing
 
-You can run the test suite locally using docker.
+This project uses CircleCI as a CI provider.
+The code can be tested locally, however, using `docker-compose`.
 
 ```bash
 docker-compose run --rm test
 ```
+
+### What does the test suite run?
+
+* [`pytest`](https://docs.pytest.org/en/latest/) for unit testing
+* [`mypy`](http://mypy-lang.org/) for type checking
+* [`flake8`](http://flake8.pycqa.org/en/latest/) for enforcing the Python style guide
+* [`bandit`](https://bandit.readthedocs.io/en/latest/) for checking for security vulnerabilities
+* [`black`](https://black.readthedocs.io/en/stable/) for code formatting
+  * When run locally, the test suite will auto-format the codebase.
+  * When run in CircleCI, unformatted code will cause the test suite to fail.
+* [`iSort`](https://isort.readthedocs.io/en/latest/) for sorting imports
+  * When run locally, the test suite will auto-sort imports in the codebase.
+  * When run in CircleCI, unsorted imports will cause the test suite to fail.
+
+### How are the tests configured?
+
+Custom configuration options are set in `setup.cfg`, `pyproject.toml`, or `.bandit`, depending on the config options supported by each tool.
