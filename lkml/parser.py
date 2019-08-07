@@ -331,7 +331,7 @@ class Parser:
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         values = []
 
-        if self.check(tokens.LiteralToken) or self.check(tokens.QuotedLiteralToken):
+        if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
             values.append(self.consume_token_value())
         else:
             return None
@@ -342,7 +342,7 @@ class Parser:
             else:
                 return None
 
-            if self.check(tokens.LiteralToken) or self.check(tokens.QuotedLiteralToken):
+            if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
                 values.append(self.consume_token_value())
             elif self.check(tokens.ListEndToken):
                 break
