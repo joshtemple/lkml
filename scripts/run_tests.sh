@@ -20,7 +20,7 @@ mypy lkml
 echo "Running black..."
 black ${BLACK_ACTION} .
 
-echo "Running iSort..."
+echo "Running isort..."
 isort -rc ${ISORT_ACTION} lkml scripts
 
 echo "Running flake8..."
