@@ -1,6 +1,6 @@
 from pathlib import Path
-from setuptools import setup, find_packages
-from codecs import open
+
+from setuptools import find_packages, setup
 
 __version__ = "0.1.2"
 
@@ -31,6 +31,14 @@ setup(
     packages=find_packages(exclude=["docs", "tests*", "scripts"]),
     include_package_data=True,
     author="Josh Temple",
-    tests_require=["pytest"],
+    tests_require=[
+        "bandit",
+        "black",
+        "flake8",
+        "isort",
+        "mypy",
+        "pytest",
+        "pytest-cov",
+    ],
     author_email="",
 )
