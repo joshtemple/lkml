@@ -1,5 +1,7 @@
 from pathlib import Path
+
 import pytest
+
 import lkml
 
 
@@ -42,7 +44,7 @@ def test_duplicate_top_level_keys():
 
 def test_duplicate_non_top_level_keys():
     with pytest.raises(KeyError):
-        lookml = load("duplicate_non_top_level_keys.view.lkml")
+        load("duplicate_non_top_level_keys.view.lkml")
 
 
 def test_reserved_dimension_names():

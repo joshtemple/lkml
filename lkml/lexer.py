@@ -1,4 +1,5 @@
-from typing import Tuple, List
+from typing import List, Tuple
+
 import lkml.tokens as tokens
 
 EXPR_BLOCK_KEYS = (
@@ -21,6 +22,17 @@ EXPR_BLOCK_KEYS = (
     "sql_on",
     "sql",
 )
+
+CH_MAPPING = {
+    "\0": tokens.StreamEndToken,
+    "{": tokens.BlockStartToken,
+    "}": tokens.BlockEndToken,
+    "[": tokens.ListStartToken,
+    "]": tokens.ListEndToken,
+    ",": tokens.CommaToken,
+    ":": tokens.ValueToken,
+    ";": tokens.ExpressionBlockEndToken,
+}
 
 
 class Lexer:
@@ -62,33 +74,18 @@ class Lexer:
             self.scan_until_token()
             ch = self.peek()
             if ch == "\0":
-                self.tokens.append(tokens.StreamEndToken(self.line_number))
+                self.tokens.append(CH_MAPPING[ch](self.line_number))
                 break
-            elif ch == "{":
-                self.advance()
-                self.tokens.append(tokens.BlockStartToken(self.line_number))
-            elif ch == "}":
-                self.advance()
-                self.tokens.append(tokens.BlockEndToken(self.line_number))
-            elif ch == "[":
-                self.advance()
-                self.tokens.append(tokens.ListStartToken(self.line_number))
-            elif ch == "]":
-                self.advance()
-                self.tokens.append(tokens.ListEndToken(self.line_number))
-            elif ch == ",":
-                self.advance()
-                self.tokens.append(tokens.CommaToken(self.line_number))
-            elif ch == ":":
-                self.advance()
-                self.tokens.append(tokens.ValueToken(self.line_number))
             elif ch == ";":
                 if self.peek_multiple(2) == ";;":
                     self.advance(2)
-                    self.tokens.append(tokens.ExpressionBlockEndToken(self.line_number))
+                    self.tokens.append(CH_MAPPING[ch](self.line_number))
             elif ch == '"':
                 self.advance()
                 self.tokens.append(self.scan_quoted_literal())
+            elif ch in CH_MAPPING.keys():
+                self.advance()
+                self.tokens.append(CH_MAPPING[ch](self.line_number))
             elif self.check_for_expression_block(self.peek_multiple(25)):
                 self.tokens.append(self.scan_literal())
                 self.scan_until_token()

@@ -1,7 +1,8 @@
 import time
 from pathlib import Path
+from statistics import mean, stdev
+
 import lkml
-from statistics import stdev, mean
 
 times = []
 
