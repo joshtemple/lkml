@@ -1,10 +1,11 @@
 from copy import deepcopy
-from typing import Sequence, Dict, Any, Optional, Iterator
+from typing import Any, Dict, Iterator, Sequence
+
 from lkml.keys import (
-    QUOTED_LITERAL_KEYS,
-    PLURAL_KEYS,
     EXPR_BLOCK_KEYS,
     KEYS_WITH_NAME_FIELDS,
+    PLURAL_KEYS,
+    QUOTED_LITERAL_KEYS,
 )
 
 
