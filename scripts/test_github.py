@@ -1,6 +1,7 @@
-from pathlib import Path
 import logging
 import shutil
+from pathlib import Path
+
 import lkml
 
 logging.basicConfig(level=logging.INFO)
