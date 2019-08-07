@@ -1,15 +1,8 @@
 import io
-from pathlib import Path
-from unittest.mock import patch
 import logging
-import pytest
+from unittest.mock import patch
+
 import lkml
-
-
-@pytest.fixture
-def lookml_path():
-    path = Path(__file__).parent / "resources" / "view_with_all_fields.view.lkml"
-    return str(path)
 
 
 def test_debug_flag_is_parsed_to_log_level_debug(lookml_path):

@@ -1,32 +1,7 @@
-from typing import Sequence
 import pytest
+
 import lkml
 import lkml.tokens as tokens
-
-
-@pytest.fixture
-def parser():
-    stream = (
-        tokens.StreamStartToken(1),
-        tokens.LiteralToken("view", 1),
-        tokens.ValueToken(1),
-        tokens.LiteralToken("view_name", 1),
-        tokens.BlockStartToken(1),
-        tokens.LiteralToken("sql_table_name", 2),
-        tokens.ValueToken(2),
-        tokens.ExpressionBlockToken("schema.table_name", 2),
-        tokens.ExpressionBlockEndToken(2),
-        tokens.LiteralToken("drill_fields", 3),
-        tokens.ValueToken(3),
-        tokens.ListStartToken(3),
-        tokens.LiteralToken("view_name.field_one", 3),
-        tokens.CommaToken(3),
-        tokens.LiteralToken("view_name.field_two", 3),
-        tokens.ListEndToken(3),
-        tokens.BlockEndToken(4),
-        tokens.StreamEndToken(4),
-    )
-    return lkml.parser.Parser(stream)
 
 
 def test_tokens__repr__():
@@ -94,7 +69,7 @@ def test_consume_token_value_does_not_return_token(parser):
 
 def test_consume_token_value_raises_error_if_not_found(parser):
     with pytest.raises(AttributeError):
-        result = parser.consume_token_value()
+        parser.consume_token_value()
 
 
 def test_check_returns_true_for_single_valid_type(parser):
@@ -201,7 +176,7 @@ def test_parse_key_without_value_token():
 
 def test_debug_logging_statements_execute_successfully(parser):
     parser.log_debug = True
-    result = parser.parse()
+    parser.parse()
 
 
 def test_update_tree_with_long_dict_raises_key_error(parser):
@@ -265,7 +240,7 @@ def test_parse_nonmatching_expression_raises_syntax_error():
     stream = (tokens.LiteralToken("view", 1), tokens.StreamEndToken(1))
     parser = lkml.parser.Parser(stream)
     with pytest.raises(SyntaxError):
-        result = parser.parse_expression()
+        parser.parse_expression()
 
 
 def test_parse_pair_with_literal():

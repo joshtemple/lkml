@@ -1,12 +1,7 @@
 import pytest
+
 import lkml
 import lkml.tokens as tokens
-
-
-@pytest.fixture
-def lexer():
-    text = "Some sample text for testing."
-    return lkml.Lexer(text)
 
 
 def test_peek_does_not_advance_index(lexer):

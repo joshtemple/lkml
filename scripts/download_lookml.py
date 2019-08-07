@@ -1,7 +1,8 @@
-import re
-from pathlib import Path
 import os
+import re
 from base64 import b64decode
+from pathlib import Path
+
 import requests
 
 username = os.environ["GITHUB_USERNAME"]
@@ -26,7 +27,7 @@ with requests.Session() as session:
 
         finds = re.findall(
             r"<(https://api.github.com/search/code\?"
-            'q=view\+language%3Alookml&page=\d+)>; rel="next"',
+            r'q=view\+language%3Alookml&page=\d+)>; rel="next"',
             links,
         )
         if finds:

@@ -1,7 +1,8 @@
-import logging
-import sys
 import argparse
 import json
+import logging
+import sys
+
 from lkml.lexer import Lexer
 from lkml.parser import Parser
 
