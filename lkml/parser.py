@@ -1,16 +1,5 @@
-import logging
-from typing import Any, List, Optional, Sequence, Type
+r"""LookML grammar.
 
-import lkml.tokens as tokens
-from lkml.keys import PLURAL_KEYS
-
-# Delimiter during logging to show parse tree depth
-DELIMITER = ". "
-
-"""
-
-LookML grammar
----
 expression = (block / pair / list)*
 
 block = key literal? "{" expression "}"
@@ -33,25 +22,69 @@ literal = [0-9A-Za-z_]+
 
 """
 
+import logging
+from typing import Any, List, Optional, Sequence, Type
+
+import lkml.tokens as tokens
+from lkml.keys import PLURAL_KEYS
+
+# Delimiter during logging to show parse tree depth
+DELIMITER = ". "
+
 
 class Parser:
+    """LookML parser.
+
+    Attributes:
+        tokens (Sequence[tokens.Token]): validated tokens from input stream
+        index (int): position in token sequence that is being evaluated
+        progress (int): tracks position of parser as it is in progress of
+            evaluating an expression
+        logger (logging.Logger)
+        depth (int): tracks level of recursion into nested expressions
+        log_debug (bool): If debug messages should be logged
+
+    """
+
     def __init__(self, stream: Sequence[tokens.Token]):
+        """Instantiate Parser.
+
+        Args:
+            stream (Sequence[tokens.Token]): Lexed tokens to parse
+
+        Raises:
+            TypeError: Invalid token in stream
+
+        """
         for token in stream:
             if not isinstance(token, tokens.Token):
                 raise TypeError(
                     f"Type {type(token)} for {token} is not a valid token type."
                 )
         self.tokens = stream
-        self.index = 0
-        self.progress = 0
+        self.index: int = 0
+        self.progress: int = 0
         self.logger = logging.getLogger(__name__)
-        self.depth = -1
-        self.log_debug = self.logger.isEnabledFor(logging.DEBUG)
+        self.depth: int = -1
+        self.log_debug: bool = self.logger.isEnabledFor(logging.DEBUG)
 
     def jump_to_index(self, index: int):
+        """Set parser index.
+
+        Args:
+            index (int): Position in stream to set
+
+        """
         self.index = index
 
-    def backtrack_if_none(method):
+    def backtrack_if_none(method):  # noqa: D202
+        """Backtrack when recursively descending.
+
+        Args:
+            method (Callable): Decorated method
+
+        """
+
         def wrapper(self, *args, **kwargs):
             mark = self.index
             self.depth += 1
@@ -67,20 +100,54 @@ class Parser:
         return wrapper
 
     def peek(self) -> tokens.Token:
+        """Get token in LookML stream at the current index.
+
+        Returns:
+            tokens.Token: token at current index
+
+        """
         return self.tokens[self.index]
 
     def advance(self, length: int = 1):
+        """Move the parser index forward.
+
+        Args:
+            length (int, optional): Number of positions forward to move the index.
+                Defaults to 1.
+
+        """
         self.index += length
 
     def consume(self) -> tokens.Token:
+        """Get the token at the current index and advance the index.
+
+        Returns:
+            tokens.Token: token at the current index
+
+        """
         self.advance()
         return self.tokens[self.index - 1]
 
     def consume_token_value(self) -> Any:
+        """Get the value of the token at the current index and advance the index.
+
+        Returns:
+            Any: token at the current index
+
+        """
         token = self.consume()
         return token.value
 
     def check(self, *token_types: Type[tokens.Token]) -> bool:
+        """Compare token at current index against specified token types.
+
+        Raises:
+            TypeError: one or more of the tokens passed as args are of an invalid type
+
+        Returns:
+            bool: True if current token matches one of the token_types
+
+        """
         if self.log_debug:
             self.logger.debug(
                 "%sCheck %s == %s",
@@ -97,9 +164,37 @@ class Parser:
             return False
 
     def parse(self) -> List:
+        """Wrapper for expression parser."""
         return self.parse_expression()
 
     def update_tree(self, target: dict, update: dict):
+        """Add new elements to the parsed LookML dictionary.
+
+        Args:
+            target (dict): Parsed Lookml
+            update (dict): New element to be added
+
+        Raises:
+            KeyError: If more than one element is added at one time
+            KeyError: If key already exists and would overwrite existing value
+
+        Examples:
+            >>> update_tree({"name": "foo"}, {"sql_table_name": "foo.bar"})
+                {"name": "foo", "sql_table_name": "foo.bar"}
+            >>> update_tree({"name": "foo"}, {"dimension": {"sql": "${TABLE}.foo", "name": "foo"}})
+                {"name": "foo", "dimensions": [{"sql": "${TABLE}.foo", "name": "foo"}]}
+            >>> update_tree(
+                    {"name": "foo", "dimensions": [{"sql": "${TABLE}.foo", "name": "foo"}]},
+                    {"dimension": {"sql": "${TABLE}.bar", "name": "bar"}})
+                {
+                    "name": "foo",
+                    "dimensions": [
+                        {"sql": "${TABLE}.foo", "name": "foo"},
+                        {"sql": "${TABLE}.bar", "name": "bar"},
+                    ],
+                }
+
+        """
         keys = tuple(update.keys())
         if len(keys) > 1:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
@@ -129,6 +224,17 @@ class Parser:
 
     @backtrack_if_none
     def parse_expression(self) -> dict:
+        """Parse LookML token into Python object.
+
+        Checks if expression is a block, pair, or list.
+
+        Raises:
+            SyntaxError: If parsed token does not match known LookML syntax
+
+        Returns:
+            dict: LookML expression as dictionary
+
+        """
         if self.log_debug:
             grammar = "[expression] = (block / pair / list)*"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
@@ -165,6 +271,28 @@ class Parser:
 
     @backtrack_if_none
     def parse_block(self) -> Optional[dict]:
+        """Parse LookML expression block.
+
+        Examples:
+            Input (token stream):
+            ------
+            "dimension: foo {
+                label: "Foo"
+                sql: ${TABLE}.foo ;;
+            }"
+
+            Output (dictionary):
+            -------
+            {
+                "name": "foo",
+                "label": "Foo",
+                "sql": "${TABLE}.foo"
+            }
+
+        Returns:
+            Optional[dict]
+
+        """
         if self.log_debug:
             grammar = "[block] = key literal? '{' expression '}'"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
@@ -202,17 +330,29 @@ class Parser:
 
     @backtrack_if_none
     def parse_pair(self) -> Optional[dict]:
+        """Parse LookML key/value pair.
+
+        Examples:
+            Input (token stream):
+            ------
+            label: "Foo"
+
+            Output (dictionary):
+            -------
+            {"label": "Foo"}
+
+        Returns:
+            Optional[dict]
+
+        """
         if self.log_debug:
             grammar = "[pair] = key value"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         key = self.parse_key()
-        if key is None:
-            return key
-
         value = self.parse_value()
-        if value is None:
-            return value
+        if key is None or value is None:
+            return None
 
         pair = {key: value}
         self.logger.debug(self.depth * DELIMITER + "Successfully parsed pair.")
@@ -220,6 +360,23 @@ class Parser:
 
     @backtrack_if_none
     def parse_key(self) -> Optional[str]:
+        """Parse LookML token stream to find a key literal.
+
+        If one is found, advance to the next index.
+
+        Examples:
+            Input (token stream):
+            ------
+            label: "Foo"
+
+            Output (str):
+            -------
+            "label"
+
+        Returns:
+            Optional[str]
+
+        """
         if self.log_debug:
             grammar = "[key] = literal ':'"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
@@ -239,6 +396,25 @@ class Parser:
 
     @backtrack_if_none
     def parse_value(self) -> Optional[str]:
+        """Parse LookML token stream to find a value.
+
+        If one is found, advance to the next index.
+
+        Examples:
+            Input (token stream):
+            ------
+            1) "Foo"
+            2) "${TABLE}.foo ;;"
+
+            Output (str):
+            -------
+            1) "Foo"
+            2) "${TABLE}.foo"
+
+        Returns:
+            Optional[str]
+
+        """
         if self.log_debug:
             grammar = "[value] = literal / quoted_literal / expression_block"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
@@ -265,6 +441,23 @@ class Parser:
 
     @backtrack_if_none
     def parse_list(self) -> Optional[dict]:
+        """Parse LookML token stream to find a list.
+
+        If one is found, advance to the next index.
+
+        Examples:
+            Input (token stream):
+            ------
+            "timeframes: [date, week]"
+
+            Output (dictionary):
+            -------
+            {"timeframes": ["date", "week",]}
+
+        Returns:
+            Optional[str]
+
+        """
         if self.log_debug:
             grammar = "[list] = key '[' csv? ']'"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
@@ -294,6 +487,25 @@ class Parser:
 
     @backtrack_if_none
     def parse_csv(self) -> Optional[list]:
+        """Parse comma separated list string into Python list.
+
+        If one is found, advance to the next index.
+
+        Examples:
+        Input (token stream):
+        ------
+        1) "[date, week]"
+        2) "['foo', 'bar']"
+
+        Output (dictionary):
+        -------
+        1) ["date", "week",]
+        2) ["foo", "bar",]
+
+        Returns:
+            Optional[list]
+
+        """
         if self.log_debug:
             grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)

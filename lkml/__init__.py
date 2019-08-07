@@ -1,14 +1,25 @@
+"""Public interface for lkml."""
 import argparse
 import json
 import logging
 import sys
+from typing import IO, Any, List
 
 from lkml.lexer import Lexer
 from lkml.parser import Parser
 from lkml.serializer import Serializer
 
 
-def load(stream):
+def load(stream: IO[Any]) -> List[dict]:
+    """Parse LookML from a stream into a Python object
+
+    Args:
+        stream (TextIO): File or stream containing raw LookML
+
+    Returns:
+        List[dict]: Parsed LookML
+
+    """
     try:
         text = stream.read()
     except AttributeError:
@@ -29,7 +40,8 @@ def dump(obj, file_object=None):
         return result
 
 
-def parse_args(args):
+def parse_args(args: list) -> argparse.Namespace:
+    """Parse CLI arguments."""
     parser = argparse.ArgumentParser(
         description=(
             "A blazing fast LookML parser, implemented in pure Python. "
@@ -54,6 +66,7 @@ def parse_args(args):
 
 
 def cli():
+    """CLI for lkml."""
     logger = logging.getLogger()
     logger.setLevel(logging.WARN)
 

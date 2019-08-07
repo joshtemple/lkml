@@ -1,3 +1,4 @@
+"""Tokenize LookML."""
 from typing import List, Tuple
 
 import lkml.tokens as tokens
@@ -16,26 +17,73 @@ CH_MAPPING = {
 
 
 class Lexer:
+    """Tokenize LookML.
+
+    Attributes:
+        text (str): Raw LookML to parse, padded with null character to denote
+            end of stream
+        index (int): Position of lexer as it traverses through the text
+        tokens (List[tokens.Token]): Tokenized elements from text
+        line_number (int): Position of lexer (in lines) as it traverses
+            through the text
+
+    """
+
     def __init__(self, text: str):
-        self.text = text + "\0"
-        self.index = 0
+        """Initialize Lexer.
+
+        Args:
+            text (str): raw LookML
+
+        """
+        self.text: str = text + "\0"
+        self.index: int = 0
         self.tokens: List[tokens.Token] = []
-        self.line_number = 1
+        self.line_number: int = 1
 
     def peek(self) -> str:
+        """Get character in LookML text at the current index.
+
+        Returns:
+            str: Character at current index
+
+        """
         return self.text[self.index]
 
     def peek_multiple(self, length: int) -> str:
+        """Get n characters in LookML text beginning at the current index.
+
+        Args:
+            length (int): Number of characters, n, to obtain
+
+        Returns:
+            str: LookML characters
+
+        """
         return self.text[self.index : self.index + length]
 
     def advance(self, length: int = 1):
+        """Move the lexer index forward.
+
+        Args:
+            length (int, optional): Number of positions forward to move the index.
+                Defaults to 1.
+
+        """
         self.index += length
 
     def consume(self) -> str:
+        """Get the character at the current index and advance the index.
+
+        Returns:
+            str: LookML character at the current index
+
+        """
         self.advance()
         return self.text[self.index - 1]
 
     def scan_until_token(self):
+        """Advance through LookML until valid token is found."""
         found = False
         while not found:
             while self.peek() in "\n\t ":
@@ -49,6 +97,12 @@ class Lexer:
                 found = True
 
     def scan(self) -> Tuple[tokens.Token, ...]:
+        """Tokenize LookML.
+
+        Returns:
+            Tuple[tokens.Token, ...]: Tokenized LookML
+
+        """
         self.tokens.append(tokens.StreamStartToken(self.line_number))
         while True:
             self.scan_until_token()
@@ -81,10 +135,25 @@ class Lexer:
         return tuple(self.tokens)
 
     @staticmethod
-    def check_for_expression_block(string: str):
+    def check_for_expression_block(string: str) -> bool:
+        """Check if input is an expression block.
+
+        Args:
+            string (str): Input string
+
+        Returns:
+            bool: True if string is an expression block
+
+        """
         return any(string.startswith(key + ":") for key in EXPR_BLOCK_KEYS)
 
     def scan_expression_block(self) -> tokens.ExpressionBlockToken:
+        """Tokenize expression block.
+
+        Returns:
+            tokens.ExpressionBlockToken:
+
+        """
         chars = ""
         while self.peek_multiple(2) != ";;":
             if self.peek() == "\n":
@@ -96,12 +165,24 @@ class Lexer:
         return tokens.ExpressionBlockToken(chars, self.line_number)
 
     def scan_literal(self) -> tokens.LiteralToken:
+        """Tokenize literals.
+
+        Returns:
+            tokens.LiteralToken
+
+        """
         chars = ""
         while self.peek() not in "\0 \n\t:}{,]":
             chars += self.consume()
         return tokens.LiteralToken(chars, self.line_number)
 
     def scan_quoted_literal(self) -> tokens.QuotedLiteralToken:
+        """Tokenize quoted literals.
+
+        Returns:
+            tokens.QuotedLiteralToken
+
+        """
         chars = ""
         while True:
             ch = self.peek()
