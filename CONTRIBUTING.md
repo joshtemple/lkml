@@ -35,6 +35,14 @@ The test suite for `lkml` is defined in `scripts/run_tests.sh` for local testing
 
 When run locally, `black` and `isort` will automatically format code. When run as part of a CI build, they only check for proper formatting and will fail the build if the formatting is incorrect.
 
+### Testing against public LookML from GitHub
+
+`lkml` contains some helpful scripts to download public LookML from GitHub and run the parser and serializer against the downloaded files. This is an excellent way to test your changes against a large variety of LookML.
+
+`scripts/download_lookml.py` will query the GitHub API and download a significant amount of LookML. You'll need to set the environment variables `GITHUB_USERNAME` and `GITHUB_PERSONAL_ACCESS_TOKEN` with your GitHub credentials before running this script.
+
+Once you have the LookML downloaded, you can run `scripts/test_github.py`, which will attempt to parse, dump, and re-parse each file. Any files that error out will be copied to `github/load_errors` or `github/dump_errors` for further debugging.
+
 ## Submitting a pull request
 
 Once you've completed development, testing, docstrings, and type hinting, you're ready to submit a pull request. Create a pull request from the feature branch in your fork to `master` in the main repository.
