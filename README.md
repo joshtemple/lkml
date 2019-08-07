@@ -128,3 +128,11 @@ would be broken into the tuple of tokens:
  If it doesn't find a match for a rule, it backtracks to a previously marked point in the stream and tries the next available rule. If the parser runs out of rules to try, it raises a syntax error.
 
  As the parser finds matches, it adds the relevant token values to its syntax tree, which is eventually returned to the user if the input parses successfully.
+
+## Testing
+
+You can run the test suite locally using docker.
+
+```bash
+docker-compose run --rm test
+```
