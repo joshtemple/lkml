@@ -24,7 +24,7 @@ echo "Running iSort..."
 isort -rc ${ISORT_ACTION} lkml scripts
 
 echo "Running flake8..."
-flake8 .
+flake8 lkml scripts
 
 echo "Running bandit..."
 bandit -r .
