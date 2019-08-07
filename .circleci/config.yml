@@ -34,7 +34,7 @@ jobs:
           name: Run mypy for type checking
           command: |
             . venv/bin/activate
-            mypy lkml]
+            mypy lkml
 
       - run:
           name: Run Black for formatting
