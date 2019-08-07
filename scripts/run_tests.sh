@@ -15,7 +15,7 @@ echo "Running Pytest..."
 pytest tests
 
 echo "Running MyPy..."
-mypy lkml
+mypy lkml scripts
 
 echo "Running black..."
 black ${BLACK_ACTION} .
@@ -28,3 +28,6 @@ flake8 lkml scripts
 
 echo "Running bandit..."
 bandit -r .
+
+echo "Running PyDocStyle..."
+pydocstyle lkml --match='(?!__init__)(?!test_).*\.py'
