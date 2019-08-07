@@ -46,7 +46,7 @@ jobs:
           name: Check flake8
           command: |
             . venv/bin/activate
-            flake8
+            flake8 lkml scripts
 
       - run:
           name: Check bandit security warnings
