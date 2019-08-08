@@ -14,9 +14,10 @@ class Serializer:
     """Serialize LookML.
 
     Attributes:
-        parent_key (str): TODO
+        parent_key (str): Name of key at previous level in a LookML block
         level (int): Number of indentations for current position
-        field_counter (int): TODO
+        field_counter (int): Tracks position of current field when serializing
+            iterable objects
         base_indent (str): Representation of one tab
         indent (str): Indentation for current position
         newline_indent (str): Indentation for newline continuations
