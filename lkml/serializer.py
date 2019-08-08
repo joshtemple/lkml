@@ -113,20 +113,14 @@ class Serializer:
         yield "["
 
         if values:
-            if len(values) > 5:
-                self.increase_level()
-                yield self.newline_indent
-                for i, value in enumerate(values):
-                    if i > 0:
-                        yield f",{self.newline_indent}"
-                    yield from self.write_value(key, value, force_quote)
-                self.decrease_level()
-                yield self.newline_indent
-            else:
-                for i, value in enumerate(values):
-                    if i > 0:
-                        yield f", "
-                    yield from self.write_value(key, value, force_quote)
+            self.increase_level()
+            yield self.newline_indent
+            for i, value in enumerate(values):
+                if i > 0:
+                    yield f",{self.newline_indent}"
+                yield from self.write_value(key, value, force_quote)
+            self.decrease_level()
+            yield self.newline_indent
         yield "]"
 
     def write_pair(self, key: str, value: str) -> Iterator[str]:
