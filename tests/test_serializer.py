@@ -222,13 +222,6 @@ def test_write_any_with_dict_value_and_name(serializer):
     )
 
 
-def test_write_any_with_dict_value_and_name(serializer):
-    generator = serializer.write_any(key="dimension", value={"label": "Dimension Name"})
-    result = "".join(generator)
-    print(result)
-    assert result == "".join(("dimension: {\n", '  label: "Dimension Name"\n', "}"))
-
-
 def test_expand_list_with_blocks(serializer):
     generator = serializer.expand_list(
         key="dimensions", values=[{"name": "dimension_one"}, {"name": "dimension_two"}]
