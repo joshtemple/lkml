@@ -43,12 +43,18 @@ datagroup: datagroup_name {
 
 access_grant: access_grant_name {
   user_attribute: user_attribute_name
-  allowed_values: ["value_1", "value_2"]
+  allowed_values: [
+    "value_1",
+    "value_2"
+  ]
 }
 
 access_grant: access_grant_name {
   user_attribute: user_attribute_name
-  allowed_values: ["value_1", "value_2"]
+  allowed_values: [
+    "value_1",
+    "value_2"
+  ]
 }
 
 explore: view_name {
@@ -56,14 +62,23 @@ explore: view_name {
   label: "desired label name"
   group_label: "label to use as a heading in the Explore menu"
   view_label: "field picker heading to use for the Explore's fields"
-  extends: [explore_name, explore_name]
+  extends: [
+    explore_name,
+    explore_name
+  ]
   extension: required
   symmetric_aggregates: yes
   hidden: yes
-  fields: [field_or_set, field_or_set]
+  fields: [
+    field_or_set,
+    field_or_set
+  ]
 
   sql_always_where: SQL WHERE condition ;;
-  required_access_grants: [access_grant_name, access_grant_name]
+  required_access_grants: [
+    access_grant_name,
+    access_grant_name
+  ]
 
   always_filter: {
     filters: {
@@ -77,7 +92,10 @@ explore: view_name {
       field: field_name
       value: "looker filter expression"
     }
-    unless: [field_or_set, field_or_set]
+    unless: [
+      field_or_set,
+      field_or_set
+    ]
   }
 
   access_filter: {
@@ -85,7 +103,10 @@ explore: view_name {
     user_attribute: user_attribute_name
   }
 
-  always_join: [view_name, view_name]
+  always_join: [
+    view_name,
+    view_name
+  ]
 
   join: view_name {
     type: left_outer
@@ -93,11 +114,20 @@ explore: view_name {
     from: view_name
     sql_table_name: table_name ;;
     view_label: "desired label name"
-    fields: [field_or_set, field_or_set]
-    required_joins: [view_name, view_name]
+    fields: [
+      field_or_set,
+      field_or_set
+    ]
+    required_joins: [
+      view_name,
+      view_name
+    ]
     foreign_key: dimension_name
     sql_on: SQL ON clause ;;
-    required_access_grants: [access_grant_name, access_grant_name]
+    required_access_grants: [
+      access_grant_name,
+      access_grant_name
+    ]
   }
 
   join: view_name {
@@ -106,11 +136,20 @@ explore: view_name {
     from: view_name
     sql_table_name: table_name ;;
     view_label: "desired label name"
-    fields: [field_or_set, field_or_set]
-    required_joins: [view_name, view_name]
+    fields: [
+      field_or_set,
+      field_or_set
+    ]
+    required_joins: [
+      view_name,
+      view_name
+    ]
     foreign_key: dimension_name
     sql_on: SQL ON clause ;;
-    required_access_grants: [access_grant_name, access_grant_name]
+    required_access_grants: [
+      access_grant_name,
+      access_grant_name
+    ]
   }
 
   persist_for: "N hours"
@@ -119,5 +158,8 @@ explore: view_name {
   view_name: view_name
   case_sensitive: true
   sql_table_name: table_name ;;
-  cancel_grouping_fields: [fully_scoped_field, fully_scoped_field]
+  cancel_grouping_fields: [
+    fully_scoped_field,
+    fully_scoped_field
+  ]
 }

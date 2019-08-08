@@ -48,7 +48,9 @@ def test_write_set_with_unquoted_literals(serializer):
     )
     result = "".join(generator)
     print(result)
-    assert result == "fields: [dimension_one, dimension_two, dimension_three]"
+    assert (
+        result == "fields: [\n  dimension_one,\n  dimension_two,\n  dimension_three\n]"
+    )
 
 
 def test_write_set_with_quoted_literals(serializer):
@@ -57,7 +59,9 @@ def test_write_set_with_quoted_literals(serializer):
     )
     result = "".join(generator)
     print(result)
-    assert result == 'sortkeys: ["column_one", "column_two", "column_three"]'
+    assert (
+        result == 'sortkeys: [\n  "column_one",\n  "column_two",\n  "column_three"\n]'
+    )
 
 
 def test_write_set_with_many_values(serializer):
@@ -204,7 +208,7 @@ def test_write_any_with_list_value(serializer):
     generator = serializer.write_any(key="sortkeys", value=["column_one", "column_two"])
     result = "".join(generator)
     print(result)
-    assert result == 'sortkeys: ["column_one", "column_two"]'
+    assert result == 'sortkeys: [\n  "column_one",\n  "column_two"\n]'
 
 
 def test_write_any_with_dict_value_and_name(serializer):
