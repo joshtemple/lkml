@@ -2,18 +2,7 @@
 from typing import List, Tuple
 
 import lkml.tokens as tokens
-from lkml.keys import EXPR_BLOCK_KEYS
-
-CH_MAPPING = {
-    "\0": tokens.StreamEndToken,
-    "{": tokens.BlockStartToken,
-    "}": tokens.BlockEndToken,
-    "[": tokens.ListStartToken,
-    "]": tokens.ListEndToken,
-    ",": tokens.CommaToken,
-    ":": tokens.ValueToken,
-    ";": tokens.ExpressionBlockEndToken,
-}
+from lkml.keys import CHARACTER_TO_TOKEN, EXPR_BLOCK_KEYS
 
 
 class Lexer:
@@ -108,18 +97,18 @@ class Lexer:
             self.scan_until_token()
             ch = self.peek()
             if ch == "\0":
-                self.tokens.append(CH_MAPPING[ch](self.line_number))
+                self.tokens.append(CHARACTER_TO_TOKEN[ch](self.line_number))
                 break
             elif ch == ";":
                 if self.peek_multiple(2) == ";;":
                     self.advance(2)
-                    self.tokens.append(CH_MAPPING[ch](self.line_number))
+                    self.tokens.append(CHARACTER_TO_TOKEN[ch](self.line_number))
             elif ch == '"':
                 self.advance()
                 self.tokens.append(self.scan_quoted_literal())
-            elif ch in CH_MAPPING.keys():
+            elif ch in CHARACTER_TO_TOKEN.keys():
                 self.advance()
-                self.tokens.append(CH_MAPPING[ch](self.line_number))
+                self.tokens.append(CHARACTER_TO_TOKEN[ch](self.line_number))
             elif self.check_for_expression_block(self.peek_multiple(25)):
                 self.tokens.append(self.scan_literal())
                 self.scan_until_token()
