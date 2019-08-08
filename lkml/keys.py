@@ -1,4 +1,9 @@
-PLURAL_KEYS = (
+"""LookML key constants."""
+from typing import Dict, Tuple, Type
+
+from lkml import tokens
+
+PLURAL_KEYS: Tuple[str, ...] = (
     "view",
     "measure",
     "dimension",
@@ -29,7 +34,7 @@ PLURAL_KEYS = (
     "user_attribute_param",
 )
 
-EXPR_BLOCK_KEYS = (
+EXPR_BLOCK_KEYS: Tuple[str, ...] = (
     "expression_custom_filter",
     "html",
     "sql_trigger_value",
@@ -50,7 +55,7 @@ EXPR_BLOCK_KEYS = (
     "sql",
 )
 
-QUOTED_LITERAL_KEYS = (
+QUOTED_LITERAL_KEYS: Tuple[str, ...] = (
     "label",
     "view_label",
     "group_label",
@@ -86,4 +91,20 @@ QUOTED_LITERAL_KEYS = (
     "else",
 )
 
-KEYS_WITH_NAME_FIELDS = ("user_attribute_param", "param", "form_param", "option")
+KEYS_WITH_NAME_FIELDS: Tuple[str, ...] = (
+    "user_attribute_param",
+    "param",
+    "form_param",
+    "option",
+)
+
+CHARACTER_TO_TOKEN: Dict[str, Type[tokens.Token]] = {
+    "\0": tokens.StreamEndToken,
+    "{": tokens.BlockStartToken,
+    "}": tokens.BlockEndToken,
+    "[": tokens.ListStartToken,
+    "]": tokens.ListEndToken,
+    ",": tokens.CommaToken,
+    ":": tokens.ValueToken,
+    ";": tokens.ExpressionBlockEndToken,
+}
