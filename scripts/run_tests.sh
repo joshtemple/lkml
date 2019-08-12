@@ -29,5 +29,5 @@ flake8 lkml scripts
 echo "Running bandit..."
 bandit -rq .
 
-echo "Running PyDocStyle..."
+echo "Running pydocstyle..."
 pydocstyle lkml --match='(?!__init__)(?!test_).*\.py'

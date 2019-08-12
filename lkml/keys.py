@@ -1,7 +1,13 @@
-"""LookML key constants."""
+"""Defines constant sequences of LookML keys."""
+
 from typing import Dict, Tuple, Type
 
 from lkml import tokens
+
+# These are repeatable keys in LookML that the parser should collapse into a single
+# Python dictionary key. For example, LookML can have multiple dimensions, so the parser
+# will combine those dimensions into a list of dictionaries with a top-level key,
+# `dimensions`.
 
 PLURAL_KEYS: Tuple[str, ...] = (
     "view",
@@ -34,6 +40,8 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "user_attribute_param",
 )
 
+# These are keys in LookML that should be recognized as expression blocks (end with ;;).
+
 EXPR_BLOCK_KEYS: Tuple[str, ...] = (
     "expression_custom_filter",
     "html",
@@ -54,6 +62,9 @@ EXPR_BLOCK_KEYS: Tuple[str, ...] = (
     "sql_on",
     "sql",
 )
+
+# These are keys that the serializer should quote the value of (e.g. `label: "Label"`).
+# An example of an unquoted literal would be `hidden: no`.
 
 QUOTED_LITERAL_KEYS: Tuple[str, ...] = (
     "label",
@@ -90,6 +101,10 @@ QUOTED_LITERAL_KEYS: Tuple[str, ...] = (
     "property_label_key",
     "else",
 )
+
+# These are keys for fields in Looker that have a "name" attribute. Since lkml uses the
+# key `name` to represent the name of the field (e.g. for `dimension: dimension_name {`,
+# the `name` key would hold the value `dimension_name`.)
 
 KEYS_WITH_NAME_FIELDS: Tuple[str, ...] = (
     "user_attribute_param",
