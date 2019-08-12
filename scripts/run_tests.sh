@@ -27,7 +27,7 @@ echo "Running flake8..."
 flake8 lkml scripts
 
 echo "Running bandit..."
-bandit -r .
+bandit -rq .
 
 echo "Running PyDocStyle..."
 pydocstyle lkml --match='(?!__init__)(?!test_).*\.py'
