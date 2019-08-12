@@ -225,6 +225,12 @@ def test_write_any_with_dict_value_and_no_name(serializer):
     assert result == "".join(("dimension: {\n", '  label: "Dimension Name"\n', "}"))
 
 
+def test_any_raises_with_bad_type(serializer):
+    generator = serializer.write_any("sql", 100)
+    with pytest.raises(TypeError):
+        "".join(generator)
+
+
 def test_expand_list_with_blocks(serializer):
     generator = serializer.expand_list(
         key="dimensions", values=[{"name": "dimension_one"}, {"name": "dimension_two"}]
