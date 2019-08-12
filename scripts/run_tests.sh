@@ -11,11 +11,11 @@ else
     ISORT_ACTION="--check-only"
 fi
 
-echo "Running Pytest..."
-pytest tests
+echo "Running mypy..."
+mypy lkml
 
-echo "Running MyPy..."
-mypy lkml scripts
+echo "Running pytest..."
+pytest tests
 
 echo "Running black..."
 black ${BLACK_ACTION} .

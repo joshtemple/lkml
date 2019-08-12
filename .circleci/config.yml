@@ -34,13 +34,26 @@ jobs:
           name: Run mypy for type checking
           command: |
             . venv/bin/activate
-            mypy lkml scripts
+            mypy lkml
+
+      - run:
+          name: Run pytest for tests
+          command: |
+            . venv/bin/activate
+            mkdir test-reports
+            pytest tests
 
       - run:
           name: Run Black for formatting
           command: |
             . venv/bin/activate
             black --check .
+
+      - run:
+          name: Run isort for import order
+          command: |
+            . venv/bin/activate
+            isort -rc -c lkml scripts
 
       - run:
           name: Run flake8 for styling
@@ -55,23 +68,10 @@ jobs:
             bandit -r .
 
       - run:
-          name: Run isort for import order
-          command: |
-            . venv/bin/activate
-            isort -rc -c lkml scripts
-
-      - run:
-          name: Check docstrings
+          name: Run pydocstyle for docstrings
           command: |
             . venv/bin/activate
             pydocstyle lkml --match='(?!__init__)(?!test_).*\.py'
-
-      - run:
-          name: Run pytest for tests
-          command: |
-            . venv/bin/activate
-            mkdir test-reports
-            pytest tests
 
       - store_test_results:
           path: test-reports
