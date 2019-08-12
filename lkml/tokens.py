@@ -1,35 +1,42 @@
-"""LookML tokens."""
+"""Tokens used by the lexer to tokenize LookML."""
 
 
 class Token:
-    """Base class for LookML tokens.
-
-    Attributes:
-        id (str): Token ID
-        value (str): Token value
-
-    """
+    """Base class for LookML tokens, lexed from LookML strings."""
 
     id: str = "<base token>"
     value: str
 
     def __init__(self, line_number: int):
-        """Initialize Token.
+        """Initializes a Token.
 
         Args:
-            line_number (int): Line on which token occurs.
+            line_number: The corresponding line in the text where this token begins
 
         """
-        self.line_number = line_number
+        self.line_number: int = line_number
 
     def __eq__(self, other):
-        """Equality check."""
+        """Compare one Token to another by their type."""
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        """Token representation.
+        """Returns the token's string representation, truncated to 25 characters.
 
-        Truncated at 25 characters.
+        If the token has a `value` attribute, include that in the output.
+
+        Examples:
+            >>> token = Token(1)
+            >>> token.__repr__()
+            'Token()'
+
+            >>> token.value = 'A string value'
+            >>> token.__repr__()
+            'Token(A string value)'
+
+            >>> token.value = 'A very, very, very long string value'
+            >>> token.__repr__()
+            'Token(A very, very, very long s ... )'
 
         """
         value = getattr(self, "value", "").strip()
@@ -38,99 +45,91 @@ class Token:
 
 
 class ContentToken(Token):
-    """LookML token containing custom content."""
-
-    id = "<base ContentToken>"
+    """Base class for LookML tokens that contain a string of content."""
 
     def __init__(self, value: str, line_number: int):
-        """Instantiate ContentToken.
+        """Initializes a ContentToken with string content.
 
         Args:
-            value (str): Expression block content
-            line_number (int): line from LookML stream containing expression block
+            value: A string value for the token's content
+            line_number: The corresponding line in the text where this token begins
 
         """
-        self.value = value
-        self.line_number = line_number
+        self.value: str = value
+        self.line_number: int = line_number
 
     def __eq__(self, other):
-        """Equality check."""
+        """Compare one ContentToken to another by their values."""
         return self.id == other.id and self.value == other.value
 
 
 class StreamStartToken(Token):
-    """Beginning of LookML stream."""
+    """Represents the start of a stream of characters."""
 
     id = "<stream start>"
 
 
 class StreamEndToken(Token):
-    """End of LookML stream."""
+    """Represents the end of a stream of characters."""
 
     id = "<stream end>"
 
 
 class BlockStartToken(Token):
-    """Beginning of field block."""
+    """Represents the start of a block."""
 
     id = "{"
 
 
 class BlockEndToken(Token):
-    """End of field block."""
+    """Represents the end of a block."""
 
     id = "}"
 
 
 class ValueToken(Token):
-    """Key/Value separator."""
+    """Separates a key from a value."""
 
     id = ":"
 
 
 class ExpressionBlockEndToken(Token):
-    """End of SQL expression block."""
+    """Represents the end of an expression block."""
 
     id = ";;"
 
 
-class DotToken(Token):
-    """Dot token."""
-
-    id = "."
-
-
 class CommaToken(Token):
-    """Comma token."""
+    """Separates elements in a list."""
 
     id = ","
 
 
 class ListStartToken(Token):
-    """Beginning of list."""
+    """Represents the start of a list."""
 
     id = "["
 
 
 class ListEndToken(Token):
-    """End of list."""
+    """Represents the end of a list."""
 
     id = "]"
 
 
 class ExpressionBlockToken(ContentToken):
-    """LookML expression block."""
+    """Contains the value of an expression block."""
 
     id = "<expression block>"
 
 
 class LiteralToken(ContentToken):
-    """LookML literal."""
+    """Contains the value of an unquoted literal."""
 
     id = "<literal>"
 
 
 class QuotedLiteralToken(ContentToken):
-    """LookML quoted literal."""
+    """Contains the value of a quoted literal."""
 
     id = "<quoted literal>"

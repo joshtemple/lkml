@@ -1,4 +1,5 @@
-"""Tokenize LookML."""
+"""Splits a LookML string into a sequence of tokens."""
+
 from typing import List, Tuple
 
 import lkml.tokens as tokens
@@ -6,23 +7,21 @@ from lkml.keys import CHARACTER_TO_TOKEN, EXPR_BLOCK_KEYS
 
 
 class Lexer:
-    """Tokenize LookML.
+    """Splits a LookML string into a sequence of tokens.
 
     Attributes:
-        text (str): Raw LookML to parse, padded with null character to denote
-            end of stream
-        index (int): Position of lexer as it traverses through the text
-        tokens (List[tokens.Token]): Tokenized elements from text
-        line_number (int): Position of lexer (in lines) as it traverses
-            through the text
+        text: Raw LookML to parse, padded with null character to denote end of stream
+        index: Position of lexer in characters as it traverses the text
+        tokens: Sequence of tokens that contain the relevant chunks of text
+        line_number: Position of lexer in lines as it traverses the text
 
     """
 
     def __init__(self, text: str):
-        """Initialize Lexer.
+        """Initializes the Lexer with a LookML string and sets the index.
 
         Args:
-            text (str): raw LookML
+            text: LookML string to be lexed
 
         """
         self.text: str = text + "\0"
@@ -31,48 +30,34 @@ class Lexer:
         self.line_number: int = 1
 
     def peek(self) -> str:
-        """Get character in LookML text at the current index.
-
-        Returns:
-            str: Character at current index
-
-        """
+        """Returns the character at the current index of the text being lexed."""
         return self.text[self.index]
 
     def peek_multiple(self, length: int) -> str:
-        """Get n characters in LookML text beginning at the current index.
+        """Returns the next n characters from the current index in the text being lexed.
 
         Args:
-            length (int): Number of characters, n, to obtain
-
-        Returns:
-            str: LookML characters
+            length: The number of characters to return
 
         """
         return self.text[self.index : self.index + length]
 
-    def advance(self, length: int = 1):
-        """Move the lexer index forward.
+    def advance(self, length: int = 1) -> None:
+        """Moves the index forward by n characters.
 
         Args:
-            length (int, optional): Number of positions forward to move the index.
-                Defaults to 1.
+            length: The number of positions forward to move the index.
 
         """
         self.index += length
 
     def consume(self) -> str:
-        """Get the character at the current index and advance the index.
-
-        Returns:
-            str: LookML character at the current index
-
-        """
+        """Returns the current index character and advances the index 1 character."""
         self.advance()
         return self.text[self.index - 1]
 
-    def scan_until_token(self):
-        """Advance through LookML until valid token is found."""
+    def scan_until_token(self) -> None:
+        """Skips through the text being lexed to the next tokenizable character."""
         found = False
         while not found:
             while self.peek() in "\n\t ":
@@ -86,11 +71,11 @@ class Lexer:
                 found = True
 
     def scan(self) -> Tuple[tokens.Token, ...]:
-        """Tokenize LookML.
+        """Tokenizes LookML into a sequence of tokens.
 
-        Returns:
-            Tuple[tokens.Token, ...]: Tokenized LookML
-
+        This method skips through the text being lexed until it finds a character that
+        indicates the start of a new token. It consumes the relevant characters and adds
+        the tokens to a sequence until it reaches the end of the text.
         """
         self.tokens.append(tokens.StreamStartToken(self.line_number))
         while True:
@@ -125,22 +110,19 @@ class Lexer:
 
     @staticmethod
     def check_for_expression_block(string: str) -> bool:
-        """Check if input is an expression block.
-
-        Args:
-            string (str): Input string
-
-        Returns:
-            bool: True if string is an expression block
-
-        """
+        """Returns True if the input string is an expression block."""
         return any(string.startswith(key + ":") for key in EXPR_BLOCK_KEYS)
 
     def scan_expression_block(self) -> tokens.ExpressionBlockToken:
-        """Tokenize expression block.
+        """Returns an token from an expression block string.
 
-        Returns:
-            tokens.ExpressionBlockToken:
+        This method strips any trailing whitespace from the expression string, since
+        Looker usually adds an extra space before the `;;` terminal.
+
+        Example:
+            >>> lexer = Lexer("SELECT * FROM ${TABLE} ;;")
+            >>> lexer.scan_expression_block()
+            ExpressionBlockToken(SELECT * FROM ${TABLE})
 
         """
         chars = ""
@@ -148,16 +130,16 @@ class Lexer:
             if self.peek() == "\n":
                 self.line_number += 1
             chars += self.consume()
-        # Strip any trailing whitespace from the expression
-        # Usually there is an extra space before the ;;
         chars = chars.rstrip()
         return tokens.ExpressionBlockToken(chars, self.line_number)
 
     def scan_literal(self) -> tokens.LiteralToken:
-        """Tokenize literals.
+        """Returns a token from a literal string.
 
-        Returns:
-            tokens.LiteralToken
+        Example:
+            >>> lexer = Lexer("yes")
+            >>> lexer.scan_literal()
+            LiteralToken(yes)
 
         """
         chars = ""
@@ -166,10 +148,15 @@ class Lexer:
         return tokens.LiteralToken(chars, self.line_number)
 
     def scan_quoted_literal(self) -> tokens.QuotedLiteralToken:
-        """Tokenize quoted literals.
+        """Returns a token from a quoted literal string.
 
-        Returns:
-            tokens.QuotedLiteralToken
+        The initial double quote character is consumed in the scan method, so this
+        method only scans for the trailing quote to indicate the end of the token.
+
+        Example:
+            >>> lexer = Lexer('Label"')
+            >>> lexer.scan_quoted_literal()
+            QuotedLiteralToken(Label)
 
         """
         chars = ""

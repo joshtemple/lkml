@@ -1,6 +1,7 @@
-"""Serialize LookML from Python objects."""
+"""Serializes a Python dictionary into a LookML string."""
+
 from copy import deepcopy
-from typing import Any, Dict, Iterator, Sequence
+from typing import Any, Dict, Iterator, Sequence, Union
 
 from lkml.keys import (
     EXPR_BLOCK_KEYS,
@@ -11,21 +12,25 @@ from lkml.keys import (
 
 
 class Serializer:
-    """Serialize LookML.
+    """Serializes a Python dictionary into a LookML string.
+
+    Review the grammar specified for the Parser class to understand how LookML
+    is represented. The grammar details the differences between blocks, pairs, keys,
+    and values.
 
     Attributes:
-        parent_key (str): Name of key at previous level in a LookML block
-        level (int): Number of indentations for current position
-        field_counter (int): Tracks position of current field when serializing
+        parent_key: The name of the key at the previous level in a LookML block
+        level: The number of indentations appropriate for the current position
+        field_counter: The position of the current field when serializing
             iterable objects
-        base_indent (str): Representation of one tab
-        indent (str): Indentation for current position
-        newline_indent (str): Indentation for newline continuations
+        base_indent: Whitespace representing one tab
+        indent: An indent of whitespace dynamically sized for the current position
+        newline_indent: A newline plus an indent string
 
     """
 
     def __init__(self):
-        """Initialize Serializer."""
+        """Initializes the Serializer."""
         self.parent_key: str = None
         self.level: int = 0
         self.field_counter: int = 0
@@ -34,57 +39,43 @@ class Serializer:
         self.newline_indent: str = "\n"
 
     def increase_level(self) -> None:
-        """Increase indent of current line by one tab."""
+        """Increases the indent level of the current line by one tab."""
         self.field_counter = 0
         self.level += 1
         self.update_indent()
 
     def decrease_level(self) -> None:
-        """Decrease indent of current line by one tab."""
+        """Decreases the indent level of the current line by one tab."""
         self.field_counter = 0
         self.level -= 1
         self.update_indent()
 
     def update_indent(self) -> None:
-        """Set indent based on level of current position."""
+        """Sets the indent string based on the current level."""
         self.indent = self.base_indent * self.level
         self.newline_indent = "\n" + self.indent
 
     def is_plural_key(self, key: str) -> bool:
-        """If there can be multiple versions of the key.
+        """Returns True if the key is a repeatable key.
 
-        For example `dimension` can be repeated, whereas `sql` cannot.
+        For example, `dimension` can be repeated, but `sql` cannot be.
 
-        Args:
-            key (str): Key to check
-
-        Returns:
-            bool: If key can be repeated
+        The key `allowed_value` is a special case and changes behavior depending on its
+        parent key. If its parent key is `access_grant`, it is a list and cannot be
+        repeated. Otherwise, it can be repeated.
 
         """
         if key.endswith("s"):
             singular_key = key.rstrip("s")
-            return (
-                singular_key in PLURAL_KEYS
-                # `allowed_values` can be a set or a plural key depending on the parent
-                and not (
-                    singular_key == "allowed_value"
-                    and self.parent_key.rstrip("s") == "access_grant"
-                )
+            return singular_key in PLURAL_KEYS and not (
+                singular_key == "allowed_value"
+                and self.parent_key.rstrip("s") == "access_grant"
             )
         else:
             return False
 
-    def serialize(self, obj: Dict) -> str:  # noqa: D202
-        """Serialize LookML dictionary representation to string.
-
-        Args:
-            obj (Dict): LookML python object
-
-        Returns:
-            str: Valid LookML string
-
-        """
+    def serialize(self, obj: dict) -> str:  # noqa: D202
+        """Returns a LookML string serialized from a dictionary."""
 
         def chain_with_newline():
             for key, value in deepcopy(obj).items():
@@ -94,16 +85,18 @@ class Serializer:
         return "".join(chain_with_newline())
 
     def expand_list(self, key: str, values: Sequence) -> Iterator[str]:
-        """Convert list of fields to a given type string representation.
+        """Expands and serializes a list of values for a repeatable key.
 
-        Chooses the appropriate converter for each element.
+        This method is exclusively used for sequences of values with a repeated key like
+        `dimensions` or `views`, which need to be serialized sequentially with a newline
+        in between.
 
         Args:
-            key (str): Field type (e.g. "measures", "dimensions")
-            values (Sequence): object to serialize.
+            key: A repeatable LookML field type (e.g. "views" or "dimension_groups")
+            values: A sequence of objects to be serialized
 
         Returns:
-            Iterator[str]: String representation iterator
+            A generator of serialized string chunks
 
         """
         modified_key = key.rstrip("s") if key not in ("filters") else key
@@ -112,47 +105,52 @@ class Serializer:
                 yield "\n"
             yield from self.write_any(modified_key, value)
 
-    def write_any(self, key: str, value: Any) -> Iterator[str]:
-        """Convert python object to string using the correct converter for the object type.
+    def write_any(
+        self, key: str, value: Union[str, list, tuple, dict]
+    ) -> Iterator[str]:
+        """Dynamically serializes a Python object based on its type.
 
         Args:
-            key (str): Field type
-            value (Any): object to serialize
+            key: A LookML field type (e.g. "suggestions" or "hidden")
+            value: A string, tuple, or list to serialize
+
+        Raises:
+            TypeError: If input value is not of a valid type
 
         Returns:
-            Iterator[str]: String representation iterator
+            A generator of serialized string chunks
 
         """
         if isinstance(value, str):
             yield from self.write_pair(key, value)
-
-        if isinstance(value, (list, tuple)):
+        elif isinstance(value, (list, tuple)):
             if self.is_plural_key(key):
                 yield from self.expand_list(key, value)
             else:
                 yield from self.write_set(key, value)
-
-        if isinstance(value, dict):
+        elif isinstance(value, dict):
             if key in KEYS_WITH_NAME_FIELDS or "name" not in value.keys():
                 name = None
             else:
                 name = value.pop("name")
             yield from self.write_block(key, value, name)
+        else:
+            raise TypeError("Value must be a string, list, tuple, or dict.")
 
         self.field_counter += 1
 
     def write_block(
         self, key: str, fields: Dict[str, Any], name: str = None
     ) -> Iterator[str]:
-        """Convert python dictionary to LookML block.
+        """Serializes a dictionary to a LookML block.
 
         Args:
-            key (str): Field type
-            fields (Dict[str, Any]): object to serialize
-            name (str): Name of block
+            key: A LookML field type (e.g. "dimension")
+            fields: A dictionary to serialize (e.g. {"sql": "${TABLE}.order_id"})
+            name: An optional name of the block (e.g. "order_id")
 
         Returns:
-            Iterator[str]: String representation iterator
+            A generator of serialized string chunks
 
         """
         if self.field_counter > 0:
@@ -178,14 +176,14 @@ class Serializer:
         yield "}"
 
     def write_set(self, key: str, values: Sequence[str]) -> Iterator[str]:
-        """Convert python set to LookML block.
+        """Serializes a sequence to a LookML block.
 
         Args:
-            key (str): Name of block (e.g. "suggestions", "drills")
-            value (Sequence[str]): object to serialize
+            key: A LookML field type (e.g. "fields")
+            value: A sequence to serialize (e.g. ["orders.order_id", "orders.item"])
 
         Returns:
-            Iterator[str]: String representation iterator
+            A generator of serialized string chunks
 
         """
         # `suggestions` is only quoted when it's a set, so override the default
@@ -212,27 +210,27 @@ class Serializer:
         yield "]"
 
     def write_pair(self, key: str, value: str) -> Iterator[str]:
-        """Convert key/value pair to LookML.
+        """Serializes a key and value to a LookML pair.
 
         Args:
-            key (str): parameter key
-            value (str): parameter value
+            key: A LookML field type (e.g. "hidden")
+            value: The value string (e.g. "yes")
 
         Returns:
-            Iterator[str]: String representation iterator
+            A generator of serialized string chunks
 
         """
         yield from self.write_key(key)
         yield from self.write_value(key, value)
 
     def write_key(self, key: str) -> Iterator[str]:
-        """Write parameter key to LookML.
+        """Serializes a key to LookML.
 
         Args:
-            key (str): parameter key
+            key: A LookML field type (e.g. "sql")
 
         Returns:
-            Iterator[str]: String representation iterator
+            A generator of serialized string chunks
 
         """
         yield f"{self.indent}{key}: "
@@ -240,15 +238,15 @@ class Serializer:
     def write_value(
         self, key: str, value: str, force_quote: bool = False
     ) -> Iterator[str]:
-        """Write parameter value to LookML.
+        """Serializes a value to LookML, quoting it required by the key or forced.
 
         Args:
-            key (str): parameter key
-            value (str): parameter value
-            force_quote(bool): if value should always be a quoted literal
+            key: A LookML field type (e.g. "hidden")
+            value: The value string (e.g. "yes")
+            force_quote: True if value should always be quoted
 
         Returns:
-            Iterator[str]: String representation iterator
+            A generator of serialized string chunks
 
         """
         if force_quote or key in QUOTED_LITERAL_KEYS:

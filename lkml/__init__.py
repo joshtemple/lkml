@@ -1,29 +1,32 @@
-"""Public interface for lkml."""
 import argparse
+import io
 import json
 import logging
 import sys
-from typing import IO, Any, List
+from typing import IO, Optional, Sequence, Union
 
 from lkml.lexer import Lexer
 from lkml.parser import Parser
 from lkml.serializer import Serializer
 
 
-def load(stream: IO[Any]) -> List[dict]:
-    """Parse LookML from a stream into a Python object
+def load(stream: Union[str, IO]) -> dict:
+    """Parse LookML into a Python dictionary.
 
     Args:
-        stream (TextIO): File or stream containing raw LookML
+        stream: File object or string containing LookML to be parsed
 
-    Returns:
-        List[dict]: Parsed LookML
+    Raises:
+        TypeError: If stream is neither a string or a file object
 
     """
-    try:
+
+    if isinstance(stream, io.TextIOWrapper):
         text = stream.read()
-    except AttributeError:
+    elif isinstance(stream, str):
         text = stream
+    else:
+        raise TypeError("Input stream must be a string or file object.")
     lexer = Lexer(text)
     tokens = lexer.scan()
     parser = Parser(tokens)
@@ -31,17 +34,28 @@ def load(stream: IO[Any]) -> List[dict]:
     return result
 
 
-def dump(obj, file_object=None):
+def dump(obj: dict, file_object: IO = None) -> Optional[str]:
+    """Serialize a Python dictionary into LookML.
+
+    Args:
+        obj: The Python dictionary to be serialized to LookML
+        file_object: An optional file object to save the LookML string to
+
+    Returns:
+        A LookML string if no file_object is passed
+
+    """
     serializer = Serializer()
     result = serializer.serialize(obj)
     if file_object:
         file_object.write(result)
+        return None
     else:
         return result
 
 
-def parse_args(args: list) -> argparse.Namespace:
-    """Parse CLI arguments."""
+def parse_args(args: Sequence) -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
         description=(
             "A blazing fast LookML parser, implemented in pure Python. "
@@ -66,7 +80,7 @@ def parse_args(args: list) -> argparse.Namespace:
 
 
 def cli():
-    """CLI for lkml."""
+    """Command-line entry point for lkml."""
     logger = logging.getLogger()
     logger.setLevel(logging.WARN)
 
