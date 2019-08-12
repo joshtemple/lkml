@@ -218,7 +218,7 @@ def test_write_any_with_dict_value_and_name(serializer):
     )
 
 
-def test_write_any_with_dict_value_and_name(serializer):
+def test_write_any_with_dict_value_and_no_name(serializer):
     generator = serializer.write_any(key="dimension", value={"label": "Dimension Name"})
     result = "".join(generator)
     print(result)
