@@ -293,7 +293,7 @@ class Parser:
             }"
 
             Output (dictionary):
-            ------
+            -------
             {
                 "name": "dimension_name",
                 "label": "Dimension Label",
@@ -352,7 +352,7 @@ class Parser:
             label: "Foo"
 
             Output (dictionary):
-            ------
+            -------
             {"label": "Foo"}
 
         """
@@ -385,7 +385,7 @@ class Parser:
             label:
 
             Output (string):
-            ------
+            -------
             "label"
 
         """
@@ -423,7 +423,7 @@ class Parser:
             2) "${TABLE}.foo ;;"
 
             Output (string):
-            ------
+            -------
             1) "Foo"
             2) "${TABLE}.foo"
 
@@ -468,7 +468,7 @@ class Parser:
             "timeframes: [date, week]"
 
             Output (dictionary):
-            ------
+            -------
             {"timeframes": ["date", "week"]}
 
         """
@@ -516,7 +516,7 @@ class Parser:
             2) "['foo', 'bar']"
 
             Output (list):
-            ------
+            -------
             1) ["date", "week"]
             2) ["foo", "bar"]
 
