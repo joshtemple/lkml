@@ -140,10 +140,20 @@ class Lexer:
             >>> lexer = Lexer("yes")
             >>> lexer.scan_literal()
             LiteralToken(yes)
+            
+            >>> lexer = Lexer("- yes")
+            >>> lexer.scan_literal()
+            LiteralToken(-yes)
 
         """
         chars = ""
-        while self.peek() not in "\0 \n\t:}{,]":
+        while self.peek() not in "\0\n\t:}{,]":
+            if self.peek() == ' ':
+                if chars is '-':
+                    self.advance()
+                    continue
+                else:
+                    break
             chars += self.consume()
         return tokens.LiteralToken(chars, self.line_number)
 
