@@ -51,6 +51,42 @@ access_grant: access_grant_name {
   allowed_values: ["value_1", "value_2"]
 }
 
+test: data_test_name {
+  explore_source: explore_name {
+    column: column_name {
+      field: view_name.dimension_name
+    }
+    filters: {
+      field: view_name.dimension_name
+      value: "value"
+    }
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 626000 ;;
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 'value' ;;
+  }
+}
+
+test: data_test_name {
+  explore_source: explore_name {
+    column: column_name {
+      field: view_name.dimension_name
+    }
+    filters: {
+      field: view_name.dimension_name
+      value: "value"
+    }
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 626000 ;;
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 'value' ;;
+  }
+}
+
 explore: view_name {
   description: "description string"
   label: "desired label name"
