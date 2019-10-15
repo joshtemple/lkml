@@ -37,12 +37,15 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "form_param",
     "option",
     "user_attribute_param",
+    "assert",
+    "test",
 )
 
 # These are keys in LookML that should be recognized as expression blocks (end with ;;).
 
 EXPR_BLOCK_KEYS: Tuple[str, ...] = (
     "expression_custom_filter",
+    "expression",
     "html",
     "sql_trigger_value",
     "sql_table_name",
