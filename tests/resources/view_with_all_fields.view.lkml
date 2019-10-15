@@ -1,3 +1,42 @@
+include: "filename_or_pattern"
+include: "filename_or_pattern"
+
+test: data_test_name {
+  explore_source: explore_name {
+    column: column_name {
+      field: view_name.dimension_name
+    }
+    filters: {
+      field: view_name.dimension_name
+      value: "value"
+    }
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 626000 ;;
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 'value' ;;
+  }
+}
+
+test: data_test_name {
+  explore_source: explore_name {
+    column: column_name {
+      field: view_name.dimension_name
+    }
+    filters: {
+      field: view_name.dimension_name
+      value: "value"
+    }
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 626000 ;;
+  }
+  assert: assertion_name {
+    expression: ${view_name.dimension_name} = 'value' ;;
+  }
+}
+
 view: view_name {
   sql_table_name: table_name ;;
   suggestions: no
