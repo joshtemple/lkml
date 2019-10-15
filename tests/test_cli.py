@@ -31,3 +31,8 @@ def test_run_cli(mock_parse_args, mock_load, lookml_path):
     mock_parse_args.return_value.log_level = logging.WARN
     mock_load.return_value = {"a": 1}
     lkml.cli()
+
+
+def test_load_with_bad_argument_raises_type_error():
+    with pytest.raises(TypeError):
+        lkml.load(stream=100)
