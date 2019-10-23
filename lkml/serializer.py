@@ -99,7 +99,9 @@ class Serializer:
             A generator of serialized string chunks
 
         """
-        modified_key = key.rstrip("s") if key not in ("filters") else key
+        modified_key = (
+            key.rstrip("s") if key not in ("filters", "bind_filters") else key
+        )
         for i, value in enumerate(values):
             if i > 0:
                 yield "\n"

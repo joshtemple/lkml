@@ -16,7 +16,7 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "dimension_group",
     "filter",
     "access_filter",
-    "bind_filters",
+    "bind_filter",
     "map_layer",
     "parameter",
     "set",
