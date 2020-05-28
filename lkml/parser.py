@@ -549,7 +549,7 @@ class Parser:
                 return None
 
             if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
-                if len(key): # type: ignore
+                if len(key):  # type: ignore
                     values[key] = self.consume_token_value()
                 else:
                     values[len(values)] = self.consume_token_value()
@@ -562,7 +562,7 @@ class Parser:
             values_list: list = []
             for k in values.values():
                 values_list.append(k)
-            values = values_list # type: ignore
+            values = values_list  # type: ignore
 
         if self.log_debug:
             self.logger.debug(

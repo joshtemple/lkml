@@ -7,7 +7,6 @@ test: data_test_name {
       field: view_name.dimension_name
     }
     filters: [field: "value"]
-    }
   }
   assert: assertion_name {
     expression: ${view_name.dimension_name} = 626000 ;;

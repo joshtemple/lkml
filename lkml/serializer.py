@@ -85,7 +85,7 @@ class Serializer:
 
         return "".join(chain_with_newline())
 
-    def expand_list(self, key: str, values: Sequence) -> Iterator[str]:
+    def expand_list(self, key: str, values: Union[Sequence, Dict]) -> Iterator[str]:
         """Expands and serializes a list of values for a repeatable key.
 
         This method is exclusively used for sequences of values with a repeated key like
@@ -126,7 +126,9 @@ class Serializer:
         """
         if isinstance(value, str):
             yield from self.write_pair(key, value)
-        elif isinstance(value, (list, tuple)):
+        elif isinstance(value, (list, tuple)) or (
+            isinstance(value, (dict)) and key == "filters"
+        ):
             if self.is_plural_key(key):
                 yield from self.expand_list(key, value)
             else:
@@ -178,7 +180,7 @@ class Serializer:
 
         yield "}"
 
-    def write_set(self, key: str, values: Sequence[str]) -> Iterator[str]:
+    def write_set(self, key: str, values: Union[Sequence[str], Dict]) -> Iterator[str]:
         """Serializes a sequence to a LookML block.
 
         Args:
@@ -202,8 +204,9 @@ class Serializer:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f",{self.newline_indent}"
-                    if type(value) == 'dict':
-                        yield from self.write_labeled_set(i, value)
+                    if key == "filters":
+                        for k, v in values.items():  # type: ignore
+                            yield from self.write_labeled_set(k, v)
                     else:
                         yield from self.write_value(key, value, force_quote)
                 self.decrease_level()
@@ -212,8 +215,9 @@ class Serializer:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f", "
-                    if type(value) == 'dict':
-                        yield from self.write_labeled_set(i, value)
+                    if key == "filters":
+                        for k, v in values.items():  # type: ignore
+                            yield from self.write_labeled_set(k, v)
                     else:
                         yield from self.write_value(key, value, force_quote)
         yield "]"
@@ -282,7 +286,7 @@ class Serializer:
         """
 
         yield key
-        yield ":"
+        yield ": "
         yield '"'
         yield value
         yield '"'

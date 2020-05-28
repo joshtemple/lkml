@@ -72,7 +72,6 @@ test: data_test_name {
       field: view_name.dimension_name
     }
     filters: [view_name.dimension_name: "value"]
-    }
   }
   assert: assertion_name {
     expression: ${view_name.dimension_name} = 626000 ;;
@@ -98,12 +97,10 @@ explore: view_name {
 
   always_filter: {
     filters: [field_name: "looker filter expression"]
-    }
   }
 
   conditionally_filter: {
     filters: [field_name: "looker filter expression"]
-    }
     unless: [field_or_set, field_or_set]
   }
 
