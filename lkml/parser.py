@@ -309,8 +309,13 @@ class Parser:
         if key is None:
             return key
 
+        literal: Optional[str] = ""
+        if self.check(tokens.RefinementToken):
+            self.advance()
+            literal = "+"
+
         if self.check(tokens.LiteralToken):
-            literal = self.consume_token_value()
+            literal = "{}{}".format(literal, self.consume_token_value())
         else:
             literal = None
 

@@ -94,6 +94,9 @@ class Lexer:
             elif ch in CHARACTER_TO_TOKEN.keys():
                 self.advance()
                 self.tokens.append(CHARACTER_TO_TOKEN[ch](self.line_number))
+            elif ch == "+":
+                self.advance()
+                self.tokens.append(tokens.RefinementToken(self.line_number))
             elif self.check_for_expression_block(self.peek_multiple(25)):
                 self.tokens.append(self.scan_literal())
                 self.scan_until_token()

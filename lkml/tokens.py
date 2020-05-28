@@ -133,3 +133,9 @@ class QuotedLiteralToken(ContentToken):
     """Contains the value of a quoted literal."""
 
     id = "<quoted literal>"
+
+
+class RefinementToken(Token):
+    """Indicates a LookML refinement."""
+
+    id = "+"

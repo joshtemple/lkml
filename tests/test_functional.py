@@ -64,3 +64,8 @@ def test_duplicate_non_top_level_keys():
 def test_reserved_dimension_names():
     parsed = load("block_with_reserved_dimension_names.view.lkml")
     assert parsed is not None
+
+
+def test_view_with_refinements():
+    parsed = load("view_with_refinements.view.lkml")
+    assert parsed is not None

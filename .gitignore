@@ -46,6 +46,10 @@ output/
 # Pyenv
 *.python-version
 
+# venv
+pyvenv.cfg
+pip-wheel-metadata
+
 # mypy
 .mypy_cache/
 
