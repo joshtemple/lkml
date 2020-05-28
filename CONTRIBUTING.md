@@ -19,7 +19,7 @@ Once your local repository is set up, develop away on your feature! Double-check
 To run the full test suite locally, you'll need to install Docker. Once Docker is installed, the following command will run the test suite:
 
 ```
-docker compose --rm test
+docker-compose run test
 ```
 
 The test suite for `lkml` is defined in `scripts/run_tests.sh` for local testing and `.circleci/config.yml` for CI builds. The test suite runs the following:
