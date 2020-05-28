@@ -69,3 +69,8 @@ def test_reserved_dimension_names():
 def test_view_with_refinements():
     parsed = load("view_with_refinements.view.lkml")
     assert parsed is not None
+
+
+def test_measure_with_new_filters_syntax():
+    parsed = load("measure_with_new_filters_syntax.view.lkml")
+    assert parsed is not None

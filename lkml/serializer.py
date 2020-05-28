@@ -62,10 +62,11 @@ class Serializer:
 
         The key `allowed_value` is a special case and changes behavior depending on its
         parent key. If its parent key is `access_grant`, it is a list and cannot be
-        repeated. Otherwise, it can be repeated.
+        repeated. Otherwise, it can be repeated. The key `filters` is another special
+        key associated to the new filters syntax, and it also cannot be repeated.
 
         """
-        if key.endswith("s"):
+        if key.endswith("s") and key != "filters":
             singular_key = key.rstrip("s")
             return singular_key in PLURAL_KEYS and not (
                 singular_key == "allowed_value"
@@ -201,14 +202,20 @@ class Serializer:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f",{self.newline_indent}"
-                    yield from self.write_value(key, value, force_quote)
+                    if type(value) == 'dict':
+                        yield from self.write_labeled_set(i, value)
+                    else:
+                        yield from self.write_value(key, value, force_quote)
                 self.decrease_level()
                 yield self.newline_indent
             else:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f", "
-                    yield from self.write_value(key, value, force_quote)
+                    if type(value) == 'dict':
+                        yield from self.write_labeled_set(i, value)
+                    else:
+                        yield from self.write_value(key, value, force_quote)
         yield "]"
 
     def write_pair(self, key: str, value: str) -> Iterator[str]:
@@ -260,3 +267,22 @@ class Serializer:
             yield " ;;"
         else:
             yield value
+
+    def write_labeled_set(self, key: str, value) -> Iterator[str]:
+        """Serializes a labeled set with string keys to LookML
+        (e.g. [created_at: "7 Days", user.status: "-disabled"])
+        
+        Args:
+            key: An array key (e.g. "created_at")
+            value: The value string (e.g. "7 Days")
+        
+        Returns:
+            A generator of serialized string chunks
+        
+        """
+
+        yield key
+        yield ":"
+        yield '"'
+        yield value
+        yield '"'

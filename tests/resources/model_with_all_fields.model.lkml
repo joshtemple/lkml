@@ -56,10 +56,7 @@ test: data_test_name {
     column: column_name {
       field: view_name.dimension_name
     }
-    filters: {
-      field: view_name.dimension_name
-      value: "value"
-    }
+    filters: [view_name.dimension_name: "value"]
   }
   assert: assertion_name {
     expression: ${view_name.dimension_name} = 626000 ;;
@@ -74,9 +71,7 @@ test: data_test_name {
     column: column_name {
       field: view_name.dimension_name
     }
-    filters: {
-      field: view_name.dimension_name
-      value: "value"
+    filters: [view_name.dimension_name: "value"]
     }
   }
   assert: assertion_name {
@@ -102,16 +97,12 @@ explore: view_name {
   required_access_grants: [access_grant_name, access_grant_name]
 
   always_filter: {
-    filters: {
-      field: field_name
-      value: "looker filter expression"
+    filters: [field_name: "looker filter expression"]
     }
   }
 
   conditionally_filter: {
-    filters: {
-      field: field_name
-      value: "looker filter expression"
+    filters: [field_name: "looker filter expression"]
     }
     unless: [field_or_set, field_or_set]
   }

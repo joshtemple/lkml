@@ -6,9 +6,7 @@ test: data_test_name {
     column: column_name {
       field: view_name.dimension_name
     }
-    filters: {
-      field: view_name.dimension_name
-      value: "value"
+    filters: [field: "value"]
     }
   }
   assert: assertion_name {
@@ -24,10 +22,7 @@ test: data_test_name {
     column: column_name {
       field: view_name.dimension_name
     }
-    filters: {
-      field: view_name.dimension_name
-      value: "value"
-    }
+    filters: [view_name.dimension_name: "value"]
   }
   assert: assertion_name {
     expression: ${view_name.dimension_name} = 626000 ;;
@@ -62,14 +57,6 @@ view: view_name {
         sql: SQL query ;;
       }
       expression_custom_filter: custom_filter_expression ;;
-      filters: {
-        field: field_name
-        value: "filter_value"
-      }
-      filters: {
-        field: field_name
-        value: "filter_value"
-      }
       limit: number
       sort: {
         desc: no
@@ -246,14 +233,7 @@ view: view_name {
     list_field: dimension_name
     percentile: 90
     precision: N
-    filters: {
-      field: dimension_name
-      value: "looker filter expression"
-    }
-    filters: {
-      field: dimension_name
-      value: "looker filter expression"
-    }
+    filters: [dimension_name: "looker filter expression"]
     default_value: "desired default value"
   }
 }

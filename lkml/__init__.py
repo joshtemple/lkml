@@ -99,8 +99,9 @@ def cli():
     lookml = load(args.file)
     args.file.close()
 
-    json_string = json.dumps(lookml, indent=2)
-    print(json_string)
+    #json_string = json.dumps(lookml, indent=2)
+    #print(json_string)
+    print(dump(lookml))
 
 
 if __name__ == "__main__":

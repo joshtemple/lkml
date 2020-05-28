@@ -1,7 +1,7 @@
 """Parses a sequence of tokenized LookML into a Python object."""
 
 import logging
-from typing import Optional, Sequence, Type
+from typing import Optional, Sequence, Type, Union
 
 import lkml.tokens as tokens
 from lkml.keys import PLURAL_KEYS
@@ -505,7 +505,7 @@ class Parser:
             return None
 
     @backtrack_if_none
-    def parse_csv(self) -> Optional[list]:
+    def parse_csv(self) -> Optional[Union[list, dict]]:
         """Returns a list that represents comma-separated LookML values.
 
         Returns:
@@ -529,25 +529,40 @@ class Parser:
         if self.log_debug:
             grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
-        values = []
+        values: dict = {}
 
         if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
-            values.append(self.consume_token_value())
+            values[len(values)] = self.consume_token_value()
         else:
             return None
 
+        preserve_dict = False
         while not self.check(tokens.ListEndToken):
+            key: Optional[str] = ""
             if self.check(tokens.CommaToken):
+                self.advance()
+            elif self.check(tokens.ValueToken):
+                key = values.pop(len(values) - 1)
+                preserve_dict = True
                 self.advance()
             else:
                 return None
 
             if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
-                values.append(self.consume_token_value())
+                if len(key): # type: ignore
+                    values[key] = self.consume_token_value()
+                else:
+                    values[len(values)] = self.consume_token_value()
             elif self.check(tokens.ListEndToken):
                 break
             else:
                 return None
+
+        if not preserve_dict:
+            values_list: list = []
+            for k in values.values():
+                values_list.append(k)
+            values = values_list # type: ignore
 
         if self.log_debug:
             self.logger.debug(
