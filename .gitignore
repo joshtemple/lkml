@@ -21,6 +21,7 @@ develop-eggs
 lib
 lib64
 dist/
+pip-wheel-metadata/
 
 # Installer logs
 pip-log.txt
@@ -58,3 +59,6 @@ github/
 # Jupyter notebook
 *.ipynb
 .ipynb_checkpoints/
+
+# VSCode
+.vscode/
