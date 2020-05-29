@@ -232,7 +232,8 @@ view: view_name {
     list_field: dimension_name
     percentile: 90
     precision: N
-    filters: [dimension_name: "looker filter expression"]
+    filters: [dimension_name: "looker filter expression", created_at: "7 Days"]
+    sorts: [field1: asc, field2: desc]
     default_value: "desired default value"
   }
 }

@@ -66,7 +66,7 @@ class Serializer:
         key associated to the new filters syntax, and it also cannot be repeated.
 
         """
-        if key.endswith("s") and key != "filters":
+        if key.endswith("s"):
             singular_key = key.rstrip("s")
             return singular_key in PLURAL_KEYS and not (
                 singular_key == "allowed_value"
@@ -127,7 +127,7 @@ class Serializer:
         if isinstance(value, str):
             yield from self.write_pair(key, value)
         elif isinstance(value, (list, tuple)) or (
-            isinstance(value, (dict)) and key == "filters"
+            isinstance(value, (dict)) and (key == "filters" or key == "sorts")
         ):
             if self.is_plural_key(key):
                 yield from self.expand_list(key, value)
@@ -204,9 +204,8 @@ class Serializer:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f",{self.newline_indent}"
-                    if key == "filters":
-                        for k, v in values.items():  # type: ignore
-                            yield from self.write_labeled_set(k, v)
+                    if key == "filters" or key == "sorts":
+                        yield from self.write_labeled_set(value, values[value])
                     else:
                         yield from self.write_value(key, value, force_quote)
                 self.decrease_level()
@@ -215,9 +214,8 @@ class Serializer:
                 for i, value in enumerate(values):
                     if i > 0:
                         yield f", "
-                    if key == "filters":
-                        for k, v in values.items():  # type: ignore
-                            yield from self.write_labeled_set(k, v)
+                    if key == "filters" or key == "sorts":
+                        yield from self.write_labeled_set(value, values[value])
                     else:
                         yield from self.write_value(key, value, force_quote)
         yield "]"
@@ -287,6 +285,9 @@ class Serializer:
 
         yield key
         yield ": "
-        yield '"'
-        yield value
-        yield '"'
+        if value != "asc" and value != "desc":
+            yield '"'
+            yield value
+            yield '"'
+        else:
+            yield value
