@@ -117,6 +117,18 @@ class ListEndToken(Token):
     id = "]"
 
 
+class WhitespaceToken(ContentToken):
+    """Represents one or more whitespace characters."""
+
+    id = "<whitespace>"
+
+
+class CommentToken(ContentToken):
+    """Represents a comment."""
+
+    id = "<comment>"
+
+
 class ExpressionBlockToken(ContentToken):
     """Contains the value of an expression block."""
 
