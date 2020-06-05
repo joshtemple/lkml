@@ -56,20 +56,6 @@ class Lexer:
         self.advance()
         return self.text[self.index - 1]
 
-    def scan_until_token(self) -> None:
-        """Skips through the text being lexed to the next tokenizable character."""
-        found = False
-        while not found:
-            while self.peek() in "\n\t ":
-                if self.peek() == "\n":
-                    self.line_number += 1
-                self.advance()
-            if self.peek() == "#":
-                while self.peek() not in "\0\n":
-                    self.advance()
-            else:
-                found = True
-
     def scan(self) -> Tuple[tokens.Token, ...]:
         """Tokenizes LookML into a sequence of tokens.
 
@@ -79,11 +65,15 @@ class Lexer:
         """
         self.tokens.append(tokens.StreamStartToken(self.line_number))
         while True:
-            self.scan_until_token()
             ch = self.peek()
             if ch == "\0":
                 self.tokens.append(CHARACTER_TO_TOKEN[ch](self.line_number))
                 break
+            elif ch in "\n\t ":
+                self.tokens.append(self.scan_whitespace())
+            elif ch == "#":
+                self.advance()
+                self.tokens.append(self.scan_comment())
             elif ch == ";":
                 if self.peek_multiple(2) == ";;":
                     self.advance(2)
@@ -95,11 +85,11 @@ class Lexer:
                 self.advance()
                 self.tokens.append(CHARACTER_TO_TOKEN[ch](self.line_number))
             elif self.check_for_expression_block(self.peek_multiple(25)):
+                # TODO: Handle edges here with whitespace and comments
                 self.tokens.append(self.scan_literal())
-                self.scan_until_token()
                 self.advance()
                 self.tokens.append(tokens.ValueToken(self.line_number))
-                self.scan_until_token()
+                self.tokens.append(self.scan_whitespace())
                 self.tokens.append(self.scan_expression_block())
             else:
                 # TODO: This should actually check for valid literals first
@@ -112,6 +102,39 @@ class Lexer:
     def check_for_expression_block(string: str) -> bool:
         """Returns True if the input string is an expression block."""
         return any(string.startswith(key + ":") for key in EXPR_BLOCK_KEYS)
+
+    def scan_whitespace(self) -> tokens.WhitespaceToken:
+        """Returns a token from one or more whitespace characters.
+        
+        Example:
+            >>> lexer = Lexer("\\n\\n\\t Hello")
+            >>> lexer.scan_whitespace()
+            WhitespaceToken('\\n\\n\\t ')
+
+        """
+        chars = ""
+        while self.peek() in "\n\t ":
+            if self.peek() == "\n":
+                self.line_number += 1
+            chars += self.consume()
+        return tokens.WhitespaceToken(chars, self.line_number)
+
+    def scan_comment(self) -> tokens.CommentToken:
+        """Returns a token from a comment.
+
+        The initial pound (#) character is consumed in the scan method, so this
+        method only scans for a newline or end of file to indicate the end of the token.
+
+        Example:
+            >>> lexer = Lexer("Disregard this line\\n")
+            >>> lexer.scan_comment()
+            CommentToken(Disregard this line)
+
+        """
+        chars = ""
+        while self.peek() not in "\0\n":
+            chars += self.consume()
+        return tokens.CommentToken(chars, self.line_number)
 
     def scan_expression_block(self) -> tokens.ExpressionBlockToken:
         """Returns an token from an expression block string.
