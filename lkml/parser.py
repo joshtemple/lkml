@@ -257,9 +257,9 @@ class Parser:
                 self.update_tree(expression, pair)
                 continue
 
-            list = self.parse_list()
-            if list is not None:
-                expression.update(list)
+            list_ = self.parse_list()
+            if list_ is not None:
+                expression.update(list_)
                 continue
 
             token = self.tokens[self.progress]
