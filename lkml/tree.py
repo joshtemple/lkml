@@ -153,26 +153,26 @@ class Visitor(ABC):
 
 class BasicVisitor(Visitor):
     @staticmethod
-    def visit(node: SyntaxNode):
+    def _visit(node: SyntaxNode):
         raise NotImplementedError
 
     def visit_expression(self, node: ExpressionNode):
-        return self.visit(node)
+        return self._visit(node)
 
     def visit_block(self, node: BlockNode):
-        return self.visit(node)
+        return self._visit(node)
 
     def visit_list(self, node: ListNode):
-        return self.visit(node)
+        return self._visit(node)
 
     def visit_pair(self, node: PairNode):
-        return self.visit(node)
+        return self._visit(node)
 
     def visit_token(self, token: SyntaxToken):
-        return self.visit(token)
+        return self._visit(token)
 
 
 class LookMlVisitor(BasicVisitor):
     @staticmethod
-    def visit(node: SyntaxNode) -> str:
+    def _visit(node: SyntaxNode) -> str:
         return str(node)
