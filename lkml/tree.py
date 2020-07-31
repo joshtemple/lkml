@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple, Optional, Union
+from typing import List, Tuple, Optional, Union
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -68,15 +68,14 @@ class ListNode(SyntaxNode):
         for token in (self.type, self.name):
             if token is not None:
                 visitor.visit_token(token)
-        if self.children:
-            for child in self.children:
-                visitor.visit_pair(child)
-        else:
-            for item in self.items:
+        for item in self.items:
+            if isinstance(item, PairNode):
+                visitor.visit_pair(item)
+            else:
                 visitor.visit_token(item)
 
     def __str__(self) -> str:
-        name = "" if self.name is None else self.name
+        name = self.name or ""
         return "%s:%s[%s]" % (
             self.type,
             name,
@@ -87,31 +86,55 @@ class ListNode(SyntaxNode):
 @dataclass
 class BlockNode(SyntaxNode):
     type: SyntaxToken
-    items: Tuple[Union[BlockNode, PairNode, ListNode]]
+    expression: Optional[ExpressionNode] = None
     name: Optional[SyntaxToken] = None
 
     @property
-    def children(self) -> Tuple[PairNode]:
-        return self.pairs
+    def children(self) -> Optional[Tuple[ExpressionNode]]:
+        return (self.expression,) if self.expression else None
 
     def accept(self, visitor: Visitor) -> None:
         for token in (self.type, self.name):
             if token is not None:
                 visitor.visit_token(token)
-        if self.children:
-            for child in self.children:
-                visitor.visit_pair(child)
+        if self.expression:
+            visitor.visit_expression(self.expression)
 
     def __str__(self) -> str:
-        name = "" if self.name is None else self.name
-        return "%s:%s{%s}" % (
-            self.type,
-            name,
-            "".join(str(item) for item in self.items),
-        )
+        name = self.name or ""
+        expression = str(self.expression) if self.expression else ""
+        return "%s:%s{%s}" % (self.type, name, expression)
+
+
+@dataclass
+class ExpressionNode(SyntaxNode):
+    items: Tuple[Union[BlockNode, PairNode, ListNode]]
+
+    @property
+    def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode]]:
+        return self.items
+
+    def accept(self, visitor: Visitor) -> None:
+        if self.children:
+            for child in self.children:
+                if isinstance(child, BlockNode):
+                    visitor.visit_block(child)
+                elif isinstance(child, PairNode):
+                    visitor.visit_pair(child)
+                elif isinstance(child, ListNode):
+                    visitor.visit_list(child)
+
+    def __str__(self) -> str:
+        # TODO: This produces unparseable LookML for unquoted pair values if no suffix
+        # For example, hidden: yes + dimension: ... with no whitespace in between
+        return "".join(str(item) for item in self.items)
 
 
 class Visitor(ABC):
+    @abstractmethod
+    def visit_expression(self, node: ExpressionNode):
+        ...
+
     @abstractmethod
     def visit_block(self, node: BlockNode):
         ...
@@ -130,6 +153,9 @@ class Visitor(ABC):
 
 
 class StringifyVisitor(Visitor):
+    def visit_expression(self, node: ExpressionNode) -> str:
+        return str(node)
+
     def visit_block(self, node: BlockNode) -> str:
         return str(node)
 
