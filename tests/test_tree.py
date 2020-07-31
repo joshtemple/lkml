@@ -29,6 +29,11 @@ def test_pair_node_str_should_return_formatted():
     assert str(node) == "foo:bar"
 
 
+def test_pair_node_should_not_have_children():
+    node = PairNode(key=SyntaxToken("foo"), value=SyntaxToken("bar"))
+    assert node.children is None
+
+
 def test_list_node_str_should_return_formatted():
     # Test a node with PairNodes as items
     node = ListNode(
