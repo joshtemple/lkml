@@ -57,3 +57,14 @@ def test_block_node_str_should_return_formatted():
         name=SyntaxToken("user_dimensions"),
     )
     assert str(node) == "set:user_dimensions{fields:[user.user_id,user.age]}"
+
+
+def syntax_token_with_trivia_str_should_render():
+    token = SyntaxToken("foo", prefix="# Skip this\n  ")
+    assert str(token) == "# Skip this\n  foo"
+
+    token = SyntaxToken("foo", suffix="\n# Skip this\n  ")
+    assert str(token == "foo\n# Skip this\n  ")
+
+    token = SyntaxToken("foo", prefix="\n\t", suffix="\t\n")
+    assert str(token) == "\n\tfoo\t\n"
