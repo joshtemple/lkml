@@ -5,7 +5,7 @@ from lkml.tree import (
     ExpressionNode,
     ListNode,
     PairNode,
-    StringifyVisitor,
+    LookMlVisitor,
     SyntaxToken,
     QuotedSyntaxToken,
     ExpressionSyntaxToken,
@@ -97,7 +97,7 @@ def syntax_token_with_trivia_str_should_render():
     assert str(token) == "\n\tfoo\t\n"
 
 
-def test_stringify_visitor_should_visit_syntax_token_correctly():
-    visitor = StringifyVisitor()
+def test_lookml_visitor_should_visit_syntax_token_correctly():
+    visitor = LookMlVisitor()
     token = SyntaxToken("foo", suffix="\n")
     assert visitor.visit_token(token) == "foo\n"
