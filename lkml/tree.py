@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import List, Tuple, Optional, Union
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from copy import copy
 
 
 @dataclass
@@ -58,7 +59,6 @@ class PairNode(SyntaxNode):
 class ListNode(SyntaxNode):
     type: SyntaxToken
     items: Union[Tuple[PairNode], Tuple[SyntaxToken]]
-    name: Optional[SyntaxToken] = None
 
     @property
     def children(self) -> Optional[Tuple[PairNode]]:
@@ -75,12 +75,9 @@ class ListNode(SyntaxNode):
                 visitor.visit_token(item)
 
     def __str__(self) -> str:
-        name = self.name or ""
-        return "%s:%s[%s]" % (
-            self.type,
-            name,
-            ",".join(str(item) for item in self.items),
-        )
+        type = copy(self.type)
+        type.value += ":"
+        return "%s[%s]" % (type, ",".join(str(item) for item in self.items))
 
 
 @dataclass
@@ -102,8 +99,10 @@ class BlockNode(SyntaxNode):
 
     def __str__(self) -> str:
         name = self.name or ""
-        expression = str(self.expression) if self.expression else ""
-        return "%s:%s{%s}" % (self.type, name, expression)
+        expression = self.expression or ""
+        type = copy(self.type)
+        type.value += ":"
+        return "%s%s{%s}" % (type, name, expression)
 
 
 @dataclass
