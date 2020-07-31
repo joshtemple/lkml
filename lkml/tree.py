@@ -87,7 +87,7 @@ class ListNode(SyntaxNode):
 @dataclass
 class BlockNode(SyntaxNode):
     type: SyntaxToken
-    pairs: Tuple[PairNode]
+    items: Tuple[Union[BlockNode, PairNode, ListNode]]
     name: Optional[SyntaxToken] = None
 
     @property
@@ -107,7 +107,7 @@ class BlockNode(SyntaxNode):
         return "%s:%s{%s}" % (
             self.type,
             name,
-            "".join(str(pair) for pair in self.pairs),
+            "".join(str(item) for item in self.items),
         )
 
 

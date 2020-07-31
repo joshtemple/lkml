@@ -1,6 +1,6 @@
-from lkml.parser import Syntax
 import pytest
 from lkml.tree import (
+    BlockNode,
     ListNode,
     PairNode,
     SyntaxToken,
@@ -43,3 +43,17 @@ def test_list_node_str_should_return_formatted():
         items=(SyntaxToken("user.user_id"), SyntaxToken("user.age")),
     )
     assert str(node) == "fields:[user.user_id,user.age]"
+
+
+def test_block_node_str_should_return_formatted():
+    node = BlockNode(
+        type=SyntaxToken("set"),
+        items=(
+            ListNode(
+                type=SyntaxToken("fields"),
+                items=(SyntaxToken("user.user_id"), SyntaxToken("user.age")),
+            ),
+        ),
+        name=SyntaxToken("user_dimensions"),
+    )
+    assert str(node) == "set:user_dimensions{fields:[user.user_id,user.age]}"
