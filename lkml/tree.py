@@ -1,8 +1,13 @@
 from __future__ import annotations
-from typing import List, Tuple, Optional, Union
+from typing import Tuple, Optional, Union
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from copy import copy
+
+
+def tokens_to_str(*tokens: SyntaxToken) -> str:
+    """Converts each token to a string and joins them together"""
+    return "".join(str(token) for token in tokens)
 
 
 @dataclass
@@ -18,14 +23,39 @@ class SyntaxToken:
         return (self.prefix or "") + self.format_value() + (self.suffix or "")
 
 
+@dataclass
+class LeftCurlyBrace(SyntaxToken):
+    value: str = "{"
+
+
+@dataclass
+class RightCurlyBrace(SyntaxToken):
+    value: str = "}"
+
+
+@dataclass
+class Colon(SyntaxToken):
+    value: str = ":"
+
+
+@dataclass
+class LeftBracket(SyntaxToken):
+    value: str = "["
+
+
+@dataclass
+class RightBracket(SyntaxToken):
+    value: str = "]"
+
+
+@dataclass
+class DoubleSemicolon(SyntaxToken):
+    value: str = ";;"
+
+
 class QuotedSyntaxToken(SyntaxToken):
     def format_value(self) -> str:
         return '"' + self.value + '"'
-
-
-class ExpressionSyntaxToken(SyntaxToken):
-    def format_value(self) -> str:
-        return self.value + " ;;"
 
 
 class SyntaxNode(ABC):
@@ -37,6 +67,26 @@ class SyntaxNode(ABC):
     @abstractmethod
     def accept(self, visitor: Visitor):
         ...
+
+
+@dataclass
+class ExpressionNode(SyntaxNode):
+    value: SyntaxToken
+    terminal: Optional[DoubleSemicolon] = None
+
+    def __post_init__(self):
+        if self.terminal is None:
+            self.terminal = DoubleSemicolon(prefix=" ", suffix="\n")
+
+    @property
+    def children(self) -> None:
+        return None
+
+    def accept(self, visitor: Visitor) -> None:
+        visitor.visit_expression(self)
+
+    def __str__(self) -> str:
+        return tokens_to_str(self.value, self.terminal)
 
 
 @dataclass
@@ -52,13 +102,20 @@ class PairNode(SyntaxNode):
         visitor.visit_pair(self)
 
     def __str__(self) -> str:
-        return str(self.key) + ":" + str(self.value)
+        return tokens_to_str(self.key, Colon(suffix=" "), self.value)
 
 
 @dataclass
 class ListNode(SyntaxNode):
     type: SyntaxToken
     items: Union[Tuple[PairNode], Tuple[SyntaxToken]]
+    left_bracket: LeftBracket
+    right_bracket: RightBracket
+    colon: Optional[Colon] = None
+
+    def __post_init__(self):
+        if self.colon is None:
+            self.colon = Colon(suffix=" ")
 
     @property
     def children(self) -> Optional[Tuple[PairNode]]:
@@ -75,38 +132,49 @@ class ListNode(SyntaxNode):
                 visitor.visit_token(item)
 
     def __str__(self) -> str:
-        type = copy(self.type)
-        type.value += ":"
-        return "%s[%s]" % (type, ",".join(str(item) for item in self.items))
+        return tokens_to_str(
+            self.type,
+            self.colon,
+            self.left_bracket,
+            ",".join(str(item) for item in self.items),
+            self.right_bracket,
+        )
 
 
 @dataclass
 class BlockNode(SyntaxNode):
     type: SyntaxToken
-    expression: Optional[ExpressionNode] = None
+    left_brace: LeftCurlyBrace
+    right_brace: RightCurlyBrace
+    colon: Optional[Colon] = None
     name: Optional[SyntaxToken] = None
+    container: Optional[ContainerNode] = None
+
+    def __post_init__(self):
+        if self.colon is None:
+            self.colon = Colon(suffix=" ")
 
     @property
-    def children(self) -> Optional[Tuple[ExpressionNode]]:
-        return (self.expression,) if self.expression else None
+    def children(self) -> Optional[Tuple[ContainerNode]]:
+        return (self.container,) if self.container else None
 
     def accept(self, visitor: Visitor) -> None:
         for token in (self.type, self.name):
             if token is not None:
                 visitor.visit_token(token)
-        if self.expression:
-            visitor.visit_expression(self.expression)
+        if self.container:
+            visitor.visit_container(self.container)
 
     def __str__(self) -> str:
         name = self.name or ""
-        expression = self.expression or ""
-        type = copy(self.type)
-        type.value += ":"
-        return "%s%s{%s}" % (type, name, expression)
+        container = self.container or ""
+        return tokens_to_str(
+            self.type, self.colon, name, self.left_brace, container, self.right_brace,
+        )
 
 
 @dataclass
-class ExpressionNode(SyntaxNode):
+class ContainerNode(SyntaxNode):
     items: Tuple[Union[BlockNode, PairNode, ListNode]]
 
     @property
@@ -126,7 +194,7 @@ class ExpressionNode(SyntaxNode):
     def __str__(self) -> str:
         # TODO: This produces unparseable LookML for unquoted pair values if no suffix
         # For example, hidden: yes + dimension: ... with no whitespace in between
-        return "".join(str(item) for item in self.items)
+        return tokens_to_str(*self.items)
 
 
 class Visitor(ABC):

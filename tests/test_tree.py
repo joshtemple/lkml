@@ -2,23 +2,23 @@ from lkml.parser import Syntax
 import pytest
 from lkml.tree import (
     BlockNode,
-    ExpressionNode,
+    ContainerNode,
+    LeftBracket,
+    LeftCurlyBrace,
     ListNode,
     PairNode,
+    ExpressionNode,
     LookMlVisitor,
+    RightBracket,
+    RightCurlyBrace,
     SyntaxToken,
     QuotedSyntaxToken,
-    ExpressionSyntaxToken,
+    Colon,
 )
 
 
 @pytest.mark.parametrize(
-    "token_class,expected",
-    [
-        (SyntaxToken, "foo"),
-        (QuotedSyntaxToken, '"foo"'),
-        (ExpressionSyntaxToken, "foo ;;"),
-    ],
+    "token_class,expected", [(SyntaxToken, "foo"), (QuotedSyntaxToken, '"foo"'),],
 )
 def test_syntax_token_str_should_return_formatted(token_class, expected):
     assert str(token_class("foo")) == expected
@@ -26,7 +26,11 @@ def test_syntax_token_str_should_return_formatted(token_class, expected):
 
 def test_pair_node_str_should_return_formatted():
     node = PairNode(key=SyntaxToken("foo"), value=SyntaxToken("bar"))
-    assert str(node) == "foo:bar"
+    assert str(node) == "foo: bar"
+
+    # Add whitespace in an unconventional place
+    node = PairNode(key=SyntaxToken("foo", suffix=" "), value=SyntaxToken("bar"))
+    assert str(node) == "foo : bar"
 
 
 def test_pair_node_should_not_have_children():
@@ -38,57 +42,93 @@ def test_list_node_str_should_return_formatted():
     # Test a node with PairNodes as items
     node = ListNode(
         type=SyntaxToken("filters"),
+        left_bracket=LeftBracket(),
         items=(
-            PairNode(SyntaxToken("created_date"), QuotedSyntaxToken("7 days")),
-            PairNode(SyntaxToken("user.status"), QuotedSyntaxToken("-disabled")),
+            PairNode(SyntaxToken("created_date"), QuotedSyntaxToken("7 days"),),
+            PairNode(
+                SyntaxToken("user.status", prefix=" "), QuotedSyntaxToken("-disabled"),
+            ),
         ),
+        right_bracket=RightBracket(),
     )
-    assert str(node) == 'filters:[created_date:"7 days",user.status:"-disabled"]'
+    assert str(node) == 'filters: [created_date: "7 days", user.status: "-disabled"]'
 
     # Test a node with SyntaxTokens as items
     node = ListNode(
         type=SyntaxToken("fields"),
-        items=(SyntaxToken("user.user_id"), SyntaxToken("user.age")),
+        left_bracket=LeftBracket(),
+        items=(
+            SyntaxToken("user.user_id", prefix="\n  "),
+            SyntaxToken("user.age", prefix="\n  ", suffix="\n"),
+        ),
+        right_bracket=RightBracket(),
     )
-    assert str(node) == "fields:[user.user_id,user.age]"
+    assert str(node) == "fields: [\n  user.user_id,\n  user.age\n]"
 
     # Test a node with zero items
-    node = ListNode(type=SyntaxToken("fields"), items=tuple())
-    assert str(node) == "fields:[]"
+    node = ListNode(
+        type=SyntaxToken("fields"),
+        left_bracket=LeftBracket(),
+        items=tuple(),
+        right_bracket=RightBracket(),
+    )
+    assert str(node) == "fields: []"
 
 
 def test_block_node_str_should_return_formatted():
     # Test a regular block
     node = BlockNode(
         type=SyntaxToken("set"),
-        expression=ExpressionNode(
+        name=SyntaxToken("user_dimensions"),
+        left_brace=LeftCurlyBrace(prefix=" ", suffix=" "),
+        container=ContainerNode(
             (
                 ListNode(
                     type=SyntaxToken("fields"),
-                    items=(SyntaxToken("user.user_id"), SyntaxToken("user.age")),
+                    left_bracket=LeftBracket(),
+                    items=(
+                        SyntaxToken("user.user_id"),
+                        SyntaxToken("user.age", prefix=" "),
+                    ),
+                    right_bracket=RightBracket(),
                 ),
             )
         ),
-        name=SyntaxToken("user_dimensions"),
+        right_brace=RightCurlyBrace(prefix=" "),
     )
-    assert str(node) == "set:user_dimensions{fields:[user.user_id,user.age]}"
+    assert str(node) == "set: user_dimensions { fields: [user.user_id, user.age] }"
 
     # Test a block with no expression
-    node = BlockNode(type=SyntaxToken("set"), name=SyntaxToken("foo"), expression=None)
-    assert str(node) == "set:foo{}"
+    node = BlockNode(
+        type=SyntaxToken("set"),
+        name=SyntaxToken("foo"),
+        left_brace=LeftCurlyBrace(prefix=" "),
+        container=tuple(),
+        right_brace=RightCurlyBrace(),
+    )
+    assert str(node) == "set: foo {}"
 
 
-def test_expression_node_str_should_return_formatted():
-    node = ExpressionNode(
+def test_container_node_str_should_return_formatted():
+    node = ContainerNode(
         (
             PairNode(SyntaxToken("hidden"), SyntaxToken("true")),
             BlockNode(
-                type=SyntaxToken("set"), name=SyntaxToken("foo"), expression=None
+                type=SyntaxToken("set", prefix=" "),
+                name=SyntaxToken("foo"),
+                left_brace=LeftCurlyBrace(prefix=" "),
+                container=tuple(),
+                right_brace=RightCurlyBrace(),
             ),
-            ListNode(type=SyntaxToken("fields"), items=tuple()),
+            ListNode(
+                type=SyntaxToken("fields", prefix=" "),
+                left_bracket=LeftBracket(),
+                items=tuple(),
+                right_bracket=RightBracket(),
+            ),
         )
     )
-    assert str(node) == "hidden:trueset:foo{}fields:[]"
+    assert str(node) == "hidden: true set: foo {} fields: []"
 
 
 def syntax_token_with_trivia_str_should_render():
