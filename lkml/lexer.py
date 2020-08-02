@@ -125,13 +125,16 @@ class Lexer:
         The initial pound (#) character is consumed in the scan method, so this
         method only scans for a newline or end of file to indicate the end of the token.
 
+        The pound character is added back to the beginning to the token to emphasize
+        the importance of any leading whitespace that follows.
+
         Example:
             >>> lexer = Lexer("Disregard this line\\n")
             >>> lexer.scan_comment()
             CommentToken(Disregard this line)
 
         """
-        chars = ""
+        chars = "#"
         while self.peek() not in "\0\n":
             chars += self.consume()
         return tokens.CommentToken(chars, self.line_number)

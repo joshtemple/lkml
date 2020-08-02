@@ -127,9 +127,7 @@ class Parser:
         """Collects all trivia values into a string buffer."""
         trivia = ""
         while True:
-            if self.check(tokens.CommentToken):
-                trivia += "#" + self.consume_token_value()
-            elif self.check(tokens.WhitespaceToken):
+            if self.check(tokens.CommentToken, tokens.WhitespaceToken):
                 trivia += self.consume_token_value()
             else:
                 break
