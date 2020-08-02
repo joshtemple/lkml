@@ -270,8 +270,8 @@ class Parser:
 
         container = self.parse_container()
 
+        prefix = self.consume_trivia()
         if self.check(tokens.BlockEndToken):
-            prefix = self.consume_trivia()
             self.advance()
             suffix = self.consume_trivia()
             right_brace = tree.RightCurlyBrace(prefix=prefix, suffix=suffix)
