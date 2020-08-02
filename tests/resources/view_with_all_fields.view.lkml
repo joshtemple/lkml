@@ -251,8 +251,8 @@ view: view_name {
       value: "looker filter expression"
     }
     filters: {
-      field: dimension_name
-      value: "looker filter expression"
+      dimension_name: "looker filter expression"
+      dimension_name: "looker filter expression"
     }
     default_value: "desired default value"
   }
