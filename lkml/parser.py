@@ -135,7 +135,9 @@ class Parser:
                 break
         return trivia
 
-    def check(self, *token_types: Type[tokens.Token]) -> bool:
+    def check(
+        self, *token_types: Type[tokens.Token], skip_trivia: bool = False
+    ) -> bool:
         """Compares the current index token type to specified token types.
 
         Args:
@@ -158,15 +160,25 @@ class Parser:
         for token_type in token_types:
             if not issubclass(token_type, tokens.Token):
                 raise TypeError(f"{token_type} is not a valid token type.")
+
+        # Set a bookmark to skip over trivia tokens before the check if asked
+        mark = self.index
+        if skip_trivia:
+            _ = self.consume_trivia()
         try:
             token = self.peek()
         except IndexError:
-            return False
+            # Reached the end of the stream
+            result = False
         else:
             if type(token) in token_types:
-                return True
+                result = True
             else:
-                return False
+                result = False
+        finally:
+            if skip_trivia:
+                self.jump_to_index(mark)
+            return result
 
     def parse(self) -> dict:
         """Main method of this class and a wrapper for the expression parser."""
@@ -189,7 +201,9 @@ class Parser:
         items: List[Union[tree.BlockNode, tree.PairNode, tree.ListNode]] = []
         if self.check(tokens.StreamStartToken):
             self.advance()
-        while not self.check(tokens.StreamEndToken, tokens.BlockEndToken):
+        while not self.check(
+            tokens.StreamEndToken, tokens.BlockEndToken, skip_trivia=True
+        ):
             block = self.parse_block()
             if block is not None:
                 items.append(block)
@@ -349,8 +363,9 @@ class Parser:
         if self.log_debug:
             grammar = "[key] = literal ':'"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+        prefix = self.consume_trivia()
         if self.check(tokens.LiteralToken):
-            key = tree.SyntaxToken(self.consume_token_value())
+            key = tree.SyntaxToken(self.consume_token_value(), prefix=prefix)
         else:
             return None
 
