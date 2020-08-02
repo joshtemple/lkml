@@ -1,13 +1,12 @@
 from __future__ import annotations
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional, Union, Any
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from copy import copy
 
 
-def tokens_to_str(*tokens: SyntaxToken) -> str:
-    """Converts each token to a string and joins them together"""
-    return "".join(str(token) for token in tokens)
+def items_to_str(*items: Any) -> str:
+    """Converts each item to a string and joins them together"""
+    return "".join(str(item) for item in items)
 
 
 @dataclass
@@ -16,11 +15,15 @@ class SyntaxToken:
     prefix: Optional[str] = None
     suffix: Optional[str] = None
 
+    def __post_init__(self):
+        self.prefix: str = self.prefix or ""
+        self.suffix: str = self.suffix or ""
+
     def format_value(self) -> str:
         return self.value
 
     def __str__(self) -> str:
-        return (self.prefix or "") + self.format_value() + (self.suffix or "")
+        return items_to_str(self.prefix, self.format_value(), self.suffix)
 
 
 @dataclass
@@ -58,6 +61,11 @@ class QuotedSyntaxToken(SyntaxToken):
         return '"' + self.value + '"'
 
 
+class ExpressionSyntaxToken(SyntaxToken):
+    def format_value(self) -> str:
+        return self.value + ' ;;'
+
+
 class SyntaxNode(ABC):
     @property
     @abstractmethod
@@ -69,30 +77,35 @@ class SyntaxNode(ABC):
         ...
 
 
-@dataclass
-class ExpressionNode(SyntaxNode):
-    value: SyntaxToken
-    terminal: Optional[DoubleSemicolon] = None
+# @dataclass
+# class ExpressionNode(SyntaxNode):
+#     value: SyntaxToken
+#     terminal: Optional[DoubleSemicolon] = None
 
-    def __post_init__(self):
-        if self.terminal is None:
-            self.terminal = DoubleSemicolon(prefix=" ", suffix="\n")
+#     def __post_init__(self):
+#         if self.terminal is None:
+#             self.terminal = DoubleSemicolon(prefix=" ", suffix="\n")
 
-    @property
-    def children(self) -> None:
-        return None
+#     @property
+#     def children(self) -> None:
+#         return None
 
-    def accept(self, visitor: Visitor) -> None:
-        visitor.visit_expression(self)
+#     def accept(self, visitor: Visitor) -> None:
+#         visitor.visit_expression(self)
 
-    def __str__(self) -> str:
-        return tokens_to_str(self.value, self.terminal)
+#     def __str__(self) -> str:
+#         return items_to_str(self.value, self.terminal)
 
 
 @dataclass
 class PairNode(SyntaxNode):
     key: SyntaxToken
     value: SyntaxToken
+    colon: Optional[Colon] = None
+
+    def __post_init__(self):
+        if self.colon is None:
+            self.colon = Colon(suffix=" ")
 
     @property
     def children(self) -> None:
@@ -102,7 +115,7 @@ class PairNode(SyntaxNode):
         visitor.visit_pair(self)
 
     def __str__(self) -> str:
-        return tokens_to_str(self.key, Colon(suffix=" "), self.value)
+        return items_to_str(self.key, self.colon, self.value)
 
 
 @dataclass
@@ -122,9 +135,7 @@ class ListNode(SyntaxNode):
         return self.items if isinstance(self.items[0], PairNode) else None
 
     def accept(self, visitor: Visitor) -> None:
-        for token in (self.type, self.name):
-            if token is not None:
-                visitor.visit_token(token)
+        visitor.visit_token(self.type)
         for item in self.items:
             if isinstance(item, PairNode):
                 visitor.visit_pair(item)
@@ -132,7 +143,7 @@ class ListNode(SyntaxNode):
                 visitor.visit_token(item)
 
     def __str__(self) -> str:
-        return tokens_to_str(
+        return items_to_str(
             self.type,
             self.colon,
             self.left_bracket,
@@ -168,7 +179,7 @@ class BlockNode(SyntaxNode):
     def __str__(self) -> str:
         name = self.name or ""
         container = self.container or ""
-        return tokens_to_str(
+        return items_to_str(
             self.type, self.colon, name, self.left_brace, container, self.right_brace,
         )
 
@@ -194,12 +205,12 @@ class ContainerNode(SyntaxNode):
     def __str__(self) -> str:
         # TODO: This produces unparseable LookML for unquoted pair values if no suffix
         # For example, hidden: yes + dimension: ... with no whitespace in between
-        return tokens_to_str(*self.items)
+        return items_to_str(*self.items)
 
 
 class Visitor(ABC):
     @abstractmethod
-    def visit_expression(self, node: ExpressionNode):
+    def visit_container(self, node: ContainerNode):
         ...
 
     @abstractmethod
@@ -217,30 +228,3 @@ class Visitor(ABC):
     @abstractmethod
     def visit_token(self, token: SyntaxToken):
         ...
-
-
-class BasicVisitor(Visitor):
-    @staticmethod
-    def _visit(node: SyntaxNode):
-        raise NotImplementedError
-
-    def visit_expression(self, node: ExpressionNode):
-        return self._visit(node)
-
-    def visit_block(self, node: BlockNode):
-        return self._visit(node)
-
-    def visit_list(self, node: ListNode):
-        return self._visit(node)
-
-    def visit_pair(self, node: PairNode):
-        return self._visit(node)
-
-    def visit_token(self, token: SyntaxToken):
-        return self._visit(token)
-
-
-class LookMlVisitor(BasicVisitor):
-    @staticmethod
-    def _visit(node: SyntaxNode) -> str:
-        return str(node)

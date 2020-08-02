@@ -7,14 +7,12 @@ from lkml.tree import (
     LeftCurlyBrace,
     ListNode,
     PairNode,
-    ExpressionNode,
-    LookMlVisitor,
     RightBracket,
     RightCurlyBrace,
     SyntaxToken,
     QuotedSyntaxToken,
-    Colon,
 )
+from lkml.visitors import LookMlVisitor
 
 
 @pytest.mark.parametrize(

@@ -117,7 +117,11 @@ class ListEndToken(Token):
     id = "]"
 
 
-class WhitespaceToken(ContentToken):
+class TriviaToken(ContentToken):
+    """Represents a comment or whitespace"""
+
+
+class WhitespaceToken(TriviaToken):
     """Represents one or more whitespace characters."""
 
     id = "<whitespace>"
@@ -126,7 +130,7 @@ class WhitespaceToken(ContentToken):
         return f"{self.__class__.__name__}({repr(self.value)})"
 
 
-class CommentToken(ContentToken):
+class CommentToken(TriviaToken):
     """Represents a comment."""
 
     id = "<comment>"

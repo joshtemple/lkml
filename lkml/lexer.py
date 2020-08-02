@@ -105,7 +105,7 @@ class Lexer:
 
     def scan_whitespace(self) -> tokens.WhitespaceToken:
         """Returns a token from one or more whitespace characters.
-        
+
         Example:
             >>> lexer = Lexer("\\n\\n\\t Hello")
             >>> lexer.scan_whitespace()
@@ -153,6 +153,8 @@ class Lexer:
             if self.peek() == "\n":
                 self.line_number += 1
             chars += self.consume()
+        # TODO: Eventually this should not strip whitespace but should allow that
+        # to be preserved during parsing
         chars = chars.rstrip()
         return tokens.ExpressionBlockToken(chars, self.line_number)
 
