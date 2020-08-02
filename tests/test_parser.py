@@ -1,7 +1,6 @@
 import pytest
 import lkml
 import lkml.tokens as tokens
-from lkml.tokens import WhitespaceToken
 from lkml.tree import (
     LeftCurlyBrace,
     RightCurlyBrace,
@@ -216,48 +215,6 @@ def test_parse_key_without_value_token():
 def test_debug_logging_statements_execute_successfully(parser):
     parser.log_debug = True
     parser.parse()
-
-
-def test_update_tree_with_long_dict_raises_key_error(parser):
-    update = {"a": 1, "b": 2}
-    target = {}
-    with pytest.raises(KeyError):
-        parser.update_tree(target, update)
-
-
-def test_update_tree_with_existing_collapsed_singular_key(parser):
-    update = {"view": 2}
-    target = {"views": [1]}
-    parser.update_tree(target, update)
-    assert target == {"views": [1, 2]}
-
-
-def test_update_tree_with_existing_collapsed_plural_key(parser):
-    update = {"views": 2}
-    target = {"views": [1]}
-    parser.update_tree(target, update)
-    assert target == {"views": [1, 2]}
-
-
-def test_update_tree_with_nonexisting_collapsed_key(parser):
-    update = {"view": 1}
-    target = {}
-    parser.update_tree(target, update)
-    assert target == {"views": [1]}
-
-
-def test_update_tree_with_nonexisting_unique_key(parser):
-    update = {"a": 1}
-    target = {}
-    parser.update_tree(target, update)
-    assert target == {"a": 1}
-
-
-def test_update_tree_with_existing_unique_key_raises_key_error(parser):
-    update = {"a": 2}
-    target = {"a": 1}
-    with pytest.raises(KeyError):
-        parser.update_tree(target, update)
 
 
 def test_parse_block_without_closing_curly_brace():
