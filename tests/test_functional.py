@@ -1,8 +1,5 @@
-from lkml.tree import ContainerNode
+from lkml.tree import ContainerNode, ListNode
 from pathlib import Path
-
-import pytest
-
 import lkml
 
 
@@ -30,7 +27,7 @@ def test_block_with_nested_block():
 
 def test_removing_item_from_list_serializes_sensibly():
     container: ContainerNode = lkml.load("name: [a, b, c]")
-    node = container.items[0]
+    node: ListNode = container.items[0]
     assert str(node) == "name: [a, b, c]"
 
     node.items = tuple(item for item in node.items if item.value != "b")
@@ -40,7 +37,7 @@ def test_removing_item_from_list_serializes_sensibly():
     assert str(node) == "name: []"
 
     container: ContainerNode = lkml.load("name: [\n  a,\n  b,\n  c\n]")
-    node = container.items[0]
+    node: ListNode = container.items[0]
     assert str(node) == "name: [\n  a,\n  b,\n  c\n]"
 
     node.items = tuple(item for item in node.items if item.value != "b")
