@@ -26,6 +26,7 @@ def test_block_with_nested_block():
 
 
 def test_removing_item_from_list_serializes_sensibly():
+    # Test with only whitespace in between items
     container: ContainerNode = lkml.load("name: [a, b, c]")
     node: ListNode = container.items[0]
     assert str(node) == "name: [a, b, c]"
@@ -36,6 +37,18 @@ def test_removing_item_from_list_serializes_sensibly():
     node.items = tuple()
     assert str(node) == "name: []"
 
+    # Test with leading and trailing spaces
+    container: ContainerNode = lkml.load("name: [ a, b, c ]")
+    node: ListNode = container.items[0]
+    assert str(node) == "name: [ a, b, c ]"
+
+    node.items = tuple(item for item in node.items if item.value != "b")
+    assert str(node) == "name: [ a, c ]"
+
+    node.items = tuple()
+    assert str(node) == "name: []"
+
+    # Test with items on new lines with trailing newline
     container: ContainerNode = lkml.load("name: [\n  a,\n  b,\n  c\n]")
     node: ListNode = container.items[0]
     assert str(node) == "name: [\n  a,\n  b,\n  c\n]"
