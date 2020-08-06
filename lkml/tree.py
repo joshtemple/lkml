@@ -107,6 +107,9 @@ class PairNode(SyntaxNode):
         if self.colon is None:
             self.colon = Colon(suffix=" ")
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.key.value}, {self.value.value})"
+
     @property
     def children(self) -> None:
         return None
@@ -129,6 +132,9 @@ class ListNode(SyntaxNode):
     def __post_init__(self):
         if self.colon is None:
             self.colon = Colon(suffix=" ")
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.type.value})"
 
     @property
     def children(self) -> Optional[Tuple[PairNode]]:
@@ -165,6 +171,10 @@ class BlockNode(SyntaxNode):
         if self.colon is None:
             self.colon = Colon(suffix=" ")
 
+    def __repr__(self) -> str:
+        name = self.name.value if self.name else None
+        return f"{self.__class__.__name__}({self.type.value}, {name})"
+
     @property
     def children(self) -> Optional[Tuple[ContainerNode]]:
         return (self.container,) if self.container else None
@@ -187,6 +197,9 @@ class BlockNode(SyntaxNode):
 @dataclass
 class ContainerNode(SyntaxNode):
     items: Tuple[Union[BlockNode, PairNode, ListNode]]
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}()"
 
     @property
     def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode]]:
