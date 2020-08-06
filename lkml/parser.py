@@ -124,7 +124,7 @@ class Parser:
         return token.value
 
     def consume_trivia(self) -> str:
-        """Collects all trivia values into a string buffer."""
+        """Returns all continuous trivia values."""
         trivia = ""
         while True:
             if self.check(tokens.CommentToken, tokens.WhitespaceToken):
