@@ -534,6 +534,7 @@ class Parser:
             if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
                 value = self.parse_value()
                 value.prefix = prefix
+                value.suffix = self.consume_trivia()
                 values.append(value)
             elif self.check(tokens.ListEndToken):
                 break
