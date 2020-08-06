@@ -176,7 +176,7 @@ class Parser:
         finally:
             if skip_trivia:
                 self.jump_to_index(mark)
-            return result
+        return result
 
     def parse(self) -> dict:
         """Main method of this class and a wrapper for the expression parser."""
