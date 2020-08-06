@@ -449,6 +449,62 @@ def test_parse_list_with_only_commas():
     assert result is None
 
 
+def test_parse_list_with_trailing_comment():
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.LiteralToken("view_name.field_one", 1),
+        tokens.CommaToken(1),
+        tokens.LiteralToken("view_name.field_two", 1),
+        tokens.ListEndToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.CommentToken("# This is a comment", 1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("drill_fields"),
+        left_bracket=LeftBracket(),
+        items=(SyntaxToken("view_name.field_one"), SyntaxToken("view_name.field_two")),
+        right_bracket=RightBracket(suffix=" # This is a comment"),
+    )
+
+
+def test_parse_list_with_inner_comment():
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.WhitespaceToken("\n  ", 1),
+        tokens.LiteralToken("view_name.field_one", 2),
+        tokens.CommaToken(2),
+        tokens.WhitespaceToken("\n  ", 2),
+        tokens.LiteralToken("view_name.field_two", 3),
+        tokens.WhitespaceToken(" ", 3),
+        tokens.CommentToken("# This is a comment", 3),
+        tokens.WhitespaceToken("\n", 3),
+        tokens.ListEndToken(4),
+        tokens.StreamEndToken(4),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("drill_fields"),
+        left_bracket=LeftBracket(suffix="\n  "),
+        items=(
+            SyntaxToken("view_name.field_one"),
+            SyntaxToken(
+                "view_name.field_two", prefix="\n  ", suffix=" # This is a comment\n"
+            ),
+        ),
+        right_bracket=RightBracket(),
+    )
+
+
 def test_parse_block_with_no_expression():
     stream = (
         tokens.LiteralToken("dimension", 1),
