@@ -88,7 +88,7 @@ def test_scan_comment():
     lexer = lkml.Lexer(text)
     lexer.index = 1
     token = lexer.scan_comment()
-    assert token == tokens.CommentToken(" Make this better ", 1)
+    assert token == tokens.CommentToken("# Make this better ", 1)
 
 
 def test_scan_quoted_literal():
