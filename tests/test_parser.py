@@ -2,6 +2,7 @@ from lkml.parser import Syntax
 import pytest
 import lkml
 import lkml.tokens as tokens
+from lkml.tokens import LiteralToken, ValueToken, WhitespaceToken
 from lkml.tree import (
     LeftCurlyBrace,
     RightCurlyBrace,
@@ -343,6 +344,37 @@ def test_parse_list_with_literals():
     )
 
 
+def test_parse_list_with_pairs():
+    stream = (
+        tokens.LiteralToken("sorts", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.LiteralToken("orders.customer_id", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.LiteralToken("asc", 1),
+        tokens.CommaToken(1),
+        tokens.LiteralToken("orders.order_id", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.LiteralToken("desc", 1),
+        tokens.ListEndToken(1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("sorts"),
+        left_bracket=LeftBracket(),
+        items=(
+            PairNode(SyntaxToken("orders.customer_id"), SyntaxToken("asc")),
+            PairNode(SyntaxToken("orders.order_id"), SyntaxToken("desc")),
+        ),
+        right_bracket=RightBracket(),
+    )
+
+
 def test_parse_list_with_trailing_comma():
     # TODO: This does not currently preserve the trailing comma
     stream = (
@@ -502,6 +534,28 @@ def test_parse_list_with_inner_comment():
                 "view_name.field_two", prefix="\n  ", suffix=" # This is a comment\n"
             ),
         ),
+        right_bracket=RightBracket(),
+    )
+
+
+def test_parse_list_with_only_comment():
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.WhitespaceToken("\n  ", 1),
+        tokens.CommentToken("# Put some fields here", 2),
+        tokens.WhitespaceToken("\n", 2),
+        tokens.ListEndToken(3),
+        tokens.StreamEndToken(3),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("drill_fields"),
+        left_bracket=LeftBracket(),
+        items=tuple(),
         right_bracket=RightBracket(),
     )
 

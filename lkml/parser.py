@@ -515,10 +515,19 @@ class Parser:
         if self.log_debug:
             grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
-        values: List[tree.SyntaxToken] = []
 
-        prefix = self.consume_trivia()
-        if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
+        # Set a flag to ensure that all items are of the same type (pair or literal)
+        pair_mode: bool = False
+        values: Union[List[tree.SyntaxToken], List[tree.PairNode]] = []
+
+        pair = self.parse_pair()
+        if pair is not None:
+            values.append(pair)
+            pair_mode = True
+        elif self.check(
+            tokens.LiteralToken, tokens.QuotedLiteralToken, skip_trivia=True
+        ):
+            prefix = self.consume_trivia()
             value = self.parse_value()
             value.prefix = prefix
             value.suffix = self.consume_trivia()
@@ -532,16 +541,23 @@ class Parser:
             else:
                 return None
 
-            prefix = self.consume_trivia()
-            if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
-                value = self.parse_value()
-                value.prefix = prefix
-                value.suffix = self.consume_trivia()
-                values.append(value)
-            elif self.check(tokens.ListEndToken):
-                break
+            if pair_mode:
+                pair = self.parse_pair()
+                if pair is None:
+                    return None
+                else:
+                    values.append(pair)
             else:
-                return None
+                prefix = self.consume_trivia()
+                if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
+                    value = self.parse_value()
+                    value.prefix = prefix
+                    value.suffix = self.consume_trivia()
+                    values.append(value)
+                elif self.check(tokens.ListEndToken):
+                    break
+                else:
+                    return None
 
         if self.log_debug:
             self.logger.debug(
