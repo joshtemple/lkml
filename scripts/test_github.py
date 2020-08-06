@@ -17,13 +17,13 @@ def test_file(path: Path):
         shutil.copy(path, github_path / "load_errors" / path.name)
         logging.exception(f"Error parsing {path}")
 
-    try:
-        dumped = lkml.dump(parsed)
-        lkml.load(dumped)
-    except Exception:
-        with open(github_path / "dump_errors" / path.name, "w+") as file:
-            file.write(dumped)
-        logging.exception(f"Error serializing {path}")
+    # try:
+    #     dumped = lkml.dump(parsed)
+    #     lkml.load(dumped)
+    # except Exception:
+    #     with open(github_path / "dump_errors" / path.name, "w+") as file:
+    #         file.write(dumped)
+    #     logging.exception(f"Error serializing {path}")
 
 
 if __name__ == "__main__":
