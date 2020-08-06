@@ -1,4 +1,4 @@
-from lkml.tree import ContainerNode, ListNode
+from lkml.tree import ContainerNode, ListNode, PairNode, SyntaxToken
 from pathlib import Path
 import lkml
 
@@ -58,6 +58,19 @@ def test_removing_item_from_list_serializes_sensibly():
 
     node.items = tuple()
     assert str(node) == "name: []"
+
+
+def test_modifying_key_does_not_change_serialized_whitespace():
+    # Tests that the whitespace is defined by the colon token
+    container: ContainerNode = lkml.load("a :\n no")
+    node: PairNode = container.items[0]
+    assert str(node) == "a :\n no"
+
+    node.key = SyntaxToken("b")
+    assert str(node) == "b :\n no"
+
+    node.colon.prefix = ""
+    assert str(node) == "b:\n no"
 
 
 def test_view_with_all_fields():
