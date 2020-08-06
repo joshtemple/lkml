@@ -464,19 +464,17 @@ class Parser:
         prefix = self.consume_trivia()
         if self.check(tokens.ListStartToken):
             self.advance()
-            suffix = self.consume_trivia()
-            left_bracket = tree.LeftBracket(prefix=prefix, suffix=suffix)
+            left_bracket = tree.LeftBracket(prefix=prefix)
         else:
             return None
 
         csv = self.parse_csv()
         csv = csv or tuple()
 
-        prefix = self.consume_trivia()
         if self.check(tokens.ListEndToken):
             self.advance()
             suffix = self.consume_trivia()
-            right_bracket = tree.RightBracket(prefix=prefix, suffix=suffix)
+            right_bracket = tree.RightBracket(suffix=suffix)
             node = tree.ListNode(
                 type=key[0],
                 colon=key[1],
@@ -519,8 +517,12 @@ class Parser:
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         values: List[tree.SyntaxToken] = []
 
+        prefix = self.consume_trivia()
         if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
-            values.append(self.parse_value())
+            value = self.parse_value()
+            value.prefix = prefix
+            value.suffix = self.consume_trivia()
+            values.append(value)
         else:
             return None
 

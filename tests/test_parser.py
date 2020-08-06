@@ -1,3 +1,4 @@
+from lkml.parser import Syntax
 import pytest
 import lkml
 import lkml.tokens as tokens
@@ -494,9 +495,9 @@ def test_parse_list_with_inner_comment():
     result = parser.parse_list()
     assert result == ListNode(
         type=SyntaxToken("drill_fields"),
-        left_bracket=LeftBracket(suffix="\n  "),
+        left_bracket=LeftBracket(),
         items=(
-            SyntaxToken("view_name.field_one"),
+            SyntaxToken("view_name.field_one", prefix="\n  "),
             SyntaxToken(
                 "view_name.field_two", prefix="\n  ", suffix=" # This is a comment\n"
             ),
