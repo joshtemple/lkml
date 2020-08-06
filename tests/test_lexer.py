@@ -2,6 +2,7 @@ import pytest
 
 import lkml
 import lkml.tokens as tokens
+from lkml.tokens import CommentToken, StreamStartToken, WhitespaceToken
 
 
 @pytest.fixture
@@ -89,6 +90,18 @@ def test_scan_comment():
     lexer.index = 1
     token = lexer.scan_comment()
     assert token == tokens.CommentToken("# Make this better ", 1)
+
+
+def test_scan_comment_with_surrounding_whitespace():
+    text = "\n# A comment\n "
+    output = lkml.Lexer(text).scan()
+    assert output == (
+        tokens.StreamStartToken(1),
+        tokens.WhitespaceToken("\n", 1),
+        tokens.CommentToken("# A comment", 2),
+        tokens.WhitespaceToken("\n ", 2),
+        tokens.StreamEndToken(3),
+    )
 
 
 def test_scan_quoted_literal():
