@@ -22,6 +22,9 @@ class SyntaxToken:
     def format_value(self) -> str:
         return self.value
 
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_token(self)
+
     def __str__(self) -> str:
         return items_to_str(self.prefix, self.format_value(), self.suffix)
 
@@ -73,7 +76,7 @@ class SyntaxNode(ABC):
         ...
 
     @abstractmethod
-    def accept(self, visitor: Visitor):
+    def accept(self, visitor: Visitor) -> Any:
         ...
 
 
@@ -114,8 +117,8 @@ class PairNode(SyntaxNode):
     def children(self) -> None:
         return None
 
-    def accept(self, visitor: Visitor) -> None:
-        visitor.visit_pair(self)
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_pair(self)
 
     def __str__(self) -> str:
         return items_to_str(self.key, self.colon, self.value)
@@ -140,13 +143,8 @@ class ListNode(SyntaxNode):
     def children(self) -> Optional[Tuple[PairNode]]:
         return self.items if isinstance(self.items[0], PairNode) else None
 
-    def accept(self, visitor: Visitor) -> None:
-        visitor.visit_token(self.type)
-        for item in self.items:
-            if isinstance(item, PairNode):
-                visitor.visit_pair(item)
-            else:
-                visitor.visit_token(item)
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_list(self)
 
     def __str__(self) -> str:
         return items_to_str(
@@ -179,12 +177,8 @@ class BlockNode(SyntaxNode):
     def children(self) -> Optional[Tuple[ContainerNode]]:
         return (self.container,) if self.container else None
 
-    def accept(self, visitor: Visitor) -> None:
-        for token in (self.type, self.name):
-            if token is not None:
-                visitor.visit_token(token)
-        if self.container:
-            visitor.visit_container(self.container)
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_block(self)
 
     def __str__(self) -> str:
         name = self.name or ""
@@ -205,15 +199,8 @@ class ContainerNode(SyntaxNode):
     def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode]]:
         return self.items
 
-    def accept(self, visitor: Visitor) -> None:
-        if self.children:
-            for child in self.children:
-                if isinstance(child, BlockNode):
-                    visitor.visit_block(child)
-                elif isinstance(child, PairNode):
-                    visitor.visit_pair(child)
-                elif isinstance(child, ListNode):
-                    visitor.visit_list(child)
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_container(self)
 
     def __str__(self) -> str:
         # TODO: This produces unparseable LookML for unquoted pair values if no suffix
@@ -223,21 +210,21 @@ class ContainerNode(SyntaxNode):
 
 class Visitor(ABC):
     @abstractmethod
-    def visit_container(self, node: ContainerNode):
+    def visit_container(self, node: ContainerNode) -> Any:
         ...
 
     @abstractmethod
-    def visit_block(self, node: BlockNode):
+    def visit_block(self, node: BlockNode) -> Any:
         ...
 
     @abstractmethod
-    def visit_list(self, node: ListNode):
+    def visit_list(self, node: ListNode) -> Any:
         ...
 
     @abstractmethod
-    def visit_pair(self, node: PairNode):
+    def visit_pair(self, node: PairNode) -> Any:
         ...
 
     @abstractmethod
-    def visit_token(self, token: SyntaxToken):
+    def visit_token(self, token: SyntaxToken) -> Any:
         ...
