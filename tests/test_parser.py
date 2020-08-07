@@ -377,6 +377,7 @@ def test_parse_list_with_pairs():
 
 def test_parse_list_with_trailing_comma():
     # TODO: This does not currently preserve the trailing comma
+    # Test when the list items are separated by spaces
     stream = (
         tokens.LiteralToken("drill_fields", 1),
         tokens.ValueToken(1),
@@ -394,6 +395,28 @@ def test_parse_list_with_trailing_comma():
         left_bracket=LeftBracket(),
         items=(SyntaxToken("view_name.field_one"),),
         right_bracket=RightBracket(),
+    )
+
+    # Test when the list items are separated by newlines
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.WhitespaceToken("\n  ", 1),
+        tokens.LiteralToken("view_name.field_one", 2),
+        tokens.CommaToken(2),
+        tokens.WhitespaceToken("\n", 2),
+        tokens.ListEndToken(3),
+        tokens.StreamEndToken(3),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("drill_fields"),
+        left_bracket=LeftBracket(),
+        items=(SyntaxToken("view_name.field_one", prefix="\n  "),),
+        right_bracket=RightBracket(prefix="\n"),
     )
 
 
