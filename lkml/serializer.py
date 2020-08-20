@@ -137,7 +137,7 @@ class Serializer:
                 name = value.pop("name")
             yield from self.write_block(key, value, name)
         else:
-            raise TypeError("Value must be a string, list, tuple, or dict.")
+            raise TypeError("Value must be a string, list, tuple, or dict. Got %s." % type(value))
 
         self.field_counter += 1
 
