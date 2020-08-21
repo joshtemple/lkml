@@ -1,8 +1,0 @@
-bandit==1.6.2
-black==19.3b0
-flake8==3.7.8
-isort==4.3.20
-mypy==0.710
-pydocstyle==4.0.0
-pytest-cov==2.7.1
-pytest==4.6.2

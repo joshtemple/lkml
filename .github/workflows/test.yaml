@@ -1,0 +1,38 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install poetry
+        run: pip install --upgrade poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Test with pytest
+        run: |
+          poetry run pytest
+
+      - name: Security check - Bandit
+        uses: ./
+        with:
+          python_version: ${{ matrix.python-version }}
+          project_path: .
+          ignore_failure: true
+
+      - name: Security check report artifacts
+        uses: actions/upload-artifact@v1
+        # if: failure()
+        with:
+          name: Security report
+          path: output/security_report.txt

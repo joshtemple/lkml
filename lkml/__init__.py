@@ -101,7 +101,3 @@ def cli():
 
     json_string = json.dumps(lookml, indent=2)
     print(json_string)
-
-
-if __name__ == "__main__":
-    cli()
