@@ -200,6 +200,14 @@ def test_write_any_with_str_value(serializer):
     assert result == "hidden: yes"
 
 
+@pytest.mark.parametrize("value,expected",[(True, "yes"), (False, "no")])
+def test_write_any_with_boolean_value(serializer, value, expected):
+    generator = serializer.write_any(key="hidden", value=value)
+    result = "".join(generator)
+    print(result)
+    assert result == "hidden: %s" % expected
+
+
 def test_write_any_with_list_value(serializer):
     generator = serializer.write_any(key="sortkeys", value=["column_one", "column_two"])
     result = "".join(generator)

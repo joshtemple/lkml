@@ -108,7 +108,7 @@ class Serializer:
             yield from self.write_any(modified_key, value)
 
     def write_any(
-        self, key: str, value: Union[str, list, tuple, dict]
+        self, key: str, value: Union[str, list, tuple, dict, bool]
     ) -> Iterator[str]:
         """Dynamically serializes a Python object based on its type.
 
@@ -125,6 +125,8 @@ class Serializer:
         """
         if isinstance(value, str):
             yield from self.write_pair(key, value)
+        elif isinstance(value, bool):
+            yield from self.write_pair(key, "yes" if value else "no")
         elif isinstance(value, (list, tuple)):
             if self.is_plural_key(key):
                 yield from self.expand_list(key, value)
