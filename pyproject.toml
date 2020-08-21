@@ -12,7 +12,7 @@ keywords = ['lookml', 'looker', 'parser']
 lkml = 'poetry.console:run'
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4"
+python = "^3.7"
 
 [tool.poetry.dev-dependencies]
 bandit = "^1.6.2"
