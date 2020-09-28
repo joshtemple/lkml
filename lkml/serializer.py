@@ -68,7 +68,9 @@ class Serializer:
         """
         if key.endswith("s"):
             singular_key = key.rstrip("s")
-            return singular_key in PLURAL_KEYS and not (
+            return (
+                singular_key == "old_filter" or singular_key in PLURAL_KEYS
+            ) and not (
                 singular_key == "allowed_value"
                 and self.parent_key.rstrip("s") == "access_grant"
             )

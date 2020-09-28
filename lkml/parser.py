@@ -207,8 +207,12 @@ class Parser:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
         stripped_key = key.rstrip("s")
-        if stripped_key in PLURAL_KEYS:
-            plural_key = stripped_key + "s"
+        if stripped_key in PLURAL_KEYS or key == "filter":
+            if key == "filter":
+                plural_key = "old_filters"
+            else:
+                plural_key = stripped_key + "s"
+
             if plural_key in target.keys():
                 target[plural_key].append(update[key])
             else:

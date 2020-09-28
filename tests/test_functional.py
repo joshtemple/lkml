@@ -74,3 +74,8 @@ def test_view_with_refinements():
 def test_measure_with_new_filters_syntax():
     parsed = load("measure_with_new_filters_syntax.view.lkml")
     assert parsed is not None
+
+
+def test_kitchen_sink():
+    parsed = load("kitchensink.model.lkml")
+    assert parsed is not None
