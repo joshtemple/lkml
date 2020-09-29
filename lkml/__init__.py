@@ -46,7 +46,7 @@ def dump(obj: dict, file_object: IO = None) -> Optional[str]:
 
     """
     serializer = Serializer()
-    result = serializer.serialize(obj)
+    result = serializer.serialize(obj).replace("old_filter:", "filter:")
     if file_object:
         file_object.write(result)
         return None
