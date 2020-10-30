@@ -194,9 +194,14 @@ class Parser:
                 self.jump_to_index(mark)
         return result
 
-    def parse(self) -> dict:
+    def parse(self) -> tree.DocumentNode:
         """Main method of this class and a wrapper for the expression parser."""
-        return self.parse_container()
+        if self.check(tokens.StreamStartToken):
+            self.advance()
+        prefix = self.consume_trivia()
+        container = self.parse_container()
+        suffix = self.consume_trivia()
+        return tree.DocumentNode(container, prefix, suffix)
 
     @backtrack_if_none
     def parse_container(self) -> tree.ContainerNode:
@@ -213,8 +218,6 @@ class Parser:
             grammar = "[expression] = (block / pair / list)*"
             self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         items: List[Union[tree.BlockNode, tree.PairNode, tree.ListNode]] = []
-        if self.check(tokens.StreamStartToken):
-            self.advance()
         while not self.check(
             tokens.StreamEndToken, tokens.BlockEndToken, skip_trivia=True
         ):

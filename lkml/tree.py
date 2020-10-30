@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple, Optional, Union, Any
+from typing import Container, Tuple, Optional, Union, Any
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -78,26 +78,6 @@ class SyntaxNode(ABC):
     @abstractmethod
     def accept(self, visitor: Visitor) -> Any:
         ...
-
-
-# @dataclass
-# class ExpressionNode(SyntaxNode):
-#     value: SyntaxToken
-#     terminal: Optional[DoubleSemicolon] = None
-
-#     def __post_init__(self):
-#         if self.terminal is None:
-#             self.terminal = DoubleSemicolon(prefix=" ", suffix="\n")
-
-#     @property
-#     def children(self) -> None:
-#         return None
-
-#     def accept(self, visitor: Visitor) -> None:
-#         visitor.visit_expression(self)
-
-#     def __str__(self) -> str:
-#         return items_to_str(self.value, self.terminal)
 
 
 @dataclass
@@ -188,6 +168,23 @@ class BlockNode(SyntaxNode):
         return items_to_str(
             self.type, self.colon, name, self.left_brace, container, self.right_brace,
         )
+
+
+@dataclass
+class DocumentNode(SyntaxNode):
+    container: ContainerNode
+    prefix: str = ""
+    suffix: str = ""
+
+    @property
+    def children(self) -> Tuple[ContainerNode]:
+        return tuple(self.container)
+
+    def accept(self, visitor: Visitor) -> Any:
+        return visitor.visit_document(self)
+
+    def __str__(self) -> str:
+        return items_to_str(self.prefix, self.container, self.suffix)
 
 
 @dataclass
