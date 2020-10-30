@@ -374,10 +374,31 @@ def test_parse_list_with_pairs():
         right_bracket=RightBracket(),
     )
 
+    stream = (
+        tokens.LiteralToken("filters", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.WhitespaceToken("\n  ", 1),
+        tokens.LiteralToken("view_name.field_one", 2),
+        tokens.ValueToken(2),
+        tokens.WhitespaceToken(" ", 2),
+        tokens.QuotedLiteralToken("-0,-1,-8,-9,-99,-NULL,-EMPTY", 2),
+        tokens.WhitespaceToken("\n", 2),
+        tokens.ListEndToken(3),
+        tokens.StreamEndToken(3),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("filters"),
+        left_bracket=LeftBracket(),
+        items=(SyntaxToken("view_name.field_one", prefix="\n  "),),
+        right_bracket=RightBracket(prefix="\n"),
+    )
+
 
 def test_parse_list_with_trailing_comma():
-    # TODO: This does not currently preserve the trailing comma
-    # Test when the list items are separated by spaces
     stream = (
         tokens.LiteralToken("drill_fields", 1),
         tokens.ValueToken(1),
@@ -395,6 +416,7 @@ def test_parse_list_with_trailing_comma():
         left_bracket=LeftBracket(),
         items=(SyntaxToken("view_name.field_one"),),
         right_bracket=RightBracket(),
+        trailing_comma=True,
     )
 
     # Test when the list items are separated by newlines
@@ -417,6 +439,7 @@ def test_parse_list_with_trailing_comma():
         left_bracket=LeftBracket(),
         items=(SyntaxToken("view_name.field_one", prefix="\n  "),),
         right_bracket=RightBracket(prefix="\n"),
+        trailing_comma=True,
     )
 
 
@@ -453,6 +476,25 @@ def test_parse_list_with_no_contents():
         left_bracket=LeftBracket(),
         items=tuple(),
         right_bracket=RightBracket(),
+    )
+
+    # Add whitespace between brackets
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListEndToken(1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("drill_fields"),
+        left_bracket=LeftBracket(),
+        items=tuple(),
+        right_bracket=RightBracket(prefix=" "),
     )
 
 
@@ -579,7 +621,7 @@ def test_parse_list_with_only_comment():
         type=SyntaxToken("drill_fields"),
         left_bracket=LeftBracket(),
         items=tuple(),
-        right_bracket=RightBracket(),
+        right_bracket=RightBracket(prefix="\n  # Put some fields here\n"),
     )
 
 

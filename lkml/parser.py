@@ -1,5 +1,6 @@
 """Parses a sequence of tokenized LookML into a Python object."""
 
+from dataclasses import dataclass, field
 import logging
 from typing import Optional, Sequence, Type, Union, Tuple, List
 from functools import wraps
@@ -39,6 +40,21 @@ def backtrack_if_none(fn):
         return result
 
     return wrapper
+
+
+@dataclass
+class CommaSeparatedValues:
+    """Helper class to store a series of values and a flag for a trailing comma."""
+
+    _values: list = field(default_factory=list)
+    trailing_comma: bool = False
+
+    def append(self, value):
+        self._values.append(value)
+
+    @property
+    def values(self):
+        return tuple(self._values)
 
 
 class Parser:
@@ -469,18 +485,20 @@ class Parser:
             return None
 
         csv = self.parse_csv()
-        csv = csv or tuple()
+        csv = csv or CommaSeparatedValues()
 
-        if self.check(tokens.ListEndToken):
+        if self.check(tokens.ListEndToken, skip_trivia=True):
+            prefix = self.consume_trivia()
             self.advance()
             suffix = self.consume_trivia()
-            right_bracket = tree.RightBracket(suffix=suffix)
+            right_bracket = tree.RightBracket(prefix=prefix, suffix=suffix)
             node = tree.ListNode(
                 type=key[0],
                 colon=key[1],
                 left_bracket=left_bracket,
-                items=csv,
+                items=csv.values,
                 right_bracket=right_bracket,
+                trailing_comma=csv.trailing_comma,
             )
             if self.log_debug:
                 self.logger.debug(
@@ -491,7 +509,7 @@ class Parser:
             return None
 
     @backtrack_if_none
-    def parse_csv(self) -> Optional[Tuple[tree.SyntaxToken]]:
+    def parse_csv(self) -> Optional[CommaSeparatedValues]:
         """Returns a tuple that represents comma-separated LookML values.
 
         Returns:
@@ -518,11 +536,12 @@ class Parser:
 
         # Set a flag to ensure that all items are of the same type (pair or literal)
         pair_mode: bool = False
-        values: Union[List[tree.SyntaxToken], List[tree.PairNode]] = []
+        csv = CommaSeparatedValues()
 
+        # Parse the first value to set the list's type
         pair = self.parse_pair()
         if pair is not None:
-            values.append(pair)
+            csv.append(pair)
             pair_mode = True
         elif self.check(
             tokens.LiteralToken, tokens.QuotedLiteralToken, skip_trivia=True
@@ -531,13 +550,16 @@ class Parser:
             value = self.parse_value()
             value.prefix = prefix
             value.suffix = self.consume_trivia()
-            values.append(value)
+            csv.append(value)
         else:
             return None
 
-        while not self.check(tokens.ListEndToken):
+        # Parse to the closing bracket of the list
+        while not self.check(tokens.ListEndToken, skip_trivia=True):
             if self.check(tokens.CommaToken):
                 self.advance()
+                if self.check(tokens.ListEndToken, skip_trivia=True):
+                    csv.trailing_comma = True
             else:
                 return None
 
@@ -546,15 +568,17 @@ class Parser:
                 if pair is None:
                     return None
                 else:
-                    values.append(pair)
+                    csv.append(pair)
             else:
-                prefix = self.consume_trivia()
-                if self.check(tokens.LiteralToken, tokens.QuotedLiteralToken):
+                if self.check(
+                    tokens.LiteralToken, tokens.QuotedLiteralToken, skip_trivia=True
+                ):
+                    prefix = self.consume_trivia()
                     value = self.parse_value()
                     value.prefix = prefix
                     value.suffix = self.consume_trivia()
-                    values.append(value)
-                elif self.check(tokens.ListEndToken):
+                    csv.append(value)
+                elif self.check(tokens.ListEndToken, skip_trivia=True):
                     break
                 else:
                     return None
@@ -563,4 +587,4 @@ class Parser:
             self.logger.debug(
                 "%sSuccessfully parsed comma-separated values.", self.depth * DELIMITER
             )
-        return tuple(values)
+        return csv

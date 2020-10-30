@@ -131,6 +131,7 @@ class ListNode(SyntaxNode):
     left_bracket: LeftBracket
     right_bracket: RightBracket
     colon: Optional[Colon] = None
+    trailing_comma: bool = False
 
     def __post_init__(self):
         if self.colon is None:
@@ -152,6 +153,7 @@ class ListNode(SyntaxNode):
             self.colon,
             self.left_bracket,
             ",".join(str(item) for item in self.items),
+            "," if self.trailing_comma else "",
             self.right_bracket,
         )
 
