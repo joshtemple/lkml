@@ -1,8 +1,8 @@
 """Tests open-source LookML files from GitHub to catch edge cases.
 
-Tests in this file depend on the presence of .lkml files downloaded to the lkml/github
+Tests in this file depend on the presence of .lkml files downloaded to the /github
 directory. To download these files freshly, you'll need a GitHub API token. Then, run
-the script in scripts/ to download the latest batch of public LookML from GitHub.
+the script in /scripts to download the latest batch of public LookML from GitHub.
 
 """
 
