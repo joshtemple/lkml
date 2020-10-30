@@ -393,7 +393,12 @@ def test_parse_list_with_pairs():
     assert result == ListNode(
         type=SyntaxToken("filters"),
         left_bracket=LeftBracket(),
-        items=(SyntaxToken("view_name.field_one", prefix="\n  "),),
+        items=(
+            PairNode(
+                SyntaxToken("view_name.field_one", prefix="\n  "),
+                QuotedSyntaxToken("-0,-1,-8,-9,-99,-NULL,-EMPTY"),
+            ),
+        ),
         right_bracket=RightBracket(prefix="\n"),
     )
 
