@@ -89,7 +89,6 @@ class Lexer:
                 self.tokens.append(self.scan_literal())
                 self.advance()
                 self.tokens.append(tokens.ValueToken(self.line_number))
-                self.tokens.append(self.scan_whitespace())
                 self.tokens.append(self.scan_expression_block())
             else:
                 # TODO: This should actually check for valid literals first
@@ -156,9 +155,6 @@ class Lexer:
             if self.peek() == "\n":
                 self.line_number += 1
             chars += self.consume()
-        # TODO: Eventually this should not strip whitespace but should allow that
-        # to be preserved during parsing
-        chars = chars.rstrip()
         return tokens.ExpressionBlockToken(chars, self.line_number)
 
     def scan_literal(self) -> tokens.LiteralToken:

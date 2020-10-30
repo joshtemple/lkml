@@ -66,7 +66,7 @@ class QuotedSyntaxToken(SyntaxToken):
 
 class ExpressionSyntaxToken(SyntaxToken):
     def format_value(self) -> str:
-        return self.value + " ;;"
+        return self.value + ";;"
 
 
 class SyntaxNode(ABC):
