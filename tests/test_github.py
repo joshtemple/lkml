@@ -6,7 +6,6 @@ the script in scripts/ to download the latest batch of public LookML from GitHub
 
 """
 
-import itertools
 from pathlib import Path
 import pytest
 import lkml
@@ -14,10 +13,9 @@ import lkml
 BASE_GITHUB_PATH = Path(__file__).parents[1] / "github"
 # Define this separately so the parameterized fixture suffixes display nicely
 filenames = (path.name for path in BASE_GITHUB_PATH.glob("*.lkml"))
-FIRST_N_FILES = 100
 
 
-@pytest.fixture(scope="module", params=itertools.islice(filenames, FIRST_N_FILES))
+@pytest.fixture(scope="module", params=filenames)
 def lookml(request):
     with (BASE_GITHUB_PATH / request.param).open("r") as file:
         text = file.read()
