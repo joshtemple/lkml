@@ -51,7 +51,6 @@ output/
 .mypy_cache/
 
 # Project-specific
-github/
 TODO.md
 
 # Mac

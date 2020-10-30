@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 import lkml
 
-BASE_GITHUB_PATH = Path(__file__).parents[1] / "github"
+BASE_GITHUB_PATH = Path(__file__).parent / "resources/github"
 # Define this separately so the parameterized fixture suffixes display nicely
 filenames = (path.name for path in BASE_GITHUB_PATH.glob("*.lkml"))
 
