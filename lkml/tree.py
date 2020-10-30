@@ -133,7 +133,7 @@ class ListNode(SyntaxNode):
             self.colon,
             self.left_bracket,
             ",".join(str(item) for item in self.items),
-            "," if self.trailing_comma else "",
+            "," if self.trailing_comma and len(self.items) > 0 else "",
             self.right_bracket,
         )
 
