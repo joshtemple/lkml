@@ -170,9 +170,11 @@ class DictParser:
         self.parent_key: str = None
         self.level: int = 0
         self.base_indent: str = " " * 2
+        self.latest_node: Optional[SyntaxNode] = None
 
     def increase_level(self) -> None:
         """Increases the indent level of the current line by one tab."""
+        self.latest_node = None
         self.level += 1
 
     def decrease_level(self) -> None:
@@ -189,6 +191,13 @@ class DictParser:
     @property
     def newline_indent(self) -> str:
         return "\n" + self.indent
+
+    @property
+    def prefix(self) -> str:
+        if self.latest_node == BlockNode:
+            return "\n" + self.newline_indent
+        else:
+            return self.newline_indent
 
     def is_plural_key(self, key: str) -> bool:
         """Returns True if the key is a repeatable key.
@@ -257,7 +266,7 @@ class DictParser:
 
         """
         if isinstance(value, str):
-            return self.parse_pair(key, value, prefix=self.newline_indent)
+            return self.parse_pair(key, value)
         elif isinstance(value, (list, tuple)):
             if self.is_plural_key(key):
                 return self.expand_list(key, value)
@@ -288,18 +297,27 @@ class DictParser:
         """
 
         self.parent_key = key
+        latest_node_at_this_level = self.latest_node
         self.increase_level()
         nodes = [self.parse_any(key, value) for key, value in items.items()]
         self.decrease_level()
+        self.latest_node = latest_node_at_this_level
         container = ContainerNode(items=tuple(flatten(nodes)))
 
-        return BlockNode(
-            type=SyntaxToken(key, prefix="\n" + self.newline_indent),
+        if self.latest_node:
+            prefix = "\n" + self.newline_indent
+        else:
+            prefix = self.newline_indent
+        
+        node = BlockNode(
+            type=SyntaxToken(key, prefix=prefix),
             left_brace=LeftCurlyBrace(prefix=" " if name else ""),
             right_brace=RightCurlyBrace(prefix=self.newline_indent),
             name=SyntaxToken(name) if name else None,
             container=container,
         )
+        self.latest_node = BlockNode
+        return node
 
     def parse_list(self, key: str, values: Iterable[Union[str, Sequence]]) -> ListNode:
         """Serializes a sequence to a LookML block.
@@ -315,7 +333,7 @@ class DictParser:
         # `suggestions` is only quoted when it's a list, so override the default
         force_quote = True if key == "suggestions" else False
 
-        type_token = SyntaxToken(key, prefix=self.newline_indent)
+        type_token = SyntaxToken(key, prefix=self.prefix)
         right_bracket = RightBracket()
         items = []
         pair_mode = False
@@ -330,9 +348,7 @@ class DictParser:
             self.increase_level()
             for value in values:
                 if pair_mode:
-                    item: PairNode = self.parse_pair(
-                        key=value[0], value=value[1], prefix=self.newline_indent
-                    )
+                    item: PairNode = self.parse_pair(key=value[0], value=value[1])
                 else:
                     item: SyntaxToken = self.parse_token(
                         key, value, force_quote, prefix=self.newline_indent
@@ -349,17 +365,17 @@ class DictParser:
                     token = self.parse_token(key, value, force_quote, prefix=" ")
                 items.append(token)
 
-        return ListNode(
+        node = ListNode(
             type=type_token,
             left_bracket=LeftBracket(),
             items=tuple(items),
             right_bracket=right_bracket,
             trailing_comma=trailing_comma,
         )
+        self.latest_node = ListNode
+        return node
 
-    def parse_pair(
-        self, key: str, value: str, prefix: Optional[str] = None
-    ) -> PairNode:
+    def parse_pair(self, key: str, value: str) -> PairNode:
         """Serializes a key and value to a LookML pair.
 
         Args:
@@ -371,7 +387,11 @@ class DictParser:
 
         """
         value_syntax_token: SyntaxToken = self.parse_token(key, value)
-        return PairNode(key=SyntaxToken(key, prefix=prefix), value=value_syntax_token)
+        node = PairNode(
+            key=SyntaxToken(key, prefix=self.prefix), value=value_syntax_token
+        )
+        self.latest_node = PairNode
+        return node
 
     @staticmethod
     def parse_token(
