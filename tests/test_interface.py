@@ -1,67 +1,60 @@
 import pytest
-import lkml
+from lkml.interface import DictParser
 
 
 @pytest.fixture
-def serializer():
-    return lkml.Serializer()
+def parser():
+    return DictParser()
 
 
-def test_write_value_with_unquoted_literal(serializer):
-    generator = serializer.write_value(key="hidden", value="no")
-    result = "".join(generator)
+def test_write_token_with_unquoted_literal(parser):
+    token = parser.write_token(key="hidden", value="no")
+    result = str(token)
     print(result)
     assert result == "no"
 
 
-def test_write_value_with_quoted_literal(serializer):
-    generator = serializer.write_value(key="label", value="Dimension Name")
-    result = "".join(generator)
+def test_write_token_with_quoted_literal(parser):
+    token = parser.write_token(key="label", value="Dimension Name")
+    result = str(token)
     print(result)
     assert result == '"Dimension Name"'
 
 
-def test_write_key(serializer):
-    generator = serializer.write_key(key="hidden")
-    result = "".join(generator)
-    print(result)
-    assert result == "hidden: "
-
-
-def test_write_pair_with_unquoted_literal(serializer):
-    generator = serializer.write_pair(key="hidden", value="no")
-    result = "".join(generator)
+def test_write_pair_with_unquoted_literal(parser):
+    node = parser.write_pair(key="hidden", value="no")
+    result = str(node)
     print(result)
     assert result == "hidden: no"
 
 
-def test_write_pair_with_quoted_literal(serializer):
-    generator = serializer.write_pair(key="label", value="Dimension Name")
-    result = "".join(generator)
+def test_write_pair_with_quoted_literal(parser):
+    node = parser.write_pair(key="label", value="Dimension Name")
+    result = str(node)
     print(result)
     assert result == 'label: "Dimension Name"'
 
 
-def test_write_set_with_unquoted_literals(serializer):
-    generator = serializer.write_set(
+def test_write_list_with_unquoted_literals(parser):
+    node = parser.write_list(
         key="fields", values=["dimension_one", "dimension_two", "dimension_three"]
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "fields: [dimension_one, dimension_two, dimension_three]"
 
 
-def test_write_set_with_quoted_literals(serializer):
-    generator = serializer.write_set(
+def test_write_list_with_quoted_literals(parser):
+    node = parser.write_list(
         key="sortkeys", values=["column_one", "column_two", "column_three"]
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == 'sortkeys: ["column_one", "column_two", "column_three"]'
 
 
-def test_write_set_with_many_values(serializer):
-    generator = serializer.write_set(
+def test_write_list_with_many_values(parser):
+    node = parser.write_list(
         key="timeframes",
         values=[
             "raw",
@@ -75,7 +68,7 @@ def test_write_set_with_many_values(serializer):
             "year",
         ],
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "".join(
         (
@@ -94,18 +87,18 @@ def test_write_set_with_many_values(serializer):
     )
 
 
-def test_write_set_with_no_values(serializer):
-    generator = serializer.write_set(key="sortkeys", values=[])
-    result = "".join(generator)
+def test_write_list_with_no_values(parser):
+    node = parser.write_list(key="sortkeys", values=[])
+    result = str(node)
     print(result)
     assert result == "sortkeys: []"
 
 
-def test_write_block_with_unquoted_literals(serializer):
-    generator = serializer.write_block(
-        key="bind_fields", fields={"from_field": "field_name", "to_field": "field_name"}
+def test_write_block_with_unquoted_literals(parser):
+    node = parser.write_block(
+        key="bind_fields", items={"from_field": "field_name", "to_field": "field_name"}
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "".join(
         (
@@ -117,16 +110,16 @@ def test_write_block_with_unquoted_literals(serializer):
     )
 
 
-def test_write_block_with_quoted_literals(serializer):
-    generator = serializer.write_block(
+def test_write_block_with_quoted_literals(parser):
+    node = parser.write_block(
         key="dimension",
-        fields={
+        items={
             "label": "Dimension Name",
             "group_label": "Group Name",
             "description": "A dimension description.",
         },
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "".join(
         (
@@ -139,37 +132,35 @@ def test_write_block_with_quoted_literals(serializer):
     )
 
 
-def test_write_block_with_name(serializer):
-    generator = serializer.write_block(
-        key="dimension", fields={"label": "Dimension Name"}, name="dimension_name"
+def test_write_block_with_name(parser):
+    node = parser.write_block(
+        key="dimension", items={"label": "Dimension Name"}, name="dimension_name"
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "".join(
         ("dimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
     )
 
 
-def test_write_block_with_no_fields_and_name(serializer):
-    generator = serializer.write_block(
-        key="dimension", fields={}, name="dimension_name"
-    )
-    result = "".join(generator)
+def test_write_block_with_no_fields_and_name(parser):
+    node = parser.write_block(key="dimension", items={}, name="dimension_name")
+    result = str(node)
     print(result)
     assert result == "dimension: dimension_name {}"
 
 
-def test_write_block_with_no_fields_and_no_name(serializer):
-    generator = serializer.write_block(key="dimension", fields={}, name=None)
-    result = "".join(generator)
+def test_write_block_with_no_fields_and_no_name(parser):
+    node = parser.write_block(key="dimension", items={}, name=None)
+    result = str(node)
     print(result)
     assert result == "dimension: {}"
 
 
-def test_write_nested_block(serializer):
-    generator = serializer.write_block(
+def test_write_nested_block(parser):
+    node = parser.write_block(
         key="derived_table",
-        fields={
+        items={
             "explore_source": {
                 "bind_filters": {"from_field": "field_name", "to_field": "field_name"},
                 "name": "explore_name",
@@ -177,7 +168,7 @@ def test_write_nested_block(serializer):
         },
     )
 
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "".join(
         (
@@ -193,58 +184,58 @@ def test_write_nested_block(serializer):
     )
 
 
-def test_write_any_with_str_value(serializer):
-    generator = serializer.write_any(key="hidden", value="yes")
-    result = "".join(generator)
+def test_write_any_with_str_value(parser):
+    node = parser.write_any(key="hidden", value="yes")
+    result = str(node)
     print(result)
     assert result == "hidden: yes"
 
 
-def test_write_any_with_list_value(serializer):
-    generator = serializer.write_any(key="sortkeys", value=["column_one", "column_two"])
-    result = "".join(generator)
+def test_write_any_with_list_value(parser):
+    node = parser.write_any(key="sortkeys", value=["column_one", "column_two"])
+    result = str(node)
     print(result)
     assert result == 'sortkeys: ["column_one", "column_two"]'
 
 
-def test_write_any_with_dict_value_and_name(serializer):
-    generator = serializer.write_any(
+def test_write_any_with_dict_value_and_name(parser):
+    node = parser.write_any(
         key="dimension", value={"name": "dimension_name", "label": "Dimension Name"}
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "".join(
         ("dimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
     )
 
 
-def test_write_any_with_dict_value_and_no_name(serializer):
-    generator = serializer.write_any(key="dimension", value={"label": "Dimension Name"})
-    result = "".join(generator)
+def test_write_any_with_dict_value_and_no_name(parser):
+    node = parser.write_any(key="dimension", value={"label": "Dimension Name"})
+    result = str(node)
     print(result)
     assert result == "".join(("dimension: {\n", '  label: "Dimension Name"\n', "}"))
 
 
-def test_any_raises_with_bad_type(serializer):
-    generator = serializer.write_any("sql", 100)
+def test_any_raises_with_bad_type(parser):
+    node = parser.write_any("sql", 100)
     with pytest.raises(TypeError):
-        "".join(generator)
+        str(node)
 
 
-def test_expand_list_with_blocks(serializer):
-    generator = serializer.expand_list(
+def test_expand_list_with_blocks(parser):
+    node = parser.expand_list(
         key="dimensions", values=[{"name": "dimension_one"}, {"name": "dimension_two"}]
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "dimension: dimension_one {}\n\ndimension: dimension_two {}"
 
 
-def test_expand_list_with_pairs(serializer):
-    generator = serializer.expand_list(
+def test_expand_list_with_pairs(parser):
+    node = parser.expand_list(
         key="includes", values=["filename_or_pattern_one", "filename_or_pattern_two"]
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert (
         result
@@ -252,8 +243,8 @@ def test_expand_list_with_pairs(serializer):
     )
 
 
-def test_serialize_view_with_multiple_dimensions(serializer):
-    generator = serializer.write_any(
+def test_serialize_view_with_multiple_dimensions(parser):
+    node = parser.write_any(
         key="views",
         value=[
             {
@@ -297,7 +288,7 @@ def test_serialize_view_with_multiple_dimensions(serializer):
             }
         ],
     )
-    result = "".join(generator)
+    result = str(node)
     print(result)
     assert result == "".join(
         (
@@ -335,14 +326,14 @@ def test_serialize_view_with_multiple_dimensions(serializer):
     )
 
 
-def test_serialize_top_level_pairs(serializer):
+def test_serialize_top_level_pairs(parser):
     obj = {
         "connection": "c53-looker",
         "includes": ["*.view"],
         "fiscal_month_offset": "0",
         "week_start_day": "sunday",
     }
-    result = serializer.serialize(obj)
+    result = parser.serialize(obj)
     print(result)
     assert result == "".join(
         (

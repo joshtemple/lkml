@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Container, Tuple, Optional, Union, Any
+from typing import Tuple, Optional, Union, Any
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
