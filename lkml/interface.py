@@ -194,7 +194,9 @@ class DictParser:
 
     @property
     def prefix(self) -> str:
-        if self.latest_node == BlockNode:
+        if self.latest_node is None:
+            return self.newline_indent
+        elif self.latest_node == BlockNode:
             return "\n" + self.newline_indent
         else:
             return self.newline_indent
@@ -308,11 +310,13 @@ class DictParser:
             prefix = "\n" + self.newline_indent
         else:
             prefix = self.newline_indent
-        
+
         node = BlockNode(
             type=SyntaxToken(key, prefix=prefix),
             left_brace=LeftCurlyBrace(prefix=" " if name else ""),
-            right_brace=RightCurlyBrace(prefix=self.newline_indent),
+            right_brace=RightCurlyBrace(
+                prefix=self.newline_indent if container.items else ""
+            ),
             name=SyntaxToken(name) if name else None,
             container=container,
         )
