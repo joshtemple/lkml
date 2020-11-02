@@ -13,9 +13,9 @@ def lookml_path():
 
 
 def test_debug_flag_is_parsed_to_log_level_debug(lookml_path):
-    args = lkml.parse_args([lookml_path, "-d"])
+    args = lkml.parse_args([lookml_path, "-v"])
     assert args.log_level == logging.DEBUG
-    args = lkml.parse_args([lookml_path, "--debug"])
+    args = lkml.parse_args([lookml_path, "--verbose"])
     assert args.log_level == logging.DEBUG
 
 
