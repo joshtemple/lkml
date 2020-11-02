@@ -25,14 +25,14 @@ def test_parse_pair_with_unquoted_literal(parser):
     node = parser.parse_pair(key="hidden", value="no")
     result = str(node)
     print(result)
-    assert result == "\nhidden: no"
+    assert result == "hidden: no"
 
 
 def test_parse_pair_with_quoted_literal(parser):
     node = parser.parse_pair(key="label", value="Dimension Name")
     result = str(node)
     print(result)
-    assert result == '\nlabel: "Dimension Name"'
+    assert result == 'label: "Dimension Name"'
 
 
 def test_parse_list_with_unquoted_literals(parser):
@@ -41,7 +41,7 @@ def test_parse_list_with_unquoted_literals(parser):
     )
     result = str(node)
     print(result)
-    assert result == "\nfields: [dimension_one, dimension_two, dimension_three]"
+    assert result == "fields: [dimension_one, dimension_two, dimension_three]"
 
 
 def test_parse_list_with_quoted_literals(parser):
@@ -50,7 +50,7 @@ def test_parse_list_with_quoted_literals(parser):
     )
     result = str(node)
     print(result)
-    assert result == '\nsortkeys: ["column_one", "column_two", "column_three"]'
+    assert result == 'sortkeys: ["column_one", "column_two", "column_three"]'
 
 
 def test_parse_list_with_many_values(parser):
@@ -72,7 +72,7 @@ def test_parse_list_with_many_values(parser):
     print(result)
     assert result == "".join(
         (
-            "\ntimeframes: [\n",
+            "timeframes: [\n",
             "  raw,\n",
             "  time,\n",
             "  hour_of_day,\n",
@@ -91,7 +91,7 @@ def test_parse_list_with_no_values(parser):
     node = parser.parse_list(key="sortkeys", values=[])
     result = str(node)
     print(result)
-    assert result == "\nsortkeys: []"
+    assert result == "sortkeys: []"
 
 
 def test_parse_block_with_unquoted_literals(parser):
@@ -102,7 +102,7 @@ def test_parse_block_with_unquoted_literals(parser):
     print(result)
     assert result == "".join(
         (
-            "\nbind_fields: {\n",
+            "bind_fields: {\n",
             "  from_field: field_name\n",
             "  to_field: field_name\n",
             "}",
@@ -123,7 +123,7 @@ def test_parse_block_with_quoted_literals(parser):
     print(result)
     assert result == "".join(
         (
-            "\ndimension: {\n",
+            "dimension: {\n",
             '  label: "Dimension Name"\n',
             '  group_label: "Group Name"\n',
             '  description: "A dimension description."\n',
@@ -139,7 +139,7 @@ def test_parse_block_with_name(parser):
     result = str(node)
     print(result)
     assert result == "".join(
-        ("\ndimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
+        ("dimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
     )
 
 
@@ -147,14 +147,14 @@ def test_parse_block_with_no_fields_and_name(parser):
     node = parser.parse_block(key="dimension", items={}, name="dimension_name")
     result = str(node)
     print(result)
-    assert result == "\ndimension: dimension_name {}"
+    assert result == "dimension: dimension_name {}"
 
 
 def test_parse_block_with_no_fields_and_no_name(parser):
     node = parser.parse_block(key="dimension", items={}, name=None)
     result = str(node)
     print(result)
-    assert result == "\ndimension: {}"
+    assert result == "dimension: {}"
 
 
 def test_parse_nested_block(parser):
@@ -172,7 +172,7 @@ def test_parse_nested_block(parser):
     print(result)
     assert result == "".join(
         (
-            "\nderived_table: {\n",
+            "derived_table: {\n",
             "  explore_source: explore_name {\n",
             "    bind_filters: {\n",
             "      from_field: field_name\n",
@@ -188,14 +188,14 @@ def test_parse_any_with_str_value(parser):
     node = parser.parse_any(key="hidden", value="yes")
     result = str(node)
     print(result)
-    assert result == "\nhidden: yes"
+    assert result == "hidden: yes"
 
 
 def test_parse_any_with_list_value(parser):
     node = parser.parse_any(key="sortkeys", value=["column_one", "column_two"])
     result = str(node)
     print(result)
-    assert result == '\nsortkeys: ["column_one", "column_two"]'
+    assert result == 'sortkeys: ["column_one", "column_two"]'
 
 
 def test_parse_any_with_dict_value_and_name(parser):
@@ -205,7 +205,7 @@ def test_parse_any_with_dict_value_and_name(parser):
     result = str(node)
     print(result)
     assert result == "".join(
-        ("\ndimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
+        ("dimension: dimension_name {\n", '  label: "Dimension Name"\n', "}")
     )
 
 
@@ -213,7 +213,7 @@ def test_parse_any_with_dict_value_and_no_name(parser):
     node = parser.parse_any(key="dimension", value={"label": "Dimension Name"})
     result = str(node)
     print(result)
-    assert result == "".join(("\ndimension: {\n", '  label: "Dimension Name"\n', "}"))
+    assert result == "".join(("dimension: {\n", '  label: "Dimension Name"\n', "}"))
 
 
 def test_parse_any_raises_with_bad_type(parser):
@@ -227,7 +227,7 @@ def test_expand_list_with_blocks(parser):
     )
     result = "".join(str(node) for node in nodes)
     print(result)
-    assert result == "\ndimension: dimension_one {}\n\ndimension: dimension_two {}"
+    assert result == "dimension: dimension_one {}\n\ndimension: dimension_two {}"
 
 
 def test_expand_list_with_pairs(parser):
@@ -238,7 +238,7 @@ def test_expand_list_with_pairs(parser):
     print(result)
     assert (
         result
-        == '\ninclude: "filename_or_pattern_one"\ninclude: "filename_or_pattern_two"'
+        == 'include: "filename_or_pattern_one"\ninclude: "filename_or_pattern_two"'
     )
 
 
@@ -254,7 +254,7 @@ def test_parse_top_level_pairs(parser):
     print(result)
     assert result == "".join(
         (
-            '\nconnection: "c53-looker"\n',
+            'connection: "c53-looker"\n',
             'include: "*.view"\n',
             "fiscal_month_offset: 0\n",
             "week_start_day: sunday",

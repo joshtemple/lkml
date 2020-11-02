@@ -1,6 +1,5 @@
 """Serializes a Python dictionary into a LookML string."""
 
-import collections
 import logging
 from lkml.tree import (
     BlockNode,
@@ -170,7 +169,7 @@ class DictParser:
         self.parent_key: str = None
         self.level: int = 0
         self.base_indent: str = " " * 2
-        self.latest_node: Optional[SyntaxNode] = None
+        self.latest_node: Optional[SyntaxNode] = DocumentNode
 
     def increase_level(self) -> None:
         """Increases the indent level of the current line by one tab."""
@@ -194,7 +193,9 @@ class DictParser:
 
     @property
     def prefix(self) -> str:
-        if self.latest_node is None:
+        if self.latest_node == DocumentNode:
+            return ""
+        elif self.latest_node is None:
             return self.newline_indent
         elif self.latest_node == BlockNode:
             return "\n" + self.newline_indent
@@ -306,10 +307,10 @@ class DictParser:
         self.latest_node = latest_node_at_this_level
         container = ContainerNode(items=tuple(flatten(nodes)))
 
-        if self.latest_node:
+        if self.latest_node and self.latest_node != DocumentNode:
             prefix = "\n" + self.newline_indent
         else:
-            prefix = self.newline_indent
+            prefix = self.prefix
 
         node = BlockNode(
             type=SyntaxToken(key, prefix=prefix),
