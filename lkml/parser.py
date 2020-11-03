@@ -11,6 +11,8 @@ import lkml.tree as tree
 DELIMITER = ". "
 Syntax = Union[tree.SyntaxNode, tree.SyntaxToken]
 
+logger = logging.getLogger(__name__)
+
 
 def backtrack_if_none(fn):
     """Decorates parsing methods to backtrack to a previous position on failure.
@@ -106,9 +108,8 @@ class Parser:
         self.tokens = stream
         self.index: int = 0
         self.progress: int = 0
-        self.logger: logging.Logger = logging.getLogger(__name__)
         self.depth: int = -1
-        self.log_debug: bool = self.logger.isEnabledFor(logging.DEBUG)
+        self.log_debug: bool = logger.isEnabledFor(logging.DEBUG)
 
     def jump_to_index(self, index: int):
         """Sets the parser index to a specified value."""
@@ -164,8 +165,13 @@ class Parser:
             bool: True if the current token matches one of the token_types
 
         """
+        # Set a bookmark to skip over trivia tokens before the check if asked
+        mark = self.index
+        if skip_trivia:
+            _ = self.consume_trivia()
+
         if self.log_debug:
-            self.logger.debug(
+            logger.debug(
                 "%sCheck %s == %s",
                 (1 + self.depth) * DELIMITER,
                 self.peek(),
@@ -175,10 +181,6 @@ class Parser:
             if not issubclass(token_type, tokens.Token):
                 raise TypeError(f"{token_type} is not a valid token type.")
 
-        # Set a bookmark to skip over trivia tokens before the check if asked
-        mark = self.index
-        if skip_trivia:
-            _ = self.consume_trivia()
         try:
             token = self.peek()
         except IndexError:
@@ -216,7 +218,7 @@ class Parser:
         """
         if self.log_debug:
             grammar = "[expression] = (block / pair / list)*"
-            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+            logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         items: List[Union[tree.BlockNode, tree.PairNode, tree.ListNode]] = []
         while not self.check(
             tokens.StreamEndToken, tokens.BlockEndToken, skip_trivia=True
@@ -242,11 +244,9 @@ class Parser:
                 f"on line {token.line_number}"
             )
 
-        container = tree.ContainerNode(items=tuple(items))
+        container = tree.ContainerNode(items=tuple(items), top_level=self.depth == 0)
         if self.log_debug:
-            self.logger.debug(
-                "%sSuccessfully parsed expression.", self.depth * DELIMITER
-            )
+            logger.debug("%sSuccessfully parsed expression.", self.depth * DELIMITER)
         return container
 
     @backtrack_if_none
@@ -278,7 +278,7 @@ class Parser:
         """
         if self.log_debug:
             grammar = "[block] = key literal? '{' expression '}'"
-            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+            logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         key = self.parse_key()
         if key is None:
@@ -317,9 +317,7 @@ class Parser:
             )
 
             if self.log_debug:
-                self.logger.debug(
-                    "%sSuccessfully parsed block.", self.depth * DELIMITER
-                )
+                logger.debug("%sSuccessfully parsed block.", self.depth * DELIMITER)
             return block
         else:
             return None
@@ -346,15 +344,17 @@ class Parser:
         """
         if self.log_debug:
             grammar = "[pair] = key value"
-            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+            logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         key = self.parse_key()
+        if key is None:
+            return None
         value = self.parse_value()
-        if key is None or value is None:
+        if value is None:
             return None
 
-        pair = tree.PairNode(key=key[0], colon=key[1], value=value)
-        self.logger.debug(self.depth * DELIMITER + "Successfully parsed pair.")
+        pair = tree.PairNode(type=key[0], colon=key[1], value=value)
+        logger.debug(self.depth * DELIMITER + "Successfully parsed pair.")
         return pair
 
     @backtrack_if_none
@@ -379,7 +379,7 @@ class Parser:
         """
         if self.log_debug:
             grammar = "[key] = literal ':'"
-            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+            logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         prefix = self.consume_trivia()
         if self.check(tokens.LiteralToken):
             key = tree.SyntaxToken(self.consume_token_value(), prefix=prefix)
@@ -395,7 +395,7 @@ class Parser:
             return None
 
         if self.log_debug:
-            self.logger.debug("%sSuccessfully parsed key.", self.depth * DELIMITER)
+            logger.debug("%sSuccessfully parsed key.", self.depth * DELIMITER)
         return key, colon
 
     @backtrack_if_none
@@ -422,21 +422,17 @@ class Parser:
         """
         if self.log_debug:
             grammar = "[value] = literal / quoted_literal / expression_block"
-            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+            logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         if self.check(tokens.LiteralToken):
             value = self.consume_token_value()
             if self.log_debug:
-                self.logger.debug(
-                    "%sSuccessfully parsed value.", self.depth * DELIMITER
-                )
+                logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
             return tree.SyntaxToken(value)
         elif self.check(tokens.QuotedLiteralToken):
             value = self.consume_token_value()
             if self.log_debug:
-                self.logger.debug(
-                    "%sSuccessfully parsed value.", self.depth * DELIMITER
-                )
+                logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
             return tree.QuotedSyntaxToken(value)
         elif self.check(tokens.ExpressionBlockToken):
             value = self.consume_token_value()
@@ -445,9 +441,7 @@ class Parser:
             else:
                 return None
             if self.log_debug:
-                self.logger.debug(
-                    "%sSuccessfully parsed value.", self.depth * DELIMITER
-                )
+                logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
             return tree.ExpressionSyntaxToken(value)
         else:
             return None
@@ -474,7 +468,7 @@ class Parser:
         """
         if self.log_debug:
             grammar = "[list] = key '[' csv? ']'"
-            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+            logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         key = self.parse_key()
         if key is None:
@@ -504,9 +498,7 @@ class Parser:
                 trailing_comma=csv.trailing_comma,
             )
             if self.log_debug:
-                self.logger.debug(
-                    "%sSuccessfully parsed a list.", self.depth * DELIMITER
-                )
+                logger.debug("%sSuccessfully parsed a list.", self.depth * DELIMITER)
             return node
         else:
             return None
@@ -535,7 +527,7 @@ class Parser:
         """
         if self.log_debug:
             grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
-            self.logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
+            logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         # Set a flag to ensure that all items are of the same type (pair or literal)
         pair_mode: bool = False
@@ -563,6 +555,7 @@ class Parser:
                 self.advance()
                 if self.check(tokens.ListEndToken, skip_trivia=True):
                     csv.trailing_comma = True
+                    break
             else:
                 return None
 
@@ -587,7 +580,7 @@ class Parser:
                     return None
 
         if self.log_debug:
-            self.logger.debug(
+            logger.debug(
                 "%sSuccessfully parsed comma-separated values.", self.depth * DELIMITER
             )
         return csv

@@ -14,9 +14,9 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "measure",
     "dimension",
     "dimension_group",
-    "filter",
+    "filters",
     "access_filter",
-    "bind_filter",
+    "bind_filters",
     "map_layer",
     "parameter",
     "set",
@@ -39,6 +39,8 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "user_attribute_param",
     "assert",
     "test",
+    "query",
+    "extends",
 )
 
 # These are keys in LookML that should be recognized as expression blocks (end with ;;).
@@ -125,3 +127,23 @@ CHARACTER_TO_TOKEN: Dict[str, Type[tokens.Token]] = {
     ":": tokens.ValueToken,
     ";": tokens.ExpressionBlockEndToken,
 }
+
+
+def pluralize(key: str) -> str:
+    """Converts a singular key like "explore" to a plural key, e.g. 'explores'."""
+    if key in ("filters", "bind_filters", "extends"):
+        return key + "__all"
+    elif key == "query":
+        return "queries"
+    else:
+        return key + "s"
+
+
+def singularize(key: str) -> str:
+    """Converts a plural key like "explores" to a singular key, e.g. 'explore'."""
+    if key == "queries":
+        return "query"
+    elif key.endswith("__all"):
+        return key[:-5]  # Strip off __all
+    elif key.endswith("s"):
+        return key.rstrip("s")

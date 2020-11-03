@@ -24,6 +24,8 @@ from lkml.keys import (
     KEYS_WITH_NAME_FIELDS,
     PLURAL_KEYS,
     QUOTED_LITERAL_KEYS,
+    pluralize,
+    singularize,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,7 +42,8 @@ def flatten(sequence: list) -> list:
 
 
 class DictVisitor(Visitor):
-    depth: int = 0  # Tracks the level of nesting
+    def __init__(self):
+        self.depth: int = -1  # Tracks the level of nesting
 
     def update_tree(self, target: Dict, update: Dict) -> None:
         """Add one dictionary to an existing dictionary, handling certain repeated keys.
@@ -96,9 +99,9 @@ class DictVisitor(Visitor):
         if len(keys) > 1:
             raise KeyError("Dictionary to update with cannot have multiple keys.")
         key = keys[0]
-        stripped_key = key.rstrip("s")
-        if stripped_key in PLURAL_KEYS:
-            plural_key = stripped_key + "s"
+
+        if key in PLURAL_KEYS:
+            plural_key = pluralize(key)
             if plural_key in target.keys():
                 target[plural_key].append(update[key])
             else:
@@ -128,6 +131,7 @@ class DictVisitor(Visitor):
             self.depth += 1
             for item in node.items:
                 self.update_tree(container, item.accept(self))
+            self.depth -= 1
         return container
 
     def visit_block(self, node: BlockNode) -> Dict[str, Dict]:
@@ -140,7 +144,7 @@ class DictVisitor(Visitor):
         return {node.type.accept(self): [item.accept(self) for item in node.items]}
 
     def visit_pair(self, node: PairNode) -> Dict[str, str]:
-        return {node.key.accept(self): node.value.accept(self)}
+        return {node.type.accept(self): node.value.accept(self)}
 
     def visit_token(self, token: SyntaxToken) -> str:
         return str(token.value)
@@ -212,14 +216,11 @@ class DictParser:
         repeated. Otherwise, it can be repeated.
 
         """
-        if key.endswith("s"):
-            singular_key = key.rstrip("s")
-            return singular_key in PLURAL_KEYS and not (
-                singular_key == "allowed_value"
-                and self.parent_key.rstrip("s") == "access_grant"
-            )
-        else:
-            return False
+        singular_key = singularize(key)
+        return singular_key in PLURAL_KEYS and not (
+            singular_key == "allowed_value"
+            and self.parent_key.rstrip("s") == "access_grant"
+        )
 
     def parse(self, obj: Dict[str, Any]) -> DocumentNode:
         """Returns a LookML string serialized from a dictionary."""
@@ -244,10 +245,8 @@ class DictParser:
             A generator of serialized string chunks
 
         """
-        modified_key = (
-            key.rstrip("s") if key not in ("filters", "bind_filters") else key
-        )
-        nodes = [self.parse_any(modified_key, value) for value in values]
+        singular_key = singularize(key)
+        nodes = [self.parse_any(singular_key, value) for value in values]
         return flatten(nodes)
 
     def parse_any(
@@ -337,6 +336,7 @@ class DictParser:
         """
         # `suggestions` is only quoted when it's a list, so override the default
         force_quote = True if key == "suggestions" else False
+        self.parent_key = key
 
         type_token = SyntaxToken(key, prefix=self.prefix)
         right_bracket = RightBracket()
@@ -353,7 +353,9 @@ class DictParser:
             self.increase_level()
             for value in values:
                 if pair_mode:
-                    item: PairNode = self.parse_pair(key=value[0], value=value[1])
+                    # Extract key and value from dictionary with only one key
+                    [(key, val)] = value.items()
+                    item: PairNode = self.parse_pair(key, val)
                 else:
                     item: SyntaxToken = self.parse_token(
                         key, value, force_quote, prefix=self.newline_indent
@@ -391,9 +393,10 @@ class DictParser:
             A generator of serialized string chunks
 
         """
-        value_syntax_token: SyntaxToken = self.parse_token(key, value)
+        force_quote = True if self.parent_key == "filters" else False
+        value_syntax_token: SyntaxToken = self.parse_token(key, value, force_quote)
         node = PairNode(
-            key=SyntaxToken(key, prefix=self.prefix), value=value_syntax_token
+            type=SyntaxToken(key, prefix=self.prefix), value=value_syntax_token
         )
         self.latest_node = PairNode
         return node

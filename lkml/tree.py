@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Tuple, Optional, Union, Any
+from lkml.keys import PLURAL_KEYS
+from typing import Counter, Tuple, Optional, Union, Any
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -82,7 +83,7 @@ class SyntaxNode(ABC):
 
 @dataclass
 class PairNode(SyntaxNode):
-    key: SyntaxToken
+    type: SyntaxToken
     value: SyntaxToken
     colon: Optional[Colon] = None
 
@@ -91,7 +92,7 @@ class PairNode(SyntaxNode):
             self.colon = Colon(suffix=" ")
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.key.value}, {self.value.value})"
+        return f"{self.__class__.__name__}({self.type.value}, {self.value.value})"
 
     @property
     def children(self) -> None:
@@ -101,7 +102,7 @@ class PairNode(SyntaxNode):
         return visitor.visit_pair(self)
 
     def __str__(self) -> str:
-        return items_to_str(self.key, self.colon, self.value)
+        return items_to_str(self.type, self.colon, self.value)
 
 
 @dataclass
@@ -190,9 +191,19 @@ class DocumentNode(SyntaxNode):
 @dataclass
 class ContainerNode(SyntaxNode):
     items: Tuple[Union[BlockNode, PairNode, ListNode]]
+    top_level: bool = False
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
+
+    def __post_init__(self):
+        counter = Counter(item.type.value for item in self.items)
+        for key, count in counter.items():
+            if not self.top_level and count > 1 and key not in PLURAL_KEYS:
+                raise KeyError(
+                    f'Key "{key}" already exists in tree and would overwrite the '
+                    "existing value."
+                )
 
     @property
     def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode]]:
