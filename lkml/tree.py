@@ -225,6 +225,10 @@ class ContainerNode(SyntaxNode):
 
 class Visitor(ABC):
     @abstractmethod
+    def visit_document(self, document: DocumentNode) -> Any:
+        ...
+
+    @abstractmethod
     def visit_container(self, node: ContainerNode) -> Any:
         ...
 
