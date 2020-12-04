@@ -17,7 +17,7 @@ from lkml.tree import (
     SyntaxToken,
 )
 from lkml.visitors import Visitor
-from typing import Any, Tuple, Type, Dict, List, Optional, Sequence, Union, cast
+from typing import Any, Type, Dict, List, Optional, Sequence, Union, cast
 
 from lkml.keys import (
     EXPR_BLOCK_KEYS,
@@ -47,23 +47,23 @@ class DictVisitor(Visitor):
 
     def update_tree(self, target: Dict, update: Dict) -> None:
         """Add one dictionary to an existing dictionary, handling certain repeated keys.
-        
+
         This method is primarily responsible for handling repeated keys in LookML like
         `dimension` or `set`, which can exist more than once in LookML but cannot be
         repeated in a Python dictionary.
-        
+
         This method checks the list of valid repeated keys and combines the values of
         that key in `target` and/or `update` into a list and assigns a plural key (e.g.
         `dimensions` instead of `dimension`).
-        
+
         Args:
             target: Existing dictionary of parsed LookML
             update: New dictionary to be added to target
-        
+
         Raises:
             KeyError: If `update` has more than one key
             KeyError: If the key in `update` already exists and would overwrite existing
-        
+
         Examples:
             >>> from pprint import pprint
             >>> parser = Parser((tokens.Token(1),))
