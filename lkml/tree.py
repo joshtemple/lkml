@@ -73,7 +73,7 @@ class ExpressionSyntaxToken(SyntaxToken):
 class SyntaxNode(ABC):
     @property
     @abstractmethod
-    def children(self) -> Optional[Tuple[SyntaxNode]]:
+    def children(self) -> Optional[Tuple[SyntaxNode, ...]]:
         ...
 
     @abstractmethod
@@ -108,7 +108,7 @@ class PairNode(SyntaxNode):
 @dataclass
 class ListNode(SyntaxNode):
     type: SyntaxToken
-    items: Union[Tuple[PairNode], Tuple[SyntaxToken]]
+    items: Union[Tuple[PairNode, ...], Tuple[SyntaxToken, ...]]
     left_bracket: LeftBracket
     right_bracket: RightBracket
     colon: Optional[Colon] = None
@@ -122,7 +122,7 @@ class ListNode(SyntaxNode):
         return f"{self.__class__.__name__}({self.type.value})"
 
     @property
-    def children(self) -> Optional[Tuple[PairNode]]:
+    def children(self) -> Optional[Tuple[PairNode, ...]]:
         return self.items if isinstance(self.items[0], PairNode) else None
 
     def accept(self, visitor: Visitor) -> Any:
@@ -157,7 +157,7 @@ class BlockNode(SyntaxNode):
         return f"{self.__class__.__name__}({self.type.value}, {name})"
 
     @property
-    def children(self) -> Optional[Tuple[ContainerNode]]:
+    def children(self) -> Optional[Tuple[ContainerNode, ...]]:
         return (self.container,) if self.container else None
 
     def accept(self, visitor: Visitor) -> Any:
@@ -190,7 +190,7 @@ class DocumentNode(SyntaxNode):
 
 @dataclass
 class ContainerNode(SyntaxNode):
-    items: Tuple[Union[BlockNode, PairNode, ListNode]]
+    items: Tuple[Union[BlockNode, PairNode, ListNode], ...]
     top_level: bool = False
 
     def __repr__(self) -> str:
@@ -206,7 +206,7 @@ class ContainerNode(SyntaxNode):
                 )
 
     @property
-    def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode]]:
+    def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode], ...]:
         return self.items
 
     def accept(self, visitor: Visitor) -> Any:
