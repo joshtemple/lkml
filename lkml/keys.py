@@ -147,3 +147,5 @@ def singularize(key: str) -> str:
         return key[:-5]  # Strip off __all
     elif key.endswith("s"):
         return key.rstrip("s")
+    else:
+        raise ValueError("Key is not valid for singularization.")
