@@ -17,7 +17,7 @@ from lkml.tree import (
     SyntaxToken,
 )
 from lkml.visitors import Visitor
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union, cast
 
 from lkml.keys import (
     EXPR_BLOCK_KEYS,
@@ -126,7 +126,7 @@ class DictVisitor(Visitor):
         return self.visit_container(document.container)
 
     def visit_container(self, node: ContainerNode) -> Dict[str, Any]:
-        container = {}
+        container: Dict[str, Any] = {}
         if len(node.items) > 0:
             self.depth += 1
             for item in node.items:
@@ -323,7 +323,7 @@ class DictParser:
         self.latest_node = BlockNode
         return node
 
-    def parse_list(self, key: str, values: Iterable[Union[str, Sequence]]) -> ListNode:
+    def parse_list(self, key: str, values: Sequence[Union[str, Dict]]) -> ListNode:
         """Serializes a sequence to a LookML block.
 
         Args:
@@ -353,11 +353,13 @@ class DictParser:
             self.increase_level()
             for value in values:
                 if pair_mode:
+                    value = cast(dict, value)
                     # Extract key and value from dictionary with only one key
                     [(key, val)] = value.items()
-                    item: PairNode = self.parse_pair(key, val)
+                    item: Union[PairNode, SyntaxToken] = self.parse_pair(key, val)
                 else:
-                    item: SyntaxToken = self.parse_token(
+                    value = cast(dict, str)
+                    item = self.parse_token(
                         key, value, force_quote, prefix=self.newline_indent
                     )
                 items.append(item)
