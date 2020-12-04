@@ -1,6 +1,6 @@
 from __future__ import annotations
 from lkml.keys import PLURAL_KEYS
-from typing import Counter, Tuple, Optional, Union, Any
+from typing import Counter, Tuple, Optional, Union, Any, cast
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -122,8 +122,13 @@ class ListNode(SyntaxNode):
         return f"{self.__class__.__name__}({self.type.value})"
 
     @property
-    def children(self) -> Optional[Tuple[PairNode, ...]]:
-        return self.items if isinstance(self.items[0], PairNode) else None
+    def children(self,) -> Optional[Tuple[PairNode, ...]]:
+        if isinstance(self.items[0], PairNode):
+            # Assume that all elements are pairs
+            self.items = cast(Tuple[PairNode, ...], self.items)
+            return self.items
+        else:
+            return None
 
     def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_list(self)
