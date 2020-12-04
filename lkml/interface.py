@@ -17,7 +17,7 @@ from lkml.tree import (
     SyntaxToken,
 )
 from lkml.visitors import Visitor
-from typing import Any, Dict, List, Optional, Sequence, Union, cast
+from typing import Any, Tuple, Type, Dict, List, Optional, Sequence, Union, cast
 
 from lkml.keys import (
     EXPR_BLOCK_KEYS,
@@ -135,7 +135,7 @@ class DictVisitor(Visitor):
         return container
 
     def visit_block(self, node: BlockNode) -> Dict[str, Dict]:
-        container_dict = node.container.accept(self)
+        container_dict = node.container.accept(self) if node.container else {}
         if node.name is not None:
             container_dict["name"] = node.name.accept(self)
         return {node.type.accept(self): container_dict}
@@ -173,7 +173,7 @@ class DictParser:
         self.parent_key: str = None
         self.level: int = 0
         self.base_indent: str = " " * 2
-        self.latest_node: Optional[SyntaxNode] = DocumentNode
+        self.latest_node: Optional[Type[SyntaxNode]] = DocumentNode
 
     def increase_level(self) -> None:
         """Increases the indent level of the current line by one tab."""
@@ -340,12 +340,18 @@ class DictParser:
 
         type_token = SyntaxToken(key, prefix=self.prefix)
         right_bracket = RightBracket()
-        items = []
+        items: list = []
         pair_mode = False
 
         # Check the first element to see if it's a single value or a pair
         if values and not isinstance(values[0], (str, int)):
             pair_mode = True
+
+        # Coerce type depending on pair mode value
+        if pair_mode:
+            items = cast(List[PairNode], items)
+        else:
+            items = cast(List[SyntaxToken], items)
 
         # Choose newline delimiting or space delimiting based on contents
         if len(values) >= 5 or pair_mode:
@@ -356,18 +362,20 @@ class DictParser:
                     value = cast(dict, value)
                     # Extract key and value from dictionary with only one key
                     [(key, val)] = value.items()
-                    item: Union[PairNode, SyntaxToken] = self.parse_pair(key, val)
+                    pair: PairNode = self.parse_pair(key, val)
+                    items.append(pair)
                 else:
-                    value = cast(dict, str)
-                    item = self.parse_token(
+                    value = cast(str, value)
+                    token: SyntaxToken = self.parse_token(
                         key, value, force_quote, prefix=self.newline_indent
                     )
-                items.append(item)
+                    items.append(token)
             self.decrease_level()
             right_bracket.prefix = self.newline_indent
         else:
             trailing_comma = False
             for i, value in enumerate(values):
+                value = cast(str, value)
                 if i == 0:
                     token = self.parse_token(key, value, force_quote)
                 else:

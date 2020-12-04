@@ -184,7 +184,7 @@ class DocumentNode(SyntaxNode):
 
     @property
     def children(self) -> Tuple[ContainerNode]:
-        return tuple(self.container)
+        return tuple(self.container)  # type: ignore
 
     def accept(self, visitor: Visitor) -> Any:
         return visitor.visit_document(self)

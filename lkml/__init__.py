@@ -11,7 +11,7 @@ from lkml.interface import DictParser, DictVisitor
 from lkml.tree import DocumentNode
 
 
-def load(stream: Union[str, IO]) -> dict:
+def load(stream: Union[str, IO]) -> DocumentNode:
     """Parse LookML into a Python dictionary.
 
     Args:
