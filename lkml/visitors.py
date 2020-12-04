@@ -1,13 +1,14 @@
 import logging
 from typing import Union
+
 from lkml.tree import (
-    ContainerNode,
     BlockNode,
+    ContainerNode,
     DocumentNode,
     ListNode,
     PairNode,
-    SyntaxToken,
     SyntaxNode,
+    SyntaxToken,
     Visitor,
 )
 

@@ -1,8 +1,10 @@
 from __future__ import annotations
-from lkml.keys import PLURAL_KEYS
-from typing import Counter, Tuple, Optional, Union, Any, cast
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Any, Counter, Optional, Tuple, Union, cast
+
+from lkml.keys import PLURAL_KEYS
 
 
 def items_to_str(*items: Any) -> str:

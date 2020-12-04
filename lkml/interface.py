@@ -1,6 +1,16 @@
 """Serializes a Python dictionary into a LookML string."""
 
 import logging
+from typing import Any, Dict, List, Optional, Sequence, Type, Union, cast
+
+from lkml.keys import (
+    EXPR_BLOCK_KEYS,
+    KEYS_WITH_NAME_FIELDS,
+    PLURAL_KEYS,
+    QUOTED_LITERAL_KEYS,
+    pluralize,
+    singularize,
+)
 from lkml.tree import (
     BlockNode,
     ContainerNode,
@@ -17,16 +27,6 @@ from lkml.tree import (
     SyntaxToken,
 )
 from lkml.visitors import Visitor
-from typing import Any, Type, Dict, List, Optional, Sequence, Union, cast
-
-from lkml.keys import (
-    EXPR_BLOCK_KEYS,
-    KEYS_WITH_NAME_FIELDS,
-    PLURAL_KEYS,
-    QUOTED_LITERAL_KEYS,
-    pluralize,
-    singularize,
-)
 
 logger = logging.getLogger(__name__)
 

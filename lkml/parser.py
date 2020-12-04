@@ -1,9 +1,10 @@
 """Parses a sequence of tokenized LookML into a Python object."""
 
-from dataclasses import dataclass, field
 import logging
-from typing import Optional, Sequence, Type, Union, Tuple, List
+from dataclasses import dataclass, field
 from functools import wraps
+from typing import List, Optional, Sequence, Tuple, Type, Union
+
 import lkml.tokens as tokens
 import lkml.tree as tree
 
