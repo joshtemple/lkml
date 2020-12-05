@@ -41,6 +41,7 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "test",
     "query",
     "extends",
+    "aggregate_table",
 )
 
 # These are keys in LookML that should be recognized as expression blocks (end with ;;).
@@ -148,4 +149,4 @@ def singularize(key: str) -> str:
     elif key.endswith("s"):
         return key.rstrip("s")
     else:
-        raise ValueError("Key is not valid for singularization.")
+        return key
