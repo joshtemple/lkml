@@ -1,4 +1,4 @@
-from lkml.tree import ContainerNode, ListNode, PairNode, SyntaxToken
+from lkml.tree import ContainerNode, DocumentNode, ListNode, PairNode, SyntaxToken
 from pathlib import Path
 import lkml
 
@@ -27,8 +27,8 @@ def test_block_with_nested_block():
 
 def test_removing_item_from_list_serializes_sensibly():
     # Test with only whitespace in between items
-    container: ContainerNode = lkml.load("name: [a, b, c]")
-    node: ListNode = container.items[0]
+    tree: ContainerNode = lkml.load("name: [a, b, c]")
+    node: ListNode = tree.container.items[0]
     assert str(node) == "name: [a, b, c]"
 
     node.items = tuple(item for item in node.items if item.value != "b")
@@ -38,8 +38,8 @@ def test_removing_item_from_list_serializes_sensibly():
     assert str(node) == "name: []"
 
     # Test with leading and trailing spaces
-    container: ContainerNode = lkml.load("name: [ a, b, c ]")
-    node: ListNode = container.items[0]
+    tree: ContainerNode = lkml.load("name: [ a, b, c ]")
+    node: ListNode = tree.container.items[0]
     assert str(node) == "name: [ a, b, c ]"
 
     node.items = tuple(item for item in node.items if item.value != "b")
@@ -49,8 +49,8 @@ def test_removing_item_from_list_serializes_sensibly():
     assert str(node) == "name: []"
 
     # Test with items on new lines with trailing newline
-    container: ContainerNode = lkml.load("name: [\n  a,\n  b,\n  c\n]")
-    node: ListNode = container.items[0]
+    tree: DocumentNode = lkml.load("name: [\n  a,\n  b,\n  c\n]")
+    node: ListNode = tree.container.items[0]
     assert str(node) == "name: [\n  a,\n  b,\n  c\n]"
 
     node.items = tuple(item for item in node.items if item.value != "b")
@@ -62,11 +62,11 @@ def test_removing_item_from_list_serializes_sensibly():
 
 def test_modifying_key_does_not_change_serialized_whitespace():
     # Tests that the whitespace is defined by the colon token
-    container: ContainerNode = lkml.load("a :\n no")
-    node: PairNode = container.items[0]
+    tree: DocumentNode = lkml.load("a :\n no")
+    node: PairNode = tree.container.items[0]
     assert str(node) == "a :\n no"
 
-    node.key = SyntaxToken("b")
+    node.type = SyntaxToken("b")
     assert str(node) == "b :\n no"
 
     node.colon.prefix = ""

@@ -23,16 +23,16 @@ def test_syntax_token_str_should_return_formatted(token_class, expected):
 
 
 def test_pair_node_str_should_return_formatted():
-    node = PairNode(key=SyntaxToken("foo"), value=SyntaxToken("bar"))
+    node = PairNode(type=SyntaxToken("foo"), value=SyntaxToken("bar"))
     assert str(node) == "foo: bar"
 
     # Add whitespace in an unconventional place
-    node = PairNode(key=SyntaxToken("foo", suffix=" "), value=SyntaxToken("bar"))
+    node = PairNode(type=SyntaxToken("foo", suffix=" "), value=SyntaxToken("bar"))
     assert str(node) == "foo : bar"
 
 
 def test_pair_node_should_not_have_children():
-    node = PairNode(key=SyntaxToken("foo"), value=SyntaxToken("bar"))
+    node = PairNode(type=SyntaxToken("foo"), value=SyntaxToken("bar"))
     assert node.children is None
 
 
