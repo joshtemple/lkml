@@ -189,7 +189,7 @@ class DocumentNode(SyntaxNode):
         return tuple(self.container)  # type: ignore
 
     def accept(self, visitor: Visitor) -> Any:
-        return visitor.visit_document(self)
+        return visitor.visit(self)
 
     def __str__(self) -> str:
         return items_to_str(self.prefix, self.container, self.suffix)
@@ -227,7 +227,7 @@ class ContainerNode(SyntaxNode):
 
 class Visitor(ABC):
     @abstractmethod
-    def visit_document(self, document: DocumentNode) -> Any:
+    def visit(self, document: DocumentNode) -> Any:
         ...
 
     @abstractmethod
