@@ -1,7 +1,7 @@
 """Serializes a Python dictionary into a LookML string."""
 
 import logging
-from typing import Any, Dict, List, Optional, Sequence, Type, Union, cast
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union, cast
 
 from lkml.keys import (
     EXPR_BLOCK_KEYS,
@@ -222,6 +222,25 @@ class DictParser:
             and self.parent_key.rstrip("s") == "access_grant"
         )
 
+    def resolve_filters(self, values: List[dict]) -> Union[List[BlockNode], ListNode]:
+        if "name" in values[0]:
+            # This is one or more filter-only field(s), e.g.
+            # filter: order_region { type: string }
+            blocks = []
+            for value in values:
+                name = value.pop("name")
+                block = self.parse_block(key="filter", items=value, name=name)
+                blocks.append(block)
+            return blocks
+        elif "field" in values[0] and "value" in values[0]:
+            # This is the legacy filter syntax, e.g.
+            # filters: { field: dimension_name, value: "filter expression" }
+            return [self.parse_block(key="filters", items=value) for value in values]
+        else:
+            # This is the new filter syntax, e.g.
+            # filters: [ dimension_name: "filter expression", ... ]
+            return self.parse_list(key="filters", values=values)
+
     def parse(self, obj: Dict[str, Any]) -> DocumentNode:
         """Returns a LookML string serialized from a dictionary."""
         nodes = [self.parse_any(key, value) for key, value in obj.items()]
@@ -270,7 +289,9 @@ class DictParser:
         if isinstance(value, str):
             return self.parse_pair(key, value)
         elif isinstance(value, (list, tuple)):
-            if self.is_plural_key(key):
+            if key == "filters":
+                return self.resolve_filters(value)
+            elif self.is_plural_key(key):
                 return self.expand_list(key, value)
             else:
                 return self.parse_list(key, value)
