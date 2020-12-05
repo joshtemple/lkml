@@ -432,7 +432,7 @@ class DictParser:
             A generator of serialized string chunks
 
         """
-        force_quote = True if self.parent_key == "filters" else False
+        force_quote = True if self.parent_key == "filters" and key != "field" else False
         value_syntax_token: SyntaxToken = self.parse_token(key, value, force_quote)
         node = PairNode(
             type=SyntaxToken(key, prefix=self.prefix), value=value_syntax_token
