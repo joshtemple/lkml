@@ -260,3 +260,38 @@ def test_parse_top_level_pairs(parser):
             "week_start_day: sunday",
         )
     )
+
+
+def test_resolve_filters_filter_only_field(parser):
+    nodes = parser.resolve_filters(
+        [
+            {"name": "filter_a", "type": "string"},
+            {"name": "filter_b", "type": "number"},
+        ]
+    )
+    result = "".join(str(node) for node in nodes)
+    assert result == (
+        "filter: filter_a {\n  type: string\n}\n\n"
+        "filter: filter_b {\n  type: number\n}"
+    )
+
+
+def test_resolve_filters_legacy_filters(parser):
+    nodes = parser.resolve_filters(
+        [
+            {"field": "dimension_a", "value": "-NULL"},
+            {"field": "dimension_b", "value": ">5"},
+        ]
+    )
+    result = "".join(str(node) for node in nodes)
+    assert result == (
+        'filters: {\n  field: dimension_a\n  value: "-NULL"\n}\n\n'
+        'filters: {\n  field: dimension_b\n  value: ">5"\n}'
+    )
+
+
+def test_resolve_filters_new_filters(parser):
+    node = parser.resolve_filters([{"dimension_a": "-NULL"}, {"dimension_b": ">5"}])
+    result = str(node)
+    assert result == 'filters: [dimension_a: "-NULL", dimension_b: ">5"]'
+
