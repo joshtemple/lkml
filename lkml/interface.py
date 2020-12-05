@@ -264,9 +264,14 @@ class DictParser:
             A generator of serialized string chunks
 
         """
-        singular_key = singularize(key)
-        nodes = [self.parse_any(singular_key, value) for value in values]
-        return flatten(nodes)
+        # A dictionary with a key "filters" can correspond to multiple syntaxes, so
+        # must be handled in a content-aware manner
+        if key == "filters":
+            values = cast(List[dict], values)
+            return flatten([self.resolve_filters(values)])
+        else:
+            singular_key = singularize(key)
+            return flatten([self.parse_any(singular_key, value) for value in values])
 
     def parse_any(
         self, key: str, value: Union[str, list, tuple, dict]
@@ -289,9 +294,7 @@ class DictParser:
         if isinstance(value, str):
             return self.parse_pair(key, value)
         elif isinstance(value, (list, tuple)):
-            if key == "filters":
-                return self.resolve_filters(value)  # type: ignore
-            elif self.is_plural_key(key):
+            if self.is_plural_key(key):
                 return self.expand_list(key, value)
             else:
                 return self.parse_list(key, value)
@@ -318,13 +321,15 @@ class DictParser:
             A generator of serialized string chunks
 
         """
-
+        prev_parent_key = self.parent_key
         self.parent_key = key
         latest_node_at_this_level = self.latest_node
         self.increase_level()
         nodes = [self.parse_any(key, value) for key, value in items.items()]
         self.decrease_level()
         self.latest_node = latest_node_at_this_level
+        self.parent_key = prev_parent_key
+
         container = ContainerNode(items=tuple(flatten(nodes)))
 
         if self.latest_node and self.latest_node != DocumentNode:
@@ -357,6 +362,7 @@ class DictParser:
         """
         # `suggestions` is only quoted when it's a list, so override the default
         force_quote = True if key == "suggestions" else False
+        prev_parent_key = self.parent_key
         self.parent_key = key
 
         type_token = SyntaxToken(key, prefix=self.prefix)
@@ -402,6 +408,8 @@ class DictParser:
                 else:
                     token = self.parse_token(key, value, force_quote, prefix=" ")
                 items.append(token)
+
+        self.parent_key = prev_parent_key
 
         node = ListNode(
             type=type_token,
