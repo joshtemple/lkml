@@ -1,5 +1,6 @@
 from lkml.tree import ContainerNode, DocumentNode, ListNode, PairNode, SyntaxToken
 from pathlib import Path
+import pytest
 import lkml
 
 
@@ -81,9 +82,6 @@ def test_view_with_all_fields():
     parsed = lkml.load(raw)
     assert parsed is not None
 
-    # lookml = lkml.dump(parsed)
-    # assert lookml.replace("\n\n", "\n") == raw.replace("\n\n", "\n")
-
 
 def test_model_with_all_fields():
     path = Path(__file__).parent / "resources" / "model_with_all_fields.model.lkml"
@@ -93,20 +91,17 @@ def test_model_with_all_fields():
     parsed = lkml.load(raw)
     assert parsed is not None
 
-    # lookml = lkml.dump(parsed)
-    # assert lookml.replace("\n\n", "\n") == raw.replace("\n\n", "\n")
+
+def test_duplicate_top_level_keys():
+    parsed = load("duplicate_top_level_keys.view.lkml")
+    assert parsed is not None
 
 
-# def test_duplicate_top_level_keys():
-#     parsed = load("duplicate_top_level_keys.view.lkml")
-#     assert parsed is not None
+def test_duplicate_non_top_level_keys():
+    with pytest.raises(KeyError):
+        load("duplicate_non_top_level_keys.view.lkml")
 
 
-# def test_duplicate_non_top_level_keys():
-#     with pytest.raises(KeyError):
-#         load("duplicate_non_top_level_keys.view.lkml")
-
-
-# def test_reserved_dimension_names():
-#     parsed = load("block_with_reserved_dimension_names.view.lkml")
-#     assert parsed is not None
+def test_reserved_dimension_names():
+    parsed = load("block_with_reserved_dimension_names.view.lkml")
+    assert parsed is not None
