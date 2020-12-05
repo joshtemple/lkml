@@ -174,7 +174,7 @@ class BlockNode(SyntaxNode):
         name = self.name or ""
         container = self.container or ""
         return items_to_str(
-            self.type, self.colon, name, self.left_brace, container, self.right_brace,
+            self.type, self.colon, name, self.left_brace, container, self.right_brace
         )
 
 
