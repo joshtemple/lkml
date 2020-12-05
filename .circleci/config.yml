@@ -32,7 +32,9 @@ jobs:
 
       - run:
           name: Run tests
-          command: tox
+          command: |
+            . venv/bin/activate
+            tox
 
       - store_test_results:
           path: test-reports
