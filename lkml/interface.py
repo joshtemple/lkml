@@ -1,7 +1,7 @@
 """Serializes a Python dictionary into a LookML string."""
 
 import logging
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Type, Union, cast
+from typing import Any, Dict, List, Optional, Sequence, Type, Union, cast
 
 from lkml.keys import (
     EXPR_BLOCK_KEYS,
@@ -290,7 +290,7 @@ class DictParser:
             return self.parse_pair(key, value)
         elif isinstance(value, (list, tuple)):
             if key == "filters":
-                return self.resolve_filters(value)
+                return self.resolve_filters(value)  # type: ignore
             elif self.is_plural_key(key):
                 return self.expand_list(key, value)
             else:
