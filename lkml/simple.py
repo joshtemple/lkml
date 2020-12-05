@@ -170,7 +170,7 @@ class DictParser:
 
     def __init__(self):
         """Initializes the Serializer."""
-        self.parent_key: str = None
+        self.parent_key: Optional[str] = None
         self.level: int = 0
         self.base_indent: str = " " * 2
         self.latest_node: Optional[Type[SyntaxNode]] = DocumentNode

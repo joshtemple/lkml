@@ -6,7 +6,7 @@ the script in /scripts to download the latest batch of public LookML from GitHub
 
 """
 
-from lkml.interface import DictParser, DictVisitor
+from lkml.simple import DictParser, DictVisitor
 from pathlib import Path
 import pytest
 import lkml

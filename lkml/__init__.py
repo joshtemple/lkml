@@ -5,7 +5,7 @@ import logging
 import sys
 from typing import IO, Optional, Sequence, Union
 
-from lkml.interface import DictParser, DictVisitor
+from lkml.simple import DictParser, DictVisitor
 from lkml.lexer import Lexer
 from lkml.parser import Parser
 from lkml.tree import DocumentNode

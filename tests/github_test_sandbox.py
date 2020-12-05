@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 import lkml
-from lkml.interface import DictParser, DictVisitor
+from lkml.simple import DictParser, DictVisitor
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)

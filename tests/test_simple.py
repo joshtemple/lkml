@@ -1,5 +1,5 @@
 import pytest
-from lkml.interface import DictParser
+from lkml.simple import DictParser
 
 
 @pytest.fixture
