@@ -293,5 +293,5 @@ def test_resolve_filters_legacy_filters(parser):
 def test_resolve_filters_new_filters(parser):
     node = parser.resolve_filters([{"dimension_a": "-NULL"}, {"dimension_b": ">5"}])
     result = str(node)
-    assert result == 'filters: [dimension_a: "-NULL", dimension_b: ">5"]'
+    assert result == 'filters: [\n  dimension_a: "-NULL",\n  dimension_b: ">5",\n]'
 
