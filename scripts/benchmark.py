@@ -6,7 +6,7 @@ import lkml
 
 times = []
 
-directory = Path(__file__).parent.parent.resolve() / "github"
+directory = Path(__file__).parents[1] / "tests/resources/github"
 for i, path in enumerate(directory.glob("*.lkml")):
     with path.open("r") as file:
         try:
