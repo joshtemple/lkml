@@ -25,7 +25,7 @@ def lookml(request):
 
 def test_round_trip_should_work(lookml):
     # Load the LookML from file, parsing into a tree
-    tree = lkml.load(lookml)
+    tree = lkml.parse(lookml)
 
     # Verify it hasn't changed once converted back to string
     assert str(tree) == lookml

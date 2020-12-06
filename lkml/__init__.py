@@ -11,7 +11,15 @@ from lkml.simple import DictParser, DictVisitor
 from lkml.tree import DocumentNode
 
 
-def load(stream: Union[str, IO]) -> DocumentNode:
+def parse(text: str) -> DocumentNode:
+    lexer = Lexer(text)
+    tokens = lexer.scan()
+    parser = Parser(tokens)
+    tree: DocumentNode = parser.parse()
+    return tree
+
+
+def load(stream: Union[str, IO]) -> dict:
     """Parse LookML into a Python dictionary.
 
     Args:
@@ -28,11 +36,10 @@ def load(stream: Union[str, IO]) -> DocumentNode:
         text = stream
     else:
         raise TypeError("Input stream must be a string or file object.")
-    lexer = Lexer(text)
-    tokens = lexer.scan()
-    parser = Parser(tokens)
-    tree: DocumentNode = parser.parse()
-    return tree
+    tree: DocumentNode = parse(text)
+    visitor = DictVisitor()
+    tree_as_dict: dict = visitor.visit(tree)
+    return tree_as_dict
 
 
 def dump(obj: dict, file_object: IO = None) -> Optional[str]:
@@ -98,12 +105,10 @@ def cli():
 
     logging.getLogger().setLevel(args.log_level)
 
-    tree: DocumentNode = load(args.file)
+    result: dict = load(args.file)
     args.file.close()
 
-    visitor = DictVisitor()
-    tree_as_dict = visitor.visit(tree)
-    json_string = json.dumps(tree_as_dict, indent=2)
+    json_string = json.dumps(result, indent=2)
     print(json_string)
 
 

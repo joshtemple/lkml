@@ -8,7 +8,8 @@ def load(filename):
     """Helper method to load a LookML file from tests/resources and parse it."""
     path = Path(__file__).parent / "resources" / filename
     with path.open() as file:
-        return lkml.load(file)
+        text = file.read()
+    return lkml.parse(text)
 
 
 def test_block_with_single_quoted_field():
@@ -28,7 +29,7 @@ def test_block_with_nested_block():
 
 def test_removing_item_from_list_serializes_sensibly():
     # Test with only whitespace in between items
-    tree: ContainerNode = lkml.load("name: [a, b, c]")
+    tree: ContainerNode = lkml.parse("name: [a, b, c]")
     node: ListNode = tree.container.items[0]
     assert str(node) == "name: [a, b, c]"
 
@@ -39,7 +40,7 @@ def test_removing_item_from_list_serializes_sensibly():
     assert str(node) == "name: []"
 
     # Test with leading and trailing spaces
-    tree: ContainerNode = lkml.load("name: [ a, b, c ]")
+    tree: ContainerNode = lkml.parse("name: [ a, b, c ]")
     node: ListNode = tree.container.items[0]
     assert str(node) == "name: [ a, b, c ]"
 
@@ -50,7 +51,7 @@ def test_removing_item_from_list_serializes_sensibly():
     assert str(node) == "name: []"
 
     # Test with items on new lines with trailing newline
-    tree: DocumentNode = lkml.load("name: [\n  a,\n  b,\n  c\n]")
+    tree: DocumentNode = lkml.parse("name: [\n  a,\n  b,\n  c\n]")
     node: ListNode = tree.container.items[0]
     assert str(node) == "name: [\n  a,\n  b,\n  c\n]"
 
@@ -63,7 +64,7 @@ def test_removing_item_from_list_serializes_sensibly():
 
 def test_modifying_key_does_not_change_serialized_whitespace():
     # Tests that the whitespace is defined by the colon token
-    tree: DocumentNode = lkml.load("a :\n no")
+    tree: DocumentNode = lkml.parse("a :\n no")
     node: PairNode = tree.container.items[0]
     assert str(node) == "a :\n no"
 
