@@ -8,12 +8,23 @@ from lkml.keys import PLURAL_KEYS
 
 
 def items_to_str(*items: Any) -> str:
-    """Converts each item to a string and joins them together"""
+    """Converts each item to a string and joins them together."""
     return "".join(str(item) for item in items)
 
 
 @dataclass
 class SyntaxToken:
+    """Stores a text value with optional prefix or suffix trivia.
+
+    For example, a syntax token might represent meaningful punctuation like a curly
+    brace or the type or value of a LookML field.
+
+    Attributes:
+        value: The text represented by the token
+        prefix: Comments or whitespace preceding the token
+        suffix: Comments or whitespace following the token
+    """
+
     value: str
     prefix: Optional[str] = None
     suffix: Optional[str] = None
@@ -23,6 +34,7 @@ class SyntaxToken:
         self.suffix: str = self.suffix or ""
 
     def format_value(self) -> str:
+        """Returns the value itself, subclasses may modify the value first."""
         return self.value
 
     def accept(self, visitor: Visitor) -> Any:
@@ -76,6 +88,7 @@ class SyntaxNode(ABC):
     @property
     @abstractmethod
     def children(self) -> Optional[Tuple[SyntaxNode, ...]]:
+        """Returns all child SyntaxNodes, but not SyntaxTokens."""
         ...
 
     @abstractmethod
