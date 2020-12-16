@@ -207,6 +207,8 @@ view: {
 }
 ```
 
+`lkml.dump` does not allow control over the formatting of the serialized LookML and will use my opinionated style for the resulting LookML. If you want to play with the formatting, take a look at the `DictParser` class, which is used to generate a parse tree from the parsed Python dictionary and contains assumptions about how whitespace is generated.
+
 ### Parsing LookML from the command line
 
 At the command line, `lkml` accepts a single positional argument: the path to the LookML file to parse. It returns the parsed result to `stdout` as a JSON string.
