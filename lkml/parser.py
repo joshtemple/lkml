@@ -400,7 +400,9 @@ class Parser:
         return key, colon
 
     @backtrack_if_none
-    def parse_value(self) -> Optional[tree.SyntaxToken]:
+    def parse_value(
+        self, parse_prefix: bool = False, parse_suffix: bool = False
+    ) -> Optional[tree.SyntaxToken]:
         """Returns a string that represents a value.
 
         Returns:
@@ -425,25 +427,30 @@ class Parser:
             grammar = "[value] = literal / quoted_literal / expression_block"
             logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
+        prefix = self.consume_trivia() if parse_prefix else ""
+
         if self.check(tokens.LiteralToken):
             value = self.consume_token_value()
+            suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
-            return tree.SyntaxToken(value)
+            return tree.SyntaxToken(value, prefix, suffix)
         elif self.check(tokens.QuotedLiteralToken):
             value = self.consume_token_value()
+            suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
-            return tree.QuotedSyntaxToken(value)
+            return tree.QuotedSyntaxToken(value, prefix, suffix)
         elif self.check(tokens.ExpressionBlockToken):
             value = self.consume_token_value()
             if self.check(tokens.ExpressionBlockEndToken):
                 self.advance()
             else:
                 return None
+            suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
-            return tree.ExpressionSyntaxToken(value)
+            return tree.ExpressionSyntaxToken(value, prefix, suffix)
         else:
             return None
 
@@ -542,10 +549,7 @@ class Parser:
         elif self.check(
             tokens.LiteralToken, tokens.QuotedLiteralToken, skip_trivia=True
         ):
-            prefix = self.consume_trivia()
-            value = self.parse_value()
-            value.prefix = prefix
-            value.suffix = self.consume_trivia()
+            value = self.parse_value(parse_prefix=True, parse_suffix=True)
             csv.append(value)
         else:
             return None
@@ -570,10 +574,7 @@ class Parser:
                 if self.check(
                     tokens.LiteralToken, tokens.QuotedLiteralToken, skip_trivia=True
                 ):
-                    prefix = self.consume_trivia()
-                    value = self.parse_value()
-                    value.prefix = prefix
-                    value.suffix = self.consume_trivia()
+                    value = self.parse_value(parse_prefix=True, parse_suffix=True)
                     csv.append(value)
                 elif self.check(tokens.ListEndToken, skip_trivia=True):
                     break

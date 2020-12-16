@@ -12,12 +12,14 @@ def items_to_str(*items: Any) -> str:
     return "".join(str(item) for item in items)
 
 
-@dataclass
+@dataclass(frozen=True)
 class SyntaxToken:
     """Stores a text value with optional prefix or suffix trivia.
 
     For example, a syntax token might represent meaningful punctuation like a curly
-    brace or the type or value of a LookML field.
+    brace or the type or value of a LookML field. A syntax token can also store trivia,
+    comments or whitespace that precede or follow the token value. The parser attempts
+    to assign these prefixes and suffixes intelligently to the corresponding tokens.
 
     Attributes:
         value: The text represented by the token
@@ -26,12 +28,8 @@ class SyntaxToken:
     """
 
     value: str
-    prefix: Optional[str] = None
-    suffix: Optional[str] = None
-
-    def __post_init__(self):
-        self.prefix: str = self.prefix or ""
-        self.suffix: str = self.suffix or ""
+    prefix: str = ""
+    suffix: str = ""
 
     def format_value(self) -> str:
         """Returns the value itself, subclasses may modify the value first."""
@@ -44,32 +42,32 @@ class SyntaxToken:
         return items_to_str(self.prefix, self.format_value(), self.suffix)
 
 
-@dataclass
+@dataclass(frozen=True)
 class LeftCurlyBrace(SyntaxToken):
     value: str = "{"
 
 
-@dataclass
+@dataclass(frozen=True)
 class RightCurlyBrace(SyntaxToken):
     value: str = "}"
 
 
-@dataclass
+@dataclass(frozen=True)
 class Colon(SyntaxToken):
     value: str = ":"
 
 
-@dataclass
+@dataclass(frozen=True)
 class LeftBracket(SyntaxToken):
     value: str = "["
 
 
-@dataclass
+@dataclass(frozen=True)
 class RightBracket(SyntaxToken):
     value: str = "]"
 
 
-@dataclass
+@dataclass(frozen=True)
 class DoubleSemicolon(SyntaxToken):
     value: str = ";;"
 
@@ -96,18 +94,29 @@ class SyntaxNode(ABC):
         ...
 
 
-@dataclass
+@dataclass(frozen=True)
 class PairNode(SyntaxNode):
+    """A single LookML field, e.g. `hidden: yes`
+
+    Args:
+        type: [description]
+        value: The value of the field
+        colon: An optional Colon SyntaxToken. If not supplied, the default one is used
+            with a single space suffix after the colon.
+
+    Returns:
+        [type]: [description]
+    """
+
     type: SyntaxToken
     value: SyntaxToken
-    colon: Optional[Colon] = None
-
-    def __post_init__(self):
-        if self.colon is None:
-            self.colon = Colon(suffix=" ")
+    colon: Colon = Colon(suffix=" ")
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.type.value}, {self.value.value})"
+        return (
+            f"{self.__class__.__name__}"
+            f"(type='{self.type.value}', value='{self.value.value}')"
+        )
 
     @property
     def children(self) -> None:
@@ -120,21 +129,17 @@ class PairNode(SyntaxNode):
         return items_to_str(self.type, self.colon, self.value)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ListNode(SyntaxNode):
     type: SyntaxToken
     items: Union[Tuple[PairNode, ...], Tuple[SyntaxToken, ...]]
     left_bracket: LeftBracket
     right_bracket: RightBracket
-    colon: Optional[Colon] = None
+    colon: Colon = Colon(suffix=" ")
     trailing_comma: bool = False
 
-    def __post_init__(self):
-        if self.colon is None:
-            self.colon = Colon(suffix=" ")
-
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.type.value})"
+        return f"{self.__class__.__name__}(type='{self.type.value}')"
 
     @property
     def children(self,) -> Optional[Tuple[PairNode, ...]]:
@@ -159,22 +164,18 @@ class ListNode(SyntaxNode):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class BlockNode(SyntaxNode):
     type: SyntaxToken
     left_brace: LeftCurlyBrace
     right_brace: RightCurlyBrace
-    colon: Optional[Colon] = None
+    colon: Optional[Colon] = Colon(suffix=" ")
     name: Optional[SyntaxToken] = None
     container: Optional[ContainerNode] = None
 
-    def __post_init__(self):
-        if self.colon is None:
-            self.colon = Colon(suffix=" ")
-
     def __repr__(self) -> str:
-        name = self.name.value if self.name else None
-        return f"{self.__class__.__name__}({self.type.value}, {name})"
+        name = f"name='{self.name.value}'" if self.name else None
+        return f"{self.__class__.__name__}(type='{self.type.value}', {name})"
 
     @property
     def children(self) -> Optional[Tuple[ContainerNode, ...]]:
@@ -191,7 +192,7 @@ class BlockNode(SyntaxNode):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class DocumentNode(SyntaxNode):
     container: ContainerNode
     prefix: str = ""
@@ -199,7 +200,7 @@ class DocumentNode(SyntaxNode):
 
     @property
     def children(self) -> Tuple[ContainerNode]:
-        return tuple(self.container)  # type: ignore
+        return (self.container,)  # type: ignore
 
     def accept(self, visitor: Visitor) -> Any:
         return visitor.visit(self)
@@ -208,7 +209,7 @@ class DocumentNode(SyntaxNode):
         return items_to_str(self.prefix, self.container, self.suffix)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ContainerNode(SyntaxNode):
     items: Tuple[Union[BlockNode, PairNode, ListNode], ...]
     top_level: bool = False

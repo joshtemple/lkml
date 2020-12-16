@@ -398,7 +398,7 @@ class DictParser:
                     )
                     items.append(token)
             self.decrease_level()
-            right_bracket.prefix = self.newline_indent
+            right_bracket = RightBracket(prefix=self.newline_indent)
         else:
             trailing_comma = False
             for i, value in enumerate(values):
@@ -445,8 +445,8 @@ class DictParser:
         key: str,
         value: str,
         force_quote: bool = False,
-        prefix: Optional[str] = None,
-        suffix: Optional[str] = None,
+        prefix: str = "",
+        suffix: str = "",
     ) -> SyntaxToken:
         """Parses a value into a token, quoting it if required by the key or forced.
 

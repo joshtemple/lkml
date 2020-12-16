@@ -1,4 +1,9 @@
-from lkml.tree import ContainerNode, DocumentNode, ListNode, PairNode, SyntaxToken
+from dataclasses import replace
+from lkml.tree import (
+    ContainerNode,
+    DocumentNode,
+    ListNode,
+)
 from pathlib import Path
 import pytest
 import lkml
@@ -33,10 +38,11 @@ def test_removing_item_from_list_serializes_sensibly():
     node: ListNode = tree.container.items[0]
     assert str(node) == "name: [a, b, c]"
 
-    node.items = tuple(item for item in node.items if item.value != "b")
+    new_items = tuple(item for item in node.items if item.value != "b")
+    node = replace(node, items=new_items)
     assert str(node) == "name: [a, c]"
 
-    node.items = tuple()
+    node = replace(node, items=tuple())
     assert str(node) == "name: []"
 
     # Test with leading and trailing spaces
@@ -44,10 +50,11 @@ def test_removing_item_from_list_serializes_sensibly():
     node: ListNode = tree.container.items[0]
     assert str(node) == "name: [ a, b, c ]"
 
-    node.items = tuple(item for item in node.items if item.value != "b")
+    new_items = tuple(item for item in node.items if item.value != "b")
+    node = replace(node, items=new_items)
     assert str(node) == "name: [ a, c ]"
 
-    node.items = tuple()
+    node = replace(node, items=tuple())
     assert str(node) == "name: []"
 
     # Test with items on new lines with trailing newline
@@ -55,24 +62,12 @@ def test_removing_item_from_list_serializes_sensibly():
     node: ListNode = tree.container.items[0]
     assert str(node) == "name: [\n  a,\n  b,\n  c\n]"
 
-    node.items = tuple(item for item in node.items if item.value != "b")
+    new_items = tuple(item for item in node.items if item.value != "b")
+    node = replace(node, items=new_items)
     assert str(node) == "name: [\n  a,\n  c\n]"
 
-    node.items = tuple()
+    node = replace(node, items=tuple())
     assert str(node) == "name: []"
-
-
-def test_modifying_key_does_not_change_serialized_whitespace():
-    # Tests that the whitespace is defined by the colon token
-    tree: DocumentNode = lkml.parse("a :\n no")
-    node: PairNode = tree.container.items[0]
-    assert str(node) == "a :\n no"
-
-    node.type = SyntaxToken("b")
-    assert str(node) == "b :\n no"
-
-    node.colon.prefix = ""
-    assert str(node) == "b:\n no"
 
 
 def test_view_with_all_fields():
