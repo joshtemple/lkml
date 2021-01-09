@@ -43,6 +43,13 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
+html_theme_options = dict(
+    description='A speedy LookML parser and serializer implemented in pure Python.',
+    github_button=True,
+    github_user='joshtemple',
+    github_repo='lkml',
+    github_type='star',
+)
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

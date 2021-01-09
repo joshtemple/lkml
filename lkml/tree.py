@@ -100,19 +100,22 @@ class SyntaxNode(ABC):
         """Accepts a Visitor that can interact with the node.
         
         The visitor pattern allows for flexible algorithms that can traverse the tree
-        without needing to be defined as methods on the tree itself."""
+        without needing to be defined as methods on the tree itself.
+        
+        """
         ...
 
 
 @dataclass(frozen=True)
 class PairNode(SyntaxNode):
-    """A simple LookML field, e.g. `hidden: yes`.
+    """A simple LookML field, e.g. ``hidden: yes``.
 
     Attributes:
         type: The field type, the value that precedes the colon.
         value: The field value, the value that follows the colon.
         colon: An optional Colon SyntaxToken. If not supplied, a default colon is
             created with a single space suffix after the colon.
+    
     """
 
     type: SyntaxToken
@@ -139,6 +142,19 @@ class PairNode(SyntaxNode):
 
 @dataclass(frozen=True)
 class ListNode(SyntaxNode):
+    """A LookML list, enclosed in square brackets. Like ``fields`` or ``filters``.
+
+    Attributes:
+        type: The field type, the value that precedes the colon.
+        items: A tuple of pair nodes or syntax tokens, depending on the list style.
+        left_bracket: A syntax token for the opening bracket "[".
+        right_bracket: A syntax token for the closing bracket "]".
+        colon: An optional Colon SyntaxToken. If not supplied, a default colon is
+            created with a single space suffix after the colon.
+        trailing_comma: Include a trailing comma after the last item.
+
+    """
+
     type: SyntaxToken
     items: Union[Tuple[PairNode, ...], Tuple[SyntaxToken, ...]]
     left_bracket: LeftBracket
@@ -175,6 +191,19 @@ class ListNode(SyntaxNode):
 
 @dataclass(frozen=True)
 class BlockNode(SyntaxNode):
+    """A LookML block, enclosed in curly braces. Like ``view`` or ``dimension``.
+
+    Attributes:
+        type: The field type, the value that precedes the colon.
+        left_brace: A syntax token for the opening brace "{".
+        right_brace: A syntax token for the closing brace "}".
+        colon: An optional Colon SyntaxToken. If not supplied, a default colon is
+            created with a single space suffix after the colon.
+        name: An optional name token, the value that follows the colon.
+        container: A container node that holds the block's child nodes.
+
+    """
+
     type: SyntaxToken
     left_brace: LeftCurlyBrace
     right_brace: RightCurlyBrace
@@ -204,6 +233,15 @@ class BlockNode(SyntaxNode):
 
 @dataclass(frozen=True)
 class DocumentNode(SyntaxNode):
+    """The root node of the parse tree.
+
+    Attributes:
+        container: The top-level container node.
+        prefix: Leading whitespace or comments before the document.
+        suffix: Trailing whitespace or comments after the document.
+    
+    """
+
     container: ContainerNode
     prefix: str = ""
     suffix: str = ""
@@ -222,6 +260,17 @@ class DocumentNode(SyntaxNode):
 
 @dataclass(frozen=True)
 class ContainerNode(SyntaxNode):
+    """A sequence of nodes, either at the top level of a document, or within a block.
+
+    Attributes:
+        items: A tuple of the contained nodes.
+        top_level: If the container is the top level of the LookML document.
+
+    Raises:
+        KeyError: If a key already exists in the tree and would be overwritten.
+
+    """
+
     items: Tuple[Union[BlockNode, PairNode, ListNode], ...]
     top_level: bool = False
 
@@ -252,6 +301,8 @@ class ContainerNode(SyntaxNode):
 
 
 class Visitor(ABC):
+    """Abstract base class for visitors that interact with the parse tree."""
+
     @abstractmethod
     def visit(self, document: DocumentNode) -> Any:
         ...

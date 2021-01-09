@@ -43,6 +43,8 @@ lkml.tokens module
    :members:
    :undoc-members:
 
+.. _tree-ref:
+
 lkml.tree module
 ----------------
 

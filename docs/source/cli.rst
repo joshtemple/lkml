@@ -6,9 +6,15 @@ lkml can also be used as a command-line tool. It accepts a single argument: the 
 
    lkml orders.view.lkml
 
+If you would like to save the result to a file, you can pipe the output as follows.
+
+.. code-block:: bash
+
+    lkml path/to/file.view.lkml > path/to/result.json
+
 Parsing in debug mode
 ---------------------
-Providing the ``-v`` argument at the command line turns on debug, or verbose mode. In debug mode, lkml will emit its attempts to parse each bit of the LookML string (called a token).
+Providing the ``-v`` or ``--verbose`` argument at the command line turns on debug, or verbose mode. In debug mode, lkml will emit its attempts to parse each bit of the LookML string (called a token).
 
 Here's an example of the output:
 
