@@ -15,7 +15,7 @@ from lkml.tree import DocumentNode
 
 def parse(text: str) -> DocumentNode:
     """Parse LookML into a parse tree.
-    
+
     Args:
         text: The LookML string to be parsed.
 

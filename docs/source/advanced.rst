@@ -26,7 +26,7 @@ If we parse this LookML with :py:func:`lkml.load`, we'll lose the comment and an
 
     >>> parsed = lkml.load(text)
     >>> parsed
-    {'dimensions': [{'sql': '${TABLE}.days_in_inventory ', 'name': 'days_in_inventory'}]} 
+    {'dimensions': [{'sql': ' ${TABLE}.days_in_inventory ', 'name': 'days_in_inventory'}]} 
 
 Writing this dictionary back to LookML with :py:func:`lkml.dump` yields the following:
 

@@ -27,7 +27,7 @@ class SyntaxToken:
         value: The text represented by the token.
         prefix: Comments or whitespace preceding the token.
         suffix: Comments or whitespace following the token.
-    
+
     """
 
     value: str
@@ -98,10 +98,10 @@ class SyntaxNode(ABC):
     @abstractmethod
     def accept(self, visitor: Visitor) -> Any:
         """Accepts a Visitor that can interact with the node.
-        
+
         The visitor pattern allows for flexible algorithms that can traverse the tree
         without needing to be defined as methods on the tree itself.
-        
+
         """
         ...
 
@@ -115,7 +115,7 @@ class PairNode(SyntaxNode):
         value: The field value, the value that follows the colon.
         colon: An optional Colon SyntaxToken. If not supplied, a default colon is
             created with a single space suffix after the colon.
-    
+
     """
 
     type: SyntaxToken
@@ -169,7 +169,7 @@ class ListNode(SyntaxNode):
     def children(self,) -> Optional[Tuple[PairNode, ...]]:
         if isinstance(self.items[0], PairNode):
             # Assume that all elements are pairs
-            self.items = cast(Tuple[PairNode, ...], self.items)
+            self.items = cast(Tuple[PairNode, ...], self.items)  # type: ignore
             return self.items
         else:
             return None
@@ -239,7 +239,7 @@ class DocumentNode(SyntaxNode):
         container: The top-level container node.
         prefix: Leading whitespace or comments before the document.
         suffix: Trailing whitespace or comments after the document.
-    
+
     """
 
     container: ContainerNode

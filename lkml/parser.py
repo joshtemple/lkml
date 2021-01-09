@@ -201,10 +201,10 @@ class Parser:
 
     def parse(self) -> tree.DocumentNode:
         """Main method of this class and a wrapper for the container parser.
-        
+
         Returns:
             A document node, the root node of the LookML parse tree.
-            
+
         """
         if self.check(tokens.StreamStartToken):
             self.advance()
@@ -404,7 +404,6 @@ class Parser:
             return tree.QuotedSyntaxToken(value, prefix, suffix)
         elif self.check(tokens.ExpressionBlockToken):
             value = self.consume_token_value()
-            value = value.lstrip()
             if self.check(tokens.ExpressionBlockEndToken):
                 self.advance()
             else:
@@ -471,7 +470,7 @@ class Parser:
             A container with the parsed values or None if the grammar doesn't match
 
         Grammar:
-            ``csv`` ← 
+            ``csv`` ←
             ``(literal / quoted_literal) ("," (literal / quoted_literal))* ","?``
 
         """

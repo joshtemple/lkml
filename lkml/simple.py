@@ -165,9 +165,9 @@ class DictParser:
 
     def increase_level(self) -> None:
         """Increases the indent level of the current line by one tab.
-        
+
         This also resets the latest node, mainly for formatting reasons.
-        
+
         """
         self.latest_node = None
         self.level += 1
@@ -222,7 +222,7 @@ class DictParser:
 
     def resolve_filters(self, values: List[dict]) -> Union[List[BlockNode], ListNode]:
         """Parse the key ``filters`` according to the context.
-        
+
         In LookML, the ``filters`` key is wildly inconsistent and can have three
         different syntaxes. This method determines the syntax that should be used based
         on the context and parses the appropriate node.
