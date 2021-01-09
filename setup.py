@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-__version__ = "0.2.2"
+__version__ = "1.0.0"
 
 here = Path(__file__).parent.resolve()
 
@@ -19,7 +19,7 @@ setup(
     url="https://github.com/joshtemple/lkml",
     download_url="https://github.com/joshtemple/lkml/tarball/" + __version__,
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.7",
@@ -32,7 +32,6 @@ setup(
     include_package_data=True,
     author="Josh Temple",
     tests_require=[
-        "bandit",
         "black",
         "flake8",
         "isort",

@@ -1,4 +1,5 @@
 import io
+from lkml.tree import ContainerNode, DocumentNode, PairNode, SyntaxToken
 from pathlib import Path
 from unittest.mock import patch
 import logging
@@ -13,9 +14,9 @@ def lookml_path():
 
 
 def test_debug_flag_is_parsed_to_log_level_debug(lookml_path):
-    args = lkml.parse_args([lookml_path, "-d"])
+    args = lkml.parse_args([lookml_path, "-v"])
     assert args.log_level == logging.DEBUG
-    args = lkml.parse_args([lookml_path, "--debug"])
+    args = lkml.parse_args([lookml_path, "--verbose"])
     assert args.log_level == logging.DEBUG
 
 
@@ -29,7 +30,7 @@ def test_absence_of_debug_flag_is_parsed_to_log_level_warn(lookml_path):
 def test_run_cli(mock_parse_args, mock_load, lookml_path):
     mock_parse_args.return_value.file = io.StringIO()
     mock_parse_args.return_value.log_level = logging.WARN
-    mock_load.return_value = {"a": 1}
+    mock_load.return_value = {"a": "1"}
     lkml.cli()
 
 

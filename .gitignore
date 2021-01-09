@@ -21,6 +21,7 @@ develop-eggs
 lib
 lib64
 dist/
+pip-wheel-metadata/
 
 # Installer logs
 pip-log.txt
@@ -38,7 +39,7 @@ output/*.html
 output/*/index.html
 
 # Sphinx
-docs/_build
+docs/source/_build
 
 # Cookiecutter
 output/
@@ -50,7 +51,7 @@ output/
 .mypy_cache/
 
 # Project-specific
-github/
+TODO.md
 
 # Mac
 .DS_Store
@@ -58,3 +59,6 @@ github/
 # Jupyter notebook
 *.ipynb
 .ipynb_checkpoints/
+
+# VSCode
+.vscode/

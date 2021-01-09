@@ -2,6 +2,7 @@ import pytest
 
 import lkml
 import lkml.tokens as tokens
+from lkml.tokens import CommentToken, StreamStartToken, WhitespaceToken
 
 
 @pytest.fixture
@@ -56,22 +57,6 @@ def test_consume_returns_current_character(lexer):
     assert char == current_char
 
 
-def test_scan_until_token_skips_whitespace():
-    text = "\n\t   \n  Start here"
-    lexer = lkml.Lexer(text)
-    lexer.scan_until_token()
-    result = lexer.peek()
-    assert result == "S"
-
-
-def test_scan_until_token_skips_comments():
-    text = "# This is a comment\nStart here"
-    lexer = lkml.Lexer(text)
-    lexer.scan_until_token()
-    result = lexer.peek()
-    assert result == "S"
-
-
 params = [
     ("\0", tokens.StreamEndToken(1)),
     ("{", tokens.BlockStartToken(1)),
@@ -90,6 +75,33 @@ def test_scan_all_simple_tokens(text, expected):
     result = lexer.scan()
     # Skip stream start token appended at the beginning
     assert result[1] == expected
+
+
+def test_scan_whitespace():
+    text = "\n\t Hello World!"
+    lexer = lkml.Lexer(text)
+    token = lexer.scan_whitespace()
+    assert token == tokens.WhitespaceToken("\n\t ", 1)
+
+
+def test_scan_comment():
+    text = "# Make this better \n"
+    lexer = lkml.Lexer(text)
+    lexer.index = 1
+    token = lexer.scan_comment()
+    assert token == tokens.CommentToken("# Make this better ", 1)
+
+
+def test_scan_comment_with_surrounding_whitespace():
+    text = "\n# A comment\n "
+    output = lkml.Lexer(text).scan()
+    assert output == (
+        tokens.StreamStartToken(1),
+        tokens.WhitespaceToken("\n", 1),
+        tokens.CommentToken("# A comment", 2),
+        tokens.WhitespaceToken("\n ", 2),
+        tokens.StreamEndToken(3),
+    )
 
 
 def test_scan_quoted_literal():
@@ -132,7 +144,7 @@ def test_scan_expression_block_with_complex_sql_block():
     text = "concat(${orders.order_id}, '|',\n${orders__items.primary_key}) ;;"
     token = lkml.Lexer(text).scan_expression_block()
     token == tokens.ExpressionBlockToken(
-        "concat(${orders.order_id}, '|', ${orders__items.primary_key})", 1
+        "concat(${orders.order_id}, '|', ${orders__items.primary_key}) ", 1
     )
 
 
@@ -147,7 +159,7 @@ def test_scan_with_complex_sql_block():
         tokens.LiteralToken("sql_distinct_key", 1),
         tokens.ValueToken(1),
         tokens.ExpressionBlockToken(
-            "concat(${orders.order_id}, '|', ${orders__items.primary_key})", 1
+            " concat(${orders.order_id}, '|', ${orders__items.primary_key}) ", 1
         ),
         tokens.ExpressionBlockEndToken(1),
         tokens.StreamEndToken(1),
@@ -161,6 +173,7 @@ def test_scan_with_non_expression_block_starting_with_sql():
         tokens.StreamStartToken(1),
         tokens.LiteralToken("sql_not_reserved_field", 1),
         tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
         tokens.LiteralToken("yes", 1),
         tokens.StreamEndToken(1),
     )
@@ -173,6 +186,7 @@ def test_scan_with_non_expression_block_starting_with_html():
         tokens.StreamStartToken(1),
         tokens.LiteralToken("html_not_reserved_field", 1),
         tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
         tokens.LiteralToken("yes", 1),
         tokens.StreamEndToken(1),
     )

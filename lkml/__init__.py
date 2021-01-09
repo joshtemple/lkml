@@ -1,3 +1,5 @@
+"""A speedy LookML parser and serializer implemented in pure Python."""
+
 import argparse
 import io
 import json
@@ -7,7 +9,25 @@ from typing import IO, Optional, Sequence, Union
 
 from lkml.lexer import Lexer
 from lkml.parser import Parser
-from lkml.serializer import Serializer
+from lkml.simple import DictParser, DictVisitor
+from lkml.tree import DocumentNode
+
+
+def parse(text: str) -> DocumentNode:
+    """Parse LookML into a parse tree.
+
+    Args:
+        text: The LookML string to be parsed.
+
+    Returns:
+        A document node, the root of the parse tree.
+
+    """
+    lexer = Lexer(text)
+    tokens = lexer.scan()
+    parser = Parser(tokens)
+    tree: DocumentNode = parser.parse()
+    return tree
 
 
 def load(stream: Union[str, IO]) -> dict:
@@ -27,11 +47,10 @@ def load(stream: Union[str, IO]) -> dict:
         text = stream
     else:
         raise TypeError("Input stream must be a string or file object.")
-    lexer = Lexer(text)
-    tokens = lexer.scan()
-    parser = Parser(tokens)
-    result = parser.parse()
-    return result
+    tree: DocumentNode = parse(text)
+    visitor = DictVisitor()
+    tree_as_dict: dict = visitor.visit(tree)
+    return tree_as_dict
 
 
 def dump(obj: dict, file_object: IO = None) -> Optional[str]:
@@ -45,8 +64,9 @@ def dump(obj: dict, file_object: IO = None) -> Optional[str]:
         A LookML string if no file_object is passed
 
     """
-    serializer = Serializer()
-    result = serializer.serialize(obj)
+    parser = DictParser()
+    tree: DocumentNode = parser.parse(obj)
+    result = str(tree)
     if file_object:
         file_object.write(result)
         return None
@@ -67,13 +87,13 @@ def parse_args(args: Sequence) -> argparse.Namespace:
         "file", type=argparse.FileType("r"), help="path to the LookML file to parse"
     )
     parser.add_argument(
-        "-d",
-        "--debug",
+        "-v",
+        "--verbose",
         action="store_const",
         dest="log_level",
         const=logging.DEBUG,
         default=logging.WARN,
-        help="increase logging verbosity",
+        help="increase logging verbosity to debug",
     )
 
     return parser.parse_args(args)
@@ -96,10 +116,10 @@ def cli():
 
     logging.getLogger().setLevel(args.log_level)
 
-    lookml = load(args.file)
+    result: dict = load(args.file)
     args.file.close()
 
-    json_string = json.dumps(lookml, indent=2)
+    json_string = json.dumps(result, indent=2)
     print(json_string)
 
 

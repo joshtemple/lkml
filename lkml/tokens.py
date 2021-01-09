@@ -117,6 +117,25 @@ class ListEndToken(Token):
     id = "]"
 
 
+class TriviaToken(ContentToken):
+    """Represents a comment or whitespace."""
+
+
+class WhitespaceToken(TriviaToken):
+    """Represents one or more whitespace characters."""
+
+    id = "<whitespace>"
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({repr(self.value)})"
+
+
+class CommentToken(TriviaToken):
+    """Represents a comment."""
+
+    id = "<comment>"
+
+
 class ExpressionBlockToken(ContentToken):
     """Contains the value of an expression block."""
 
