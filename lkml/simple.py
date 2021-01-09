@@ -81,36 +81,6 @@ class DictVisitor(Visitor):
             KeyError: If `update` has more than one key
             KeyError: If the key in `update` already exists and would overwrite existing
 
-        Examples:
-            >>> from pprint import pprint
-            >>> parser = Parser((tokens.Token(1),))
-
-            Updating the target with a non-existing, unique key.
-
-            >>> target = {"name": "foo"}
-            >>> update = {"sql_table_name": "foo.bar"}
-            >>> parser.update_tree(target, update)
-            >>> pprint(target)
-            {'name': 'foo', 'sql_table_name': 'foo.bar'}
-
-            Updating the target with a non-existing, repeatable key.
-
-            >>> target = {"name": "foo"}
-            >>> update = {"dimension": {"sql": "${TABLE}.foo", "name": "foo"}}
-            >>> parser.update_tree(target, update)
-            >>> pprint(target)
-            {'dimensions': [{'name': 'foo', 'sql': '${TABLE}.foo'}], 'name': 'foo'}
-
-            Updating the target with an existing, repeatable key.
-
-            >>> target = {"name": "foo", "dimensions": [{"sql": "${TABLE}.foo", "name": "foo"}]}
-            >>> update = {"dimension": {"sql": "${TABLE}.bar", "name": "bar"}}
-            >>> parser.update_tree(target, update)
-            >>> pprint(target)
-            {'dimensions': [{'name': 'foo', 'sql': '${TABLE}.foo'},
-                            {'name': 'bar', 'sql': '${TABLE}.bar'}],
-             'name': 'foo'}
-
         """
         keys = tuple(update.keys())
         if len(keys) > 1:

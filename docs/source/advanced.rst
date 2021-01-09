@@ -1,3 +1,7 @@
+.. testsetup::
+
+   import lkml
+
 Advanced LookML parsing
 =======================
 :py:func:`lkml.load` and :py:func:`lkml.dump` provide a simple interface between LookML and Python primitive data structures. However, :py:func:`lkml.load` discards information about comments and whitespace, making lossless modification of LookML impossible.
@@ -22,7 +26,7 @@ If we parse this LookML with :py:func:`lkml.load`, we'll lose the comment and an
 
     >>> parsed = lkml.load(text)
     >>> parsed
-    {'dimensions': [{'name': 'days_in_inventory', 'sql': '${TABLE}.days_in_inventory'}]} 
+    {'dimensions': [{'sql': '${TABLE}.days_in_inventory ', 'name': 'days_in_inventory'}]} 
 
 Writing this dictionary back to LookML with :py:func:`lkml.dump` yields the following:
 
@@ -30,7 +34,7 @@ Writing this dictionary back to LookML with :py:func:`lkml.dump` yields the foll
 
     >>> print(lkml.dump(parsed))
     dimension: days_in_inventory {
-       sql: ${TABLE}.days_in_inventory ;;
+      sql: ${TABLE}.days_in_inventory ;;
     }
 
 The comment is missing and the whitespace has been overriden by :py:func:`lkml.dump`'s opinionated formatting. If we want to preserve the exact whitespace and comments surrounding this dimension, we'll need to dive under the hood of lkml and directly modify the **parse tree**.
@@ -88,6 +92,7 @@ Creating nodes and tokens by hand is tedious, so it's more likely that you will 
 .. doctest::
 
    >>> lkml.parse('hidden: yes')
+   DocumentNode(container=ContainerNode(), prefix='', suffix='')
 
 This tree can be analyzed with a visitor or modified with a transformer.
 

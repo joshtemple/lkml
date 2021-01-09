@@ -1,3 +1,9 @@
+.. testsetup::
+
+   import lkml
+   from lkml.parser import Parser
+   from lkml.lexer import Lexer
+
 API reference
 =============
 

@@ -106,9 +106,9 @@ class Lexer:
         r"""Returns a token from one or more whitespace characters.
 
         Example:
-            >>> lexer = Lexer("\\n\\n\\t Hello")
+            >>> lexer = Lexer("\n\n\t Hello")
             >>> lexer.scan_whitespace()
-            WhitespaceToken('\\n\\n\\t ')
+            WhitespaceToken('\n\n\t ')
 
         """
         chars = ""
@@ -128,9 +128,9 @@ class Lexer:
         the importance of any leading whitespace that follows.
 
         Example:
-            >>> lexer = Lexer("Disregard this line\\n")
+            >>> lexer = Lexer(" Disregard this line\n")
             >>> lexer.scan_comment()
-            CommentToken(Disregard this line)
+            CommentToken(# Disregard this line)
 
         """
         chars = "#"
