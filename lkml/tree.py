@@ -1,3 +1,5 @@
+"""Node and token classes that make up the parse tree."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -22,9 +24,10 @@ class SyntaxToken:
     to assign these prefixes and suffixes intelligently to the corresponding tokens.
 
     Attributes:
-        value: The text represented by the token
-        prefix: Comments or whitespace preceding the token
-        suffix: Comments or whitespace following the token
+        value: The text represented by the token.
+        prefix: Comments or whitespace preceding the token.
+        suffix: Comments or whitespace following the token.
+    
     """
 
     value: str
@@ -36,6 +39,7 @@ class SyntaxToken:
         return self.value
 
     def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's token method on itself."""
         return visitor.visit_token(self)
 
     def __str__(self) -> str:
@@ -83,6 +87,8 @@ class ExpressionSyntaxToken(SyntaxToken):
 
 
 class SyntaxNode(ABC):
+    """Abstract base class for members of the parse tree that have child nodes."""
+
     @property
     @abstractmethod
     def children(self) -> Optional[Tuple[SyntaxNode, ...]]:
@@ -91,21 +97,22 @@ class SyntaxNode(ABC):
 
     @abstractmethod
     def accept(self, visitor: Visitor) -> Any:
+        """Accepts a Visitor that can interact with the node.
+        
+        The visitor pattern allows for flexible algorithms that can traverse the tree
+        without needing to be defined as methods on the tree itself."""
         ...
 
 
 @dataclass(frozen=True)
 class PairNode(SyntaxNode):
-    """A single LookML field, e.g. `hidden: yes`
+    """A simple LookML field, e.g. `hidden: yes`.
 
-    Args:
-        type: [description]
-        value: The value of the field
-        colon: An optional Colon SyntaxToken. If not supplied, the default one is used
-            with a single space suffix after the colon.
-
-    Returns:
-        [type]: [description]
+    Attributes:
+        type: The field type, the value that precedes the colon.
+        value: The field value, the value that follows the colon.
+        colon: An optional Colon SyntaxToken. If not supplied, a default colon is
+            created with a single space suffix after the colon.
     """
 
     type: SyntaxToken
@@ -123,6 +130,7 @@ class PairNode(SyntaxNode):
         return None
 
     def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's pair method on itself."""
         return visitor.visit_pair(self)
 
     def __str__(self) -> str:
@@ -151,6 +159,7 @@ class ListNode(SyntaxNode):
             return None
 
     def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's list method on itself."""
         return visitor.visit_list(self)
 
     def __str__(self) -> str:
@@ -182,6 +191,7 @@ class BlockNode(SyntaxNode):
         return (self.container,) if self.container else None
 
     def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's block method on itself."""
         return visitor.visit_block(self)
 
     def __str__(self) -> str:
@@ -203,6 +213,7 @@ class DocumentNode(SyntaxNode):
         return (self.container,)  # type: ignore
 
     def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's visit method on itself."""
         return visitor.visit(self)
 
     def __str__(self) -> str:
@@ -231,6 +242,7 @@ class ContainerNode(SyntaxNode):
         return self.items
 
     def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's container method on itself."""
         return visitor.visit_container(self)
 
     def __str__(self) -> str:

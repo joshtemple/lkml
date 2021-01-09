@@ -1,4 +1,10 @@
-"""Serializes a Python dictionary into a LookML string."""
+"""Interface classes between the parse tree and a data structure of primitives.
+
+These classes facilitate parsing and generation to and from simple data structures like
+lists and dictionaries, and allow users to parse and generate LookML without needing
+to interact with the parse tree.
+
+"""
 
 import logging
 from typing import Any, Dict, List, Optional, Sequence, Type, Union, cast
@@ -32,6 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 def flatten(sequence: list) -> list:
+    """Flattens a singly-nested list of lists into a list of items."""
     result = []
     for each in sequence:
         if isinstance(each, list):
@@ -42,6 +49,16 @@ def flatten(sequence: list) -> list:
 
 
 class DictVisitor(Visitor):
+    """Creates a primitive representation of the parse tree.
+
+    Traverses the parse tree and transforms each node type into a dict. Each dict is
+    combined into one nested dict. Also handles the grouping of fields with plural keys
+    like ``dimension`` or ``view`` into lists.
+
+    Attributes:
+        depth: Tracks the level of nesting.
+    """
+
     def __init__(self):
         self.depth: int = -1  # Tracks the level of nesting
 
@@ -126,6 +143,7 @@ class DictVisitor(Visitor):
         return self.visit_container(document.container)
 
     def visit_container(self, node: ContainerNode) -> Dict[str, Any]:
+        """Creates a dict from a container node by visiting its children."""
         container: Dict[str, Any] = {}
         if len(node.items) > 0:
             self.depth += 1
@@ -135,48 +153,52 @@ class DictVisitor(Visitor):
         return container
 
     def visit_block(self, node: BlockNode) -> Dict[str, Dict]:
+        """Creates a dict from a block node by visiting its children."""
         container_dict = node.container.accept(self) if node.container else {}
         if node.name is not None:
             container_dict["name"] = node.name.accept(self)
         return {node.type.accept(self): container_dict}
 
     def visit_list(self, node: ListNode) -> Dict[str, List]:
+        """Creates a dict from a list node by visiting its children."""
         return {node.type.accept(self): [item.accept(self) for item in node.items]}
 
     def visit_pair(self, node: PairNode) -> Dict[str, str]:
+        """Creates a dict from pair node by visiting its type and value tokens."""
         return {node.type.accept(self): node.value.accept(self)}
 
     def visit_token(self, token: SyntaxToken) -> str:
+        """Creates a string from a syntax token."""
         return str(token.value)
 
 
 class DictParser:
-    """Parses a Python dictionary into a concrete syntax tree.
+    """Parses a Python dictionary into a parse tree.
 
     Review the grammar specified for the Parser class to understand how LookML
     is represented. The grammar details the differences between blocks, pairs, keys,
     and values.
 
     Attributes:
-        parent_key: The name of the key at the previous level in a LookML block
-        level: The number of indentations appropriate for the current position
-        field_counter: The position of the current field when serializing
-            iterable objects
-        base_indent: Whitespace representing one tab
-        indent: An indent of whitespace dynamically sized for the current position
-        newline_indent: A newline plus an indent string
+        parent_key: The name of the key at the previous level in a LookML block.
+        level: The number of indentations appropriate for the current position.
+        base_indent: Whitespace representing one tab.
+        latest_node: The type of the last node to be parsed.
 
     """
 
     def __init__(self):
-        """Initializes the Serializer."""
         self.parent_key: str = None
         self.level: int = 0
         self.base_indent: str = " " * 2
         self.latest_node: Optional[Type[SyntaxNode]] = DocumentNode
 
     def increase_level(self) -> None:
-        """Increases the indent level of the current line by one tab."""
+        """Increases the indent level of the current line by one tab.
+        
+        This also resets the latest node, mainly for formatting reasons.
+        
+        """
         self.latest_node = None
         self.level += 1
 
@@ -186,6 +208,7 @@ class DictParser:
 
     @property
     def indent(self) -> str:
+        """Returns the level-adjusted indent."""
         if self.level > 0:
             return self.base_indent * self.level
         else:
@@ -193,10 +216,12 @@ class DictParser:
 
     @property
     def newline_indent(self) -> str:
+        """Returns a newline plus the current indent."""
         return "\n" + self.indent
 
     @property
     def prefix(self) -> str:
+        """Returns the currently appropriate, preceding whitespace."""
         if self.latest_node == DocumentNode:
             return ""
         elif self.latest_node is None:
@@ -215,6 +240,9 @@ class DictParser:
         parent key. If its parent key is `access_grant`, it is a list and cannot be
         repeated. Otherwise, it can be repeated.
 
+        Args:
+            key: The name of the key to test.
+
         """
         singular_key = singularize(key)
         return singular_key in PLURAL_KEYS and not (
@@ -223,6 +251,19 @@ class DictParser:
         )
 
     def resolve_filters(self, values: List[dict]) -> Union[List[BlockNode], ListNode]:
+        """Parse the key ``filters`` according to the context.
+        
+        In LookML, the ``filters`` key is wildly inconsistent and can have three
+        different syntaxes. This method determines the syntax that should be used based
+        on the context and parses the appropriate node.
+
+        Args:
+            values: The contents of the ``filters`` block. Provides context to resolve.
+
+        Returns:
+            A block or list node depending on the resolution.
+
+        """
         if "name" in values[0]:
             # This is one or more filter-only field(s), e.g.
             # filter: order_region { type: string }
@@ -242,7 +283,7 @@ class DictParser:
             return self.parse_list(key="filters", values=values)
 
     def parse(self, obj: Dict[str, Any]) -> DocumentNode:
-        """Returns a LookML string serialized from a dictionary."""
+        """Parses a primitive representation of LookML into a parse tree."""
         nodes = [self.parse_any(key, value) for key, value in obj.items()]
         container = ContainerNode(items=tuple(flatten(nodes)))
         return DocumentNode(container)
@@ -250,22 +291,18 @@ class DictParser:
     def expand_list(
         self, key: str, values: Sequence
     ) -> List[Union[BlockNode, ListNode, PairNode]]:
-        """Expands and serializes a list of values for a repeatable key.
-
-        This method is exclusively used for sequences of values with a repeated key like
-        `dimensions` or `views`, which need to be serialized sequentially with a newline
-        in between.
+        """Expands and parses a list of values for a repeatable key.
 
         Args:
             key: A repeatable LookML field type (e.g. "views" or "dimension_groups")
-            values: A sequence of objects to be serialized
+            values: A sequence of objects to be parsed
 
         Returns:
-            A generator of serialized string chunks
+            A list of block, list, or pair nodes, depending on the list's contents.
 
         """
         # A dictionary with a key "filters" can correspond to multiple syntaxes, so
-        # must be handled in a content-aware manner
+        # must be handled in a context-aware manner
         if key == "filters":
             values = cast(List[dict], values)
             return flatten([self.resolve_filters(values)])

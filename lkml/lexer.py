@@ -103,7 +103,7 @@ class Lexer:
         return any(string.startswith(key + ":") for key in EXPR_BLOCK_KEYS)
 
     def scan_whitespace(self) -> tokens.WhitespaceToken:
-        """Returns a token from one or more whitespace characters.
+        r"""Returns a token from one or more whitespace characters.
 
         Example:
             >>> lexer = Lexer("\\n\\n\\t Hello")
@@ -119,7 +119,7 @@ class Lexer:
         return tokens.WhitespaceToken(chars, self.line_number)
 
     def scan_comment(self) -> tokens.CommentToken:
-        """Returns a token from a comment.
+        r"""Returns a token from a comment.
 
         The initial pound (#) character is consumed in the scan method, so this
         method only scans for a newline or end of file to indicate the end of the token.

@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class BasicVisitor(Visitor):
+    """Visitor class that calls the ``_visit`` method for every node type."""
+
     @staticmethod
     def _visit(node: Union[SyntaxNode, SyntaxToken]):
         raise NotImplementedError
@@ -40,6 +42,8 @@ class BasicVisitor(Visitor):
 
 
 class LookMlVisitor(BasicVisitor):
+    """Converts a parse tree into a string by casting every node."""
+
     @staticmethod
     def _visit(node: Union[SyntaxNode, SyntaxToken]) -> str:
         return str(node)

@@ -1,3 +1,5 @@
+"""A speedy LookML parser and serializer implemented in pure Python."""
+
 import argparse
 import io
 import json
@@ -12,6 +14,15 @@ from lkml.tree import DocumentNode
 
 
 def parse(text: str) -> DocumentNode:
+    """Parse LookML into a parse tree.
+    
+    Args:
+        text: The LookML string to be parsed.
+
+    Returns:
+        A document node, the root of the parse tree.
+
+    """
     lexer = Lexer(text)
     tokens = lexer.scan()
     parser = Parser(tokens)

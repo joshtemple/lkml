@@ -1,4 +1,4 @@
-"""Defines constant sequences of LookML keys."""
+"""Defines constant sequences of LookML keys and helper methods."""
 
 from typing import Dict, Tuple, Type
 

@@ -118,7 +118,7 @@ class ListEndToken(Token):
 
 
 class TriviaToken(ContentToken):
-    """Represents a comment or whitespace"""
+    """Represents a comment or whitespace."""
 
 
 class WhitespaceToken(TriviaToken):
