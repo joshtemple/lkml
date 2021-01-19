@@ -78,7 +78,8 @@ class DoubleSemicolon(SyntaxToken):
 
 class QuotedSyntaxToken(SyntaxToken):
     def format_value(self) -> str:
-        return '"' + self.value + '"'
+        # Escape double quotes since the whole value is quoted
+        return '"' + self.value.replace('"', r'\"') + '"'
 
 
 class ExpressionSyntaxToken(SyntaxToken):
