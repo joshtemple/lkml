@@ -26,10 +26,10 @@ Parsing a LookML string into Python is easy. Pass the LookML string into :py:fun
    >>> pprint(result)
    {'dimension_groups': [{'group_label': 'Order Date',
                           'name': 'created',
-                          'sql': ' ${TABLE}.created_at ',
+                          'sql': '${TABLE}.created_at',
                           'timeframes': ['hour', 'date', 'week', 'month', 'year'],
                           'type': 'time'}],
-    'dimensions': [{'name': 'order_id', 'sql': ' ${TABLE}.order_id '}]}
+    'dimensions': [{'name': 'order_id', 'sql': '${TABLE}.order_id'}]}
 
 :py:func:`lkml.load` also supports parsing LookML directly from files::
 
@@ -66,9 +66,9 @@ Fields that can be repeated (e.g. ``view``, ``dimension``, or ``join``) are comb
 
    >>> result = lkml.load(lookml)
    >>> pprint(result)
-   {'dimensions': [{'name': 'order_id', 'sql': ' ${TABLE}.order_id '},
-                   {'name': 'amount', 'sql': ' ${TABLE}.amount '},
-                   {'name': 'status', 'sql': ' ${TABLE}.status '}]}
+   {'dimensions': [{'name': 'order_id', 'sql': '${TABLE}.order_id'},
+                   {'name': 'amount', 'sql': '${TABLE}.amount'},
+                   {'name': 'status', 'sql': '${TABLE}.status'}]}
 
 Here's an example of some LookML that has been parsed into a dictionary. Note that the repeated key ``join`` has been transformed into a plural key ``joins``: a list of dictionaries representing each join::
 
