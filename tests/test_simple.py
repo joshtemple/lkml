@@ -264,10 +264,7 @@ def test_parse_top_level_pairs(parser):
 
 def test_resolve_filters_filter_only_field(parser):
     nodes = parser.resolve_filters(
-        [
-            {"name": "filter_a", "type": "string"},
-            {"name": "filter_b", "type": "number"},
-        ]
+        [{"name": "filter_a", "type": "string"}, {"name": "filter_b", "type": "number"}]
     )
     result = "".join(str(node) for node in nodes)
     assert result == (
@@ -294,4 +291,3 @@ def test_resolve_filters_new_filters(parser):
     node = parser.resolve_filters([{"dimension_a": "-NULL"}, {"dimension_b": ">5"}])
     result = str(node)
     assert result == 'filters: [\n  dimension_a: "-NULL",\n  dimension_b: ">5",\n]'
-

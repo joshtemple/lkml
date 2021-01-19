@@ -17,9 +17,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'lkml'
-copyright = '2021, Josh Temple'
-author = 'Josh Temple'
+project = "lkml"
+copyright = "2021, Josh Temple"
+author = "Josh Temple"
 
 
 # -- General configuration ---------------------------------------------------
@@ -27,39 +27,37 @@ author = 'Josh Temple'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.doctest', 'sphinx.ext.napoleon', 'sphinx.ext.autodoc']
+extensions = ["sphinx.ext.doctest", "sphinx.ext.napoleon", "sphinx.ext.autodoc"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-master_doc = 'index'
+master_doc = "index"
 
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = "alabaster"
 html_theme_options = dict(
-    description='A speedy LookML parser and serializer implemented in pure Python.',
+    description="A speedy LookML parser and serializer implemented in pure Python.",
     github_button=True,
-    github_user='joshtemple',
-    github_repo='lkml',
-    github_type='star',
+    github_user="joshtemple",
+    github_repo="lkml",
+    github_type="star",
 )
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # These paths are either relative to html_static_path
 # or fully qualified paths (eg. https://...)
-html_css_files = [
-    'css/custom.css',
-]
+html_css_files = ["css/custom.css"]

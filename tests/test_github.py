@@ -23,6 +23,7 @@ def lookml(request):
     yield text
 
 
+@pytest.mark.acceptance
 def test_round_trip_should_work(lookml):
     # Load the LookML from file, parsing into a tree
     tree = lkml.parse(lookml)
