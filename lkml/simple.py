@@ -469,6 +469,6 @@ class DictParser:
         if force_quote or key in QUOTED_LITERAL_KEYS:
             return QuotedSyntaxToken(value, prefix, suffix)
         elif key in EXPR_BLOCK_KEYS:
-            return ExpressionSyntaxToken(value.strip() + " ", prefix, suffix)
+            return ExpressionSyntaxToken(value.strip(), prefix, suffix)
         else:
             return SyntaxToken(value, prefix, suffix)
