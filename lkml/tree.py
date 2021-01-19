@@ -79,7 +79,8 @@ class DoubleSemicolon(SyntaxToken):
 class QuotedSyntaxToken(SyntaxToken):
     def format_value(self) -> str:
         # Escape double quotes since the whole value is quoted
-        return '"' + self.value.replace(r'\"', '"').replace('"', r"\"") + '"'
+        return '"' + self.value.replace(r"\"", '"').replace('"', r"\"") + '"'
+
 
 @dataclass(frozen=True)
 class ExpressionSyntaxToken(SyntaxToken):
@@ -87,7 +88,9 @@ class ExpressionSyntaxToken(SyntaxToken):
     expr_suffix: str = " "
 
     def __str__(self) -> str:
-        return items_to_str(self.prefix, self.format_value(), self.expr_suffix, ";;", self.suffix)
+        return items_to_str(
+            self.prefix, self.format_value(), self.expr_suffix, ";;", self.suffix
+        )
 
 
 class SyntaxNode(ABC):

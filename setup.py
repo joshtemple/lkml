@@ -31,13 +31,6 @@ setup(
     packages=find_packages(exclude=["docs", "tests*", "scripts"]),
     include_package_data=True,
     author="Josh Temple",
-    tests_require=[
-        "black",
-        "flake8",
-        "isort",
-        "mypy",
-        "pytest",
-        "pytest-cov",
-    ],
+    tests_require=["black", "flake8", "isort", "mypy", "pytest", "pytest-cov"],
     author_email="",
 )

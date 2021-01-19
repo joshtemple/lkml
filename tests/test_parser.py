@@ -268,14 +268,14 @@ def test_parse_pair_with_quoted_literal():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_pair()
     assert result == PairNode(
-        type=SyntaxToken("view_label"), value=QuotedSyntaxToken("The View"),
+        type=SyntaxToken("view_label"), value=QuotedSyntaxToken("The View")
     )
     with pytest.raises(AttributeError):
         result.prefix
 
 
 def test_parse_pair_with_sql_block():
-    sql = "SELECT * FROM schema.table"
+    sql = " SELECT * FROM schema.table "
     stream = (
         tokens.LiteralToken("sql", 1),
         tokens.ValueToken(1),
@@ -286,7 +286,9 @@ def test_parse_pair_with_sql_block():
     )
     parser = lkml.parser.Parser(stream)
     result = parser.parse_pair()
-    assert result == PairNode(type=SyntaxToken("sql"), value=ExpressionSyntaxToken(sql))
+    assert result == PairNode(
+        type=SyntaxToken("sql"), value=ExpressionSyntaxToken(sql.strip())
+    )
 
 
 def test_parse_pair_with_bad_key():

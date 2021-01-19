@@ -1,9 +1,5 @@
 from dataclasses import replace
-from lkml.tree import (
-    ContainerNode,
-    DocumentNode,
-    ListNode,
-)
+from lkml.tree import ContainerNode, DocumentNode, ListNode
 from pathlib import Path
 import pytest
 import lkml

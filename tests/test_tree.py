@@ -10,7 +10,7 @@ from lkml.tree import (
     RightCurlyBrace,
     SyntaxToken,
     QuotedSyntaxToken,
-    ExpressionSyntaxToken
+    ExpressionSyntaxToken,
 )
 from lkml.visitors import LookMlVisitor
 
@@ -30,7 +30,9 @@ def test_quoted_syntax_token_quotes_double_quotes():
 
 def test_expression_syntax_token_with_expression_suffix():
     sql = "SELECT * FROM orders"
-    token = ExpressionSyntaxToken(sql, prefix=" ", suffix=" # A comment", expr_suffix=" ")
+    token = ExpressionSyntaxToken(
+        sql, prefix=" ", suffix=" # A comment", expr_suffix=" "
+    )
     assert str(token) == " SELECT * FROM orders ;; # A comment"
 
 
