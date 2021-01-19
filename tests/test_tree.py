@@ -1,4 +1,3 @@
-from lkml.parser import Syntax
 import pytest
 from lkml.tree import (
     BlockNode,
@@ -11,15 +10,28 @@ from lkml.tree import (
     RightCurlyBrace,
     SyntaxToken,
     QuotedSyntaxToken,
+    ExpressionSyntaxToken
 )
 from lkml.visitors import LookMlVisitor
 
 
 @pytest.mark.parametrize(
-    "token_class,expected", [(SyntaxToken, "foo"), (QuotedSyntaxToken, '"foo"'),],
+    "token_class,expected", [(SyntaxToken, "foo"), (QuotedSyntaxToken, '"foo"')]
 )
 def test_syntax_token_str_should_return_formatted(token_class, expected):
     assert str(token_class("foo")) == expected
+
+
+def test_quoted_syntax_token_quotes_double_quotes():
+    text = 'This is the "best" dimension'
+    token = QuotedSyntaxToken(text)
+    assert token.format_value() == r'"This is the \"best\" dimension"'
+
+
+def test_expression_syntax_token_with_expression_suffix():
+    sql = "SELECT * FROM orders"
+    token = ExpressionSyntaxToken(sql, prefix=" ", suffix=" # A comment", expr_suffix=" ")
+    assert str(token) == " SELECT * FROM orders ;; # A comment"
 
 
 def test_pair_node_str_should_return_formatted():
@@ -42,9 +54,9 @@ def test_list_node_str_should_return_formatted():
         type=SyntaxToken("filters"),
         left_bracket=LeftBracket(),
         items=(
-            PairNode(SyntaxToken("created_date"), QuotedSyntaxToken("7 days"),),
+            PairNode(SyntaxToken("created_date"), QuotedSyntaxToken("7 days")),
             PairNode(
-                SyntaxToken("user.status", prefix=" "), QuotedSyntaxToken("-disabled"),
+                SyntaxToken("user.status", prefix=" "), QuotedSyntaxToken("-disabled")
             ),
         ),
         right_bracket=RightBracket(),

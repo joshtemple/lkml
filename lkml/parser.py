@@ -7,6 +7,7 @@ from typing import List, Optional, Sequence, Tuple, Type, Union
 
 import lkml.tokens as tokens
 import lkml.tree as tree
+import lkml.utils as utils
 
 # Delimiter character used during logging to show the depth of nesting
 DELIMITER = ". "
@@ -404,6 +405,9 @@ class Parser:
             return tree.QuotedSyntaxToken(value, prefix, suffix)
         elif self.check(tokens.ExpressionBlockToken):
             value = self.consume_token_value()
+            expr_prefix, value, expr_suffix = utils.strip(value)
+            prefix += expr_prefix
+
             if self.check(tokens.ExpressionBlockEndToken):
                 self.advance()
             else:
@@ -411,7 +415,7 @@ class Parser:
             suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
-            return tree.ExpressionSyntaxToken(value, prefix, suffix)
+            return tree.ExpressionSyntaxToken(value, prefix, suffix, expr_suffix)
         else:
             return None
 
