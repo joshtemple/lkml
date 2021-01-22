@@ -19,9 +19,11 @@ logger = logging.getLogger(__name__)
 class BasicVisitor(Visitor):
     """Visitor class that calls the ``_visit`` method for every node type."""
 
-    @staticmethod
-    def _visit(node: Union[SyntaxNode, SyntaxToken]):
-        raise NotImplementedError
+    def _visit(self, node: SyntaxNode):
+        """For each node, visit its children."""
+        if node.children:
+            for child in node.children:
+                child.accept(self)
 
     def visit(self, document: DocumentNode):
         return self._visit(document)
