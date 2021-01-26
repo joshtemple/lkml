@@ -147,13 +147,33 @@ For each dimension, we iterate through its children and throw an error if there 
 
 Modifying the parse tree
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Because syntax nodes and tokens are immutable, you can't change them once created, you may only replace or remove them.
+Because syntax nodes and tokens are immutable, you can't change them once created, you may only replace or remove them. This makes modifying the parse tree challenging, because the entire tree needs to be rebuilt for each change.
 
-This makes modifying the parse tree challenging, because the entire tree needs to be rebuilt for each change.
+lkml includes a basic transformer, :py:class:`lkml.visitors.BasicTransformer`, which like the visitors, traverses the tree. However, the transformer visits and replaces each node's children, allowing the immutable parse tree to be rebuilt with modifications.
 
-Future versions of lkml will provide helpers to make this process easier.
+As an example, let's write a transformer that injects a user attribute into each ``sql_table_name`` field. This is something that could easily be solved with regex, but let's write a transformer as an example instead::
 
-For now, the Python standard library ``dataclasses`` module has a helpful method, ``replace``, that returns a new instance of a dataclass with the desired modification. Nodes and tokens are dataclasses, so this is a convenient way to "modify" them, even though they are immutable.
+    from dataclasses import replace
+    from lkml.visitors import BasicTransformer
+
+    class TableNameTransformer(BasicTransformer):    
+        def visit_pair(self, pair) -> PairNode:
+            """Visit each pair and replace the SQL table schema with a user attribute."""
+            if pair.type.value == 'sql_table_name':
+                try:
+                    schema, table_name = pair.value.value.split('.')
+                # Sometimes the table name won't have a schema
+                except ValueError:
+                    table_name = pair.value.value
+                    
+                new_value = '{{ _user_attributes["dbt_schema"] }}.' + table_name
+                return replace(pair, value=ExpressionSyntaxToken(new_value))
+            else:
+                return pair
+
+This transformer traverses the parse tree and modifies ``PairNodes`` that have the ``sql_table_name`` type, injecting a user attribute into the expression.
+
+We rely on the dataclasses function :py:func:`dataclasses.replace`, which allows us to copy an immutable node (all lkml nodes are frozen, immutable dataclasses) with modifications (in this case, to the ``value`` attribute of the ``PairNode``.
 
 Generating LookML from the parse tree
 -------------------------------------
