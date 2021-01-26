@@ -101,9 +101,9 @@ To learn more about the parse tree and the different kinds of nodes, read the fu
 Traversing and modifying the parse tree
 ---------------------------------------
 
-The parse tree follows a design pattern called the `visitor pattern <https://en.wikipedia.org/wiki/Visitor_pattern>`_. The visitor pattern allows us to define flexible algorithms that interact with the tree without having to implement those algorithms on the tree itself.
+The parse tree follows a design pattern called the `visitor pattern <https://en.wikipedia.org/wiki/Visitor_pattern>`_. The visitor pattern allows us to define flexible algorithms that interact with the tree without having to implement those algorithms as methods on the tree's node classes.
 
-Each node implements a method called ``accept``, that accepts a :py:class:`lkml.tree.Visitor` instance and passes itself the corresponding ``visit_`` method on the visitor.
+Each node implements a method called ``accept``, that accepts a :py:class:`lkml.tree.Visitor` instance and passes itself to the corresponding ``visit_`` method on the visitor.
 
 Here's the ``accept`` method for a ``ListNode``.
 
@@ -125,13 +125,7 @@ For example, we could write a linting visitor that traverses the parse tree and 
     from lkml.visitors import BasicVisitor
 
     class DescriptionVisitor(BasicVisitor):
-        def _visit(self, parent):
-            """For each node, visit its children."""
-            if parent.children:
-                for node in parent.children:
-                    node.accept(self)
-                    
-        def visit_block(self, block):
+        def visit_block(self, block: BlockNode):
             """For each block, check if it's a dimension and if it has a description."""
             if block.type.value == 'dimension':
                 child_types = [node.type.value for node in block.container.items]
@@ -141,12 +135,12 @@ For example, we could write a linting visitor that traverses the parse tree and 
    # Assume we already have a parse tree to visit
    tree.accept(DescriptionVisitor())
 
-:py:class:`lkml.visitors.BasicVisitor` implements a handy shortcut where the default visiting behavior for each node type is defined by ``_visit``. We can simply override that default behavior for ``visit_block`` so we can inspect the dimensions, which are ``BlockNodes``.
+:py:class:`lkml.visitors.BasicVisitor`, will traverse the tree but do nothing. We can simply override that default behavior for ``visit_block`` so we can inspect the dimensions, which are ``BlockNodes``.
 
-For each dimension, we iterate through its children and throw an error if there aren't any with the description type.
+For each block that is a dimension, we iterate through its children and throw an error if a child with the description type is not present.
 
-Modifying the parse tree
-^^^^^^^^^^^^^^^^^^^^^^^^
+Modifying the parse tree with transformers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Because syntax nodes and tokens are immutable, you can't change them once created, you may only replace or remove them. This makes modifying the parse tree challenging, because the entire tree needs to be rebuilt for each change.
 
 lkml includes a basic transformer, :py:class:`lkml.visitors.BasicTransformer`, which like the visitors, traverses the tree. However, the transformer visits and replaces each node's children, allowing the immutable parse tree to be rebuilt with modifications.
@@ -157,23 +151,27 @@ As an example, let's write a transformer that injects a user attribute into each
     from lkml.visitors import BasicTransformer
 
     class TableNameTransformer(BasicTransformer):    
-        def visit_pair(self, pair) -> PairNode:
+        def visit_pair(self, node: PairNode) -> PairNode:
             """Visit each pair and replace the SQL table schema with a user attribute."""
-            if pair.type.value == 'sql_table_name':
+            if node.type.value == 'sql_table_name':
                 try:
-                    schema, table_name = pair.value.value.split('.')
+                    schema, table_name = node.value.value.split('.')
                 # Sometimes the table name won't have a schema
                 except ValueError:
-                    table_name = pair.value.value
+                    table_name = node.value.value
                     
-                new_value = '{{ _user_attributes["dbt_schema"] }}.' + table_name
-                return replace(pair, value=ExpressionSyntaxToken(new_value))
+                new_value: str = '{{ _user_attributes["dbt_schema"] }}.' + table_name
+                new_node: PairNode = replace(node, value=ExpressionSyntaxToken(new_value))
+                return new_node
             else:
-                return pair
+                return node
+    
+    # Assume we already have a parse tree to visit
+    tree.accept(TableNameTransformer())
 
-This transformer traverses the parse tree and modifies ``PairNodes`` that have the ``sql_table_name`` type, injecting a user attribute into the expression.
+This transformer traverses the parse tree and modifies all ``PairNodes`` that have the ``sql_table_name`` type, injecting a user attribute into the expression.
 
-We rely on the dataclasses function :py:func:`dataclasses.replace`, which allows us to copy an immutable node (all lkml nodes are frozen, immutable dataclasses) with modifications (in this case, to the ``value`` attribute of the ``PairNode``.
+We rely on the dataclasses function :py:func:`dataclasses.replace`, which allows us to copy an immutable node (all lkml nodes are frozen, immutable dataclasses) with modifications---in this case, to the ``value`` attribute of the ``PairNode``.
 
 Generating LookML from the parse tree
 -------------------------------------
