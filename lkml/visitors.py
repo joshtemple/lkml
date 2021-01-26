@@ -1,6 +1,6 @@
-from dataclasses import replace
 import logging
-from typing import Union
+from dataclasses import replace
+from typing import Union, overload
 
 from lkml.tree import (
     BlockNode,
@@ -17,11 +17,20 @@ logger = logging.getLogger(__name__)
 
 
 class BasicVisitor(Visitor):
-    """Visitor class that calls the ``_visit`` method for every node type."""
+    """Visitor class that calls the ``_visit`` method for every node type.
 
-    def _visit(self, node: SyntaxNode):
+    This class doesn't actually do anything when visiting a tree other than traverse
+    the nodes. It's meant to be used as a base class for building more useful and
+    complex visitors. For example, override any of the ``visit_`` methods for node-type
+    specific behavior.
+
+    """
+
+    def _visit(self, node: Union[SyntaxNode, SyntaxToken]):
         """For each node, visit its children."""
-        if node.children:
+        if isinstance(node, SyntaxToken):
+            return
+        elif node.children:
             for child in node.children:
                 child.accept(self)
 
@@ -55,9 +64,15 @@ class LookMlVisitor(BasicVisitor):
 class BasicTransformer(Visitor):
     """Visitor class that returns a new tree, modifying the tree as needed."""
 
-    def _visit_items(
-        self, node: Union[ContainerNode, ListNode]
-    ) -> Union[ContainerNode, ListNode]:
+    @overload
+    def _visit_items(self, node: ContainerNode) -> ContainerNode:
+        ...
+
+    @overload
+    def _visit_items(self, node: ListNode) -> ListNode:
+        ...
+
+    def _visit_items(self, node):
         """Visit a node whose children are held in the ``items`` attribute."""
         if node.children:
             new_children = tuple(child.accept(self) for child in node.children)
@@ -65,11 +80,17 @@ class BasicTransformer(Visitor):
         else:
             return node
 
-    def _visit_container(
-        self, node: Union[DocumentNode, BlockNode]
-    ) -> Union[DocumentNode, BlockNode]:
+    @overload
+    def _visit_container(self, node: BlockNode) -> BlockNode:
+        ...
+
+    @overload
+    def _visit_container(self, node: DocumentNode) -> DocumentNode:
+        ...
+
+    def _visit_container(self, node):
         """Visit a node whose only child is the ``container`` attribute."""
-        if node.children:
+        if node.container:
             new_child = node.container.accept(self)
             return replace(node, container=new_child)
         else:
