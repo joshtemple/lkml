@@ -262,6 +262,28 @@ def test_parse_top_level_pairs(parser):
     )
 
 
+def test_parse_query(parser):
+    obj = {
+        "queries": [
+            {
+                "name": "query_one",
+                "dimensions": ["dimension_one", "dimension_two"],
+                "measures": ["measure_one"]
+            }
+        ]
+    }
+    node = parser.parse(obj)
+    result = str(node)
+    assert result == "\n".join(
+        (
+            "query: query_one {",
+            "  dimensions: [dimension_one, dimension_two]",
+            "  measures: [measure_one]",
+            "}",
+        )
+    )
+
+
 def test_resolve_filters_filter_only_field(parser):
     nodes = parser.resolve_filters(
         [{"name": "filter_a", "type": "string"}, {"name": "filter_b", "type": "number"}]
