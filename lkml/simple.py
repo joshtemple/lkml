@@ -210,14 +210,21 @@ class DictParser:
         parent key. If its parent key is `access_grant`, it is a list and cannot be
         repeated. Otherwise, it can be repeated.
 
+        The parent key `query` is also a special case, where children are kept as lists.
+        See issue #53.
+
         Args:
             key: The name of the key to test.
 
         """
         singular_key = singularize(key)
-        return singular_key in PLURAL_KEYS and not (
-            singular_key == "allowed_value"
-            and self.parent_key.rstrip("s") == "access_grant"
+        return (
+            singular_key in PLURAL_KEYS
+            and not (
+                singular_key == "allowed_value"
+                and self.parent_key.rstrip("s") == "access_grant"
+            )
+            and not (self.parent_key == "query")
         )
 
     def resolve_filters(self, values: List[dict]) -> Union[List[BlockNode], ListNode]:
