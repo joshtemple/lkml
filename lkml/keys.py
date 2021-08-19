@@ -67,6 +67,7 @@ EXPR_BLOCK_KEYS: Tuple[str, ...] = (
     "sql_step",
     "sql_on",
     "sql",
+    "sql_preamble",
 )
 
 # These are keys that the serializer should quote the value of (e.g. `label: "Label"`).
