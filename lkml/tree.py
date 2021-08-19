@@ -76,6 +76,11 @@ class DoubleSemicolon(SyntaxToken):
     value: str = ";;"
 
 
+@dataclass(frozen=True)
+class Comma(SyntaxToken):
+    value: str = ","
+
+
 class QuotedSyntaxToken(SyntaxToken):
     def format_value(self) -> str:
         # Escape double quotes since the whole value is quoted
@@ -167,8 +172,6 @@ class ListNode(SyntaxNode):
     left_bracket: LeftBracket
     right_bracket: RightBracket
     colon: Colon = Colon(suffix=" ")
-    trailing_comma: bool = False
-    leading_comma: bool = False
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(type='{self.type.value}')"

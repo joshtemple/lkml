@@ -459,8 +459,6 @@ class Parser:
                 left_bracket=left_bracket,
                 items=csv.values,
                 right_bracket=right_bracket,
-                trailing_comma=csv.trailing_comma,
-                leading_comma=csv.leading_comma,
             )
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed a list.", self.depth * DELIMITER)
@@ -491,10 +489,9 @@ class Parser:
         pair_mode: bool = False
         csv = CommaSeparatedValues()
 
-        # Allow leading comma
-        if self.check(tokens.CommaToken):
-            csv.leading_comma = True
-            self.advance()
+        leading_comma = self.parse_comma()
+        if leading_comma:
+            csv.append(leading_comma)
 
         # Parse the first value to set the list's type
         pair = self.parse_pair()
@@ -541,3 +538,12 @@ class Parser:
                 "%sSuccessfully parsed comma-separated values.", self.depth * DELIMITER
             )
         return csv
+
+    @backtrack_if_none
+    def parse_comma(self) -> Optional[tree.Comma]:
+        prefix = self.consume_trivia()
+        if self.check(tokens.CommaToken):
+            self.advance()
+            return tree.Comma(prefix=prefix, suffix=self.consume_trivia())
+        else:
+            return None
