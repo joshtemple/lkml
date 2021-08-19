@@ -121,7 +121,3 @@ def cli():
 
     json_string = json.dumps(result, indent=2)
     print(json_string)
-
-
-if __name__ == "__main__":
-    cli()
