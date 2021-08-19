@@ -168,6 +168,7 @@ class ListNode(SyntaxNode):
     right_bracket: RightBracket
     colon: Colon = Colon(suffix=" ")
     trailing_comma: bool = False
+    leading_comma: bool = False
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(type='{self.type.value}')"
@@ -190,6 +191,7 @@ class ListNode(SyntaxNode):
             self.type,
             self.colon,
             self.left_bracket,
+            "," if self.leading_comma and len(self.items) > 0 else "",
             ",".join(str(item) for item in self.items),
             "," if self.trailing_comma and len(self.items) > 0 else "",
             self.right_bracket,

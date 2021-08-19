@@ -52,6 +52,7 @@ class CommaSeparatedValues:
 
     _values: list = field(default_factory=list)
     trailing_comma: bool = False
+    leading_comma: bool = False
 
     def append(self, value):
         """Add a value to the private _values list."""
@@ -459,6 +460,7 @@ class Parser:
                 items=csv.values,
                 right_bracket=right_bracket,
                 trailing_comma=csv.trailing_comma,
+                leading_comma=csv.leading_comma,
             )
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed a list.", self.depth * DELIMITER)
@@ -475,16 +477,24 @@ class Parser:
 
         Grammar:
             ``csv`` ←
-            ``(literal / quoted_literal) ("," (literal / quoted_literal))* ","?``
+            ``","? (literal / quoted_literal) ("," (literal / quoted_literal))* ","?``
 
         """
         if self.log_debug:
-            grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
+            grammar = (
+                '[csv] = ","? (literal / quoted_literal) '
+                '("," (literal / quoted_literal))* ","?'
+            )
             logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         # Set a flag to ensure that all items are of the same type (pair or literal)
         pair_mode: bool = False
         csv = CommaSeparatedValues()
+
+        # Allow leading comma
+        if self.check(tokens.CommaToken):
+            csv.leading_comma = True
+            self.advance()
 
         # Parse the first value to set the list's type
         pair = self.parse_pair()
