@@ -94,6 +94,11 @@ def test_duplicate_non_top_level_keys():
         load("duplicate_non_top_level_keys.view.lkml")
 
 
+def test_lists_with_comma_configurations():
+    parsed = load("lists_with_comma_configurations.view.lkml")
+    assert parsed is not None
+
+
 def test_reserved_dimension_names():
     parsed = load("block_with_reserved_dimension_names.view.lkml")
     assert parsed is not None

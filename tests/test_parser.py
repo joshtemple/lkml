@@ -2,7 +2,7 @@ from lkml.parser import Syntax
 import pytest
 import lkml
 import lkml.tokens as tokens
-from lkml.tokens import LiteralToken, ValueToken, WhitespaceToken
+from lkml.tokens import CommaToken, LiteralToken, ValueToken, WhitespaceToken
 from lkml.tree import (
     LeftCurlyBrace,
     RightCurlyBrace,
@@ -449,6 +449,27 @@ def test_parse_list_with_trailing_comma():
         trailing_comma=True,
     )
 
+
+def test_parse_list_with_leading_comma():
+    stream = (
+        tokens.LiteralToken("drill_fields", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.CommaToken(1),
+        tokens.LiteralToken("view_name.field_one", 1),
+        tokens.ListEndToken(1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("drill_fields"),
+        left_bracket=LeftBracket(),
+        items=(SyntaxToken("view_name.field_one"),),
+        right_bracket=RightBracket(),
+        leading_comma=True,
+    )
 
 def test_parse_list_with_missing_comma():
     stream = (
