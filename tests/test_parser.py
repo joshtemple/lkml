@@ -4,6 +4,7 @@ import lkml
 import lkml.tokens as tokens
 from lkml.tokens import CommaToken, LiteralToken, ValueToken, WhitespaceToken
 from lkml.tree import (
+    Comma,
     LeftCurlyBrace,
     RightCurlyBrace,
     SyntaxToken,
@@ -422,8 +423,8 @@ def test_parse_list_with_trailing_comma():
         type=SyntaxToken("drill_fields"),
         left_bracket=LeftBracket(),
         items=(SyntaxToken("view_name.field_one"),),
+        trailing_comma=Comma(),
         right_bracket=RightBracket(),
-        trailing_comma=True,
     )
 
     # Test when the list items are separated by newlines
@@ -445,8 +446,8 @@ def test_parse_list_with_trailing_comma():
         type=SyntaxToken("drill_fields"),
         left_bracket=LeftBracket(),
         items=(SyntaxToken("view_name.field_one", prefix="\n  "),),
+        trailing_comma=Comma(),
         right_bracket=RightBracket(prefix="\n"),
-        trailing_comma=True,
     )
 
 
@@ -468,8 +469,9 @@ def test_parse_list_with_leading_comma():
         left_bracket=LeftBracket(),
         items=(SyntaxToken("view_name.field_one"),),
         right_bracket=RightBracket(),
-        leading_comma=True,
+        leading_comma=Comma(),
     )
+
 
 def test_parse_list_with_missing_comma():
     stream = (
