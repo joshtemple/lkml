@@ -19,6 +19,7 @@ from lkml.keys import (
 )
 from lkml.tree import (
     BlockNode,
+    Comma,
     ContainerNode,
     DocumentNode,
     ExpressionSyntaxToken,
@@ -396,7 +397,7 @@ class DictParser:
 
         # Choose newline delimiting or space delimiting based on contents
         if len(values) >= 5 or pair_mode:
-            trailing_comma = True
+            trailing_comma: Optional[Comma] = Comma()
             self.increase_level()
             for value in values:
                 if pair_mode:
@@ -414,7 +415,7 @@ class DictParser:
             self.decrease_level()
             right_bracket = RightBracket(prefix=self.newline_indent)
         else:
-            trailing_comma = False
+            trailing_comma = None
             for i, value in enumerate(values):
                 value = cast(str, value)
                 if i == 0:

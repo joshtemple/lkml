@@ -51,7 +51,8 @@ class CommaSeparatedValues:
     """Helper class to store a series of values and a flag for a trailing comma."""
 
     _values: list = field(default_factory=list)
-    trailing_comma: bool = False
+    trailing_comma: Optional[tree.Comma] = None
+    leading_comma: Optional[tree.Comma] = None
 
     def append(self, value):
         """Add a value to the private _values list."""
@@ -458,6 +459,7 @@ class Parser:
                 left_bracket=left_bracket,
                 items=csv.values,
                 right_bracket=right_bracket,
+                leading_comma=csv.leading_comma,
                 trailing_comma=csv.trailing_comma,
             )
             if self.log_debug:
@@ -475,16 +477,20 @@ class Parser:
 
         Grammar:
             ``csv`` ←
-            ``(literal / quoted_literal) ("," (literal / quoted_literal))* ","?``
+            ``","? (literal / quoted_literal) ("," (literal / quoted_literal))* ","?``
 
         """
         if self.log_debug:
-            grammar = '[csv] = (literal / quoted_literal) ("," (literal / quoted_literal))* ","?'
+            grammar = (
+                '[csv] = ","? (literal / quoted_literal) '
+                '("," (literal / quoted_literal))* ","?'
+            )
             logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
 
         # Set a flag to ensure that all items are of the same type (pair or literal)
         pair_mode: bool = False
         csv = CommaSeparatedValues()
+        csv.leading_comma = self.parse_comma()
 
         # Parse the first value to set the list's type
         pair = self.parse_pair()
@@ -502,9 +508,11 @@ class Parser:
         # Parse to the closing bracket of the list
         while not self.check(tokens.ListEndToken, skip_trivia=True):
             if self.check(tokens.CommaToken):
+                index = self.index
                 self.advance()
                 if self.check(tokens.ListEndToken, skip_trivia=True):
-                    csv.trailing_comma = True
+                    self.jump_to_index(index)  # Return to the comma so we can parse it
+                    csv.trailing_comma = self.parse_comma()
                     break
             else:
                 return None
@@ -531,3 +539,16 @@ class Parser:
                 "%sSuccessfully parsed comma-separated values.", self.depth * DELIMITER
             )
         return csv
+
+    @backtrack_if_none
+    def parse_comma(self) -> Optional[tree.Comma]:
+        prefix = self.consume_trivia()
+        if self.check(tokens.CommaToken):
+            self.advance()
+            if not self.check(tokens.ListEndToken, skip_trivia=True):
+                suffix = self.consume_trivia()
+            else:
+                suffix = ""
+            return tree.Comma(prefix=prefix, suffix=suffix)
+        else:
+            return None
