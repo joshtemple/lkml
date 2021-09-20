@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 here = Path(__file__).parent.resolve()
 
