@@ -280,8 +280,9 @@ class Parser:
             return key
 
         if self.check(tokens.LiteralToken):
+            token = self.consume()
             name: Optional[tree.SyntaxToken] = tree.SyntaxToken(
-                self.consume_token_value()
+                token.value, token.line_number
             )
         else:
             name = None
@@ -358,15 +359,18 @@ class Parser:
             logger.debug("%sTry to parse %s", self.depth * DELIMITER, grammar)
         prefix = self.consume_trivia()
         if self.check(tokens.LiteralToken):
-            key = tree.SyntaxToken(self.consume_token_value(), prefix=prefix)
+            token = self.consume()
+            key = tree.SyntaxToken(token.value, token.line_number, prefix=prefix)
         else:
             return None
 
         prefix = self.consume_trivia()
         if self.check(tokens.ValueToken):
-            self.advance()
+            token = self.consume()
             suffix = self.consume_trivia()
-            colon = tree.Colon(prefix=prefix, suffix=suffix)
+            colon = tree.Colon(
+                line_number=token.line_number, prefix=prefix, suffix=suffix
+            )
         else:
             return None
 
@@ -393,20 +397,22 @@ class Parser:
         prefix = self.consume_trivia() if parse_prefix else ""
 
         if self.check(tokens.LiteralToken):
-            value = self.consume_token_value()
+            token = self.consume()
             suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
-            return tree.SyntaxToken(value, prefix, suffix)
+            return tree.SyntaxToken(token.value, token.line_number, prefix, suffix)
         elif self.check(tokens.QuotedLiteralToken):
-            value = self.consume_token_value()
+            token = self.consume()
             suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
-            return tree.QuotedSyntaxToken(value, prefix, suffix)
+            return tree.QuotedSyntaxToken(
+                token.value, token.line_number, prefix, suffix
+            )
         elif self.check(tokens.ExpressionBlockToken):
-            value = self.consume_token_value()
-            expr_prefix, value, expr_suffix = utils.strip(value)
+            token = self.consume()
+            expr_prefix, value, expr_suffix = utils.strip(token.value)
             prefix += expr_prefix
 
             if self.check(tokens.ExpressionBlockEndToken):
@@ -416,7 +422,9 @@ class Parser:
             suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
-            return tree.ExpressionSyntaxToken(value, prefix, suffix, expr_suffix)
+            return tree.ExpressionSyntaxToken(
+                value, token.line_number, prefix, suffix, expr_suffix
+            )
         else:
             return None
 

@@ -31,6 +31,7 @@ class SyntaxToken:
     """
 
     value: str
+    line_number: Optional[int] = None
     prefix: str = ""
     suffix: str = ""
 
@@ -107,6 +108,12 @@ class SyntaxNode(ABC):
         """Returns all child SyntaxNodes, but not SyntaxTokens."""
         ...
 
+    @property
+    @abstractmethod
+    def line_number(self) -> Optional[int]:
+        """Returns the line number of the first SyntaxToken in the node"""
+        ...
+
     @abstractmethod
     def accept(self, visitor: Visitor) -> Any:
         """Accepts a Visitor that can interact with the node.
@@ -143,6 +150,10 @@ class PairNode(SyntaxNode):
     @property
     def children(self) -> None:
         return None
+
+    @property
+    def line_number(self) -> Optional[int]:
+        return self.type.line_number
 
     def accept(self, visitor: Visitor) -> Any:
         """Accepts a visitor and calls the visitor's pair method on itself."""
@@ -186,6 +197,10 @@ class ListNode(SyntaxNode):
             return self.items
         else:
             return None
+
+    @property
+    def line_number(self) -> Optional[int]:
+        return self.type.line_number
 
     def accept(self, visitor: Visitor) -> Any:
         """Accepts a visitor and calls the visitor's list method on itself."""
@@ -233,6 +248,10 @@ class BlockNode(SyntaxNode):
     def children(self) -> Optional[Tuple[ContainerNode, ...]]:
         return (self.container,) if self.container else None
 
+    @property
+    def line_number(self) -> Optional[int]:
+        return self.type.line_number
+
     def accept(self, visitor: Visitor) -> Any:
         """Accepts a visitor and calls the visitor's block method on itself."""
         return visitor.visit_block(self)
@@ -263,6 +282,10 @@ class DocumentNode(SyntaxNode):
     @property
     def children(self) -> Tuple[ContainerNode]:
         return (self.container,)  # type: ignore
+
+    @property
+    def line_number(self) -> Optional[int]:
+        return 1  # Document always starts on the first line
 
     def accept(self, visitor: Visitor) -> Any:
         """Accepts a visitor and calls the visitor's visit method on itself."""
@@ -303,6 +326,14 @@ class ContainerNode(SyntaxNode):
     @property
     def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode], ...]:
         return self.items
+
+    def line_number(self) -> Optional[int]:
+        try:
+            first_item = self.items[0]
+        except IndexError:
+            return None
+        else:
+            return first_item.line_number
 
     def accept(self, visitor: Visitor) -> Any:
         """Accepts a visitor and calls the visitor's container method on itself."""
