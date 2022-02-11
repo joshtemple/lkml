@@ -139,7 +139,7 @@ def test_parse_value_quoted_literal():
     stream = (tokens.QuotedLiteralToken(quoted_literal, 1), tokens.StreamEndToken(1))
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
-    assert result == QuotedSyntaxToken(quoted_literal)
+    assert result == QuotedSyntaxToken(quoted_literal, 1)
 
 
 def test_parse_value_literal():
@@ -147,7 +147,7 @@ def test_parse_value_literal():
     stream = (tokens.LiteralToken(literal, 1), tokens.StreamEndToken(1))
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
-    assert result == SyntaxToken(literal)
+    assert result == SyntaxToken(literal, 1)
 
 
 def test_parse_value_literal_with_sql_block():
@@ -159,7 +159,7 @@ def test_parse_value_literal_with_sql_block():
     )
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
-    assert result == SyntaxToken(literal)
+    assert result == SyntaxToken(literal, 1)
 
 
 def test_parse_value_invalid_tokens():
@@ -180,7 +180,7 @@ def test_parse_value_quoted_literal_with_leftovers():
     )
     parser = lkml.parser.Parser(stream)
     result = parser.parse_value()
-    assert result == QuotedSyntaxToken(quoted_literal)
+    assert result == QuotedSyntaxToken(quoted_literal, 1)
     assert parser.index == 1
 
 
@@ -198,7 +198,7 @@ def test_parse_key_normal_returns_token_value():
     stream = (tokens.LiteralToken("label", 1), tokens.ValueToken(1))
     parser = lkml.parser.Parser(stream)
     result = parser.parse_key()
-    assert result == (SyntaxToken("label"), Colon())
+    assert result == (SyntaxToken("label", 1), Colon(line_number=1))
 
 
 def test_parse_key_without_literal_token():
@@ -255,7 +255,11 @@ def test_parse_pair_with_literal():
     )
     parser = lkml.parser.Parser(stream)
     result = parser.parse_pair()
-    assert result == PairNode(type=SyntaxToken("hidden"), value=SyntaxToken("yes"))
+    assert result == PairNode(
+        type=SyntaxToken("hidden", 1),
+        colon=Colon(line_number=1, suffix=" "),
+        value=SyntaxToken("yes", 1),
+    )
 
 
 def test_parse_pair_with_quoted_literal():
@@ -269,7 +273,9 @@ def test_parse_pair_with_quoted_literal():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_pair()
     assert result == PairNode(
-        type=SyntaxToken("view_label"), value=QuotedSyntaxToken("The View")
+        type=SyntaxToken("view_label", 1),
+        colon=Colon(line_number=1, suffix=" "),
+        value=QuotedSyntaxToken("The View", 1),
     )
     with pytest.raises(AttributeError):
         result.prefix
@@ -288,7 +294,9 @@ def test_parse_pair_with_sql_block():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_pair()
     assert result == PairNode(
-        type=SyntaxToken("sql"), value=ExpressionSyntaxToken(sql.strip())
+        type=SyntaxToken("sql", 1),
+        colon=Colon(line_number=1, suffix=" "),
+        value=ExpressionSyntaxToken(sql.strip(), 1),
     )
 
 
@@ -336,12 +344,13 @@ def test_parse_list_with_literals():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
         items=(
-            SyntaxToken("view_name.field_one"),
-            SyntaxToken("view_name.field_two", prefix=" "),
-            SyntaxToken("view_name.field_three", prefix=" "),
+            SyntaxToken("view_name.field_one", 1),
+            SyntaxToken("view_name.field_two", 1, prefix=" "),
+            SyntaxToken("view_name.field_three", 1, prefix=" "),
         ),
         right_bracket=RightBracket(),
     )
@@ -368,11 +377,20 @@ def test_parse_list_with_pairs():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("sorts"),
+        type=SyntaxToken("sorts", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
         items=(
-            PairNode(SyntaxToken("orders.customer_id"), SyntaxToken("asc")),
-            PairNode(SyntaxToken("orders.order_id"), SyntaxToken("desc")),
+            PairNode(
+                type=SyntaxToken("orders.customer_id", 1),
+                colon=Colon(line_number=1, suffix=" "),
+                value=SyntaxToken("asc", 1),
+            ),
+            PairNode(
+                type=SyntaxToken("orders.order_id", 1),
+                colon=Colon(line_number=1, suffix=" "),
+                value=SyntaxToken("desc", 1),
+            ),
         ),
         right_bracket=RightBracket(),
     )
@@ -394,12 +412,14 @@ def test_parse_list_with_pairs():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("filters"),
+        type=SyntaxToken("filters", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
         items=(
             PairNode(
-                SyntaxToken("view_name.field_one", prefix="\n  "),
-                QuotedSyntaxToken("-0,-1,-8,-9,-99,-NULL,-EMPTY"),
+                type=SyntaxToken("view_name.field_one", 2, prefix="\n  "),
+                colon=Colon(line_number=2, suffix=" "),
+                value=QuotedSyntaxToken("-0,-1,-8,-9,-99,-NULL,-EMPTY", 2),
             ),
         ),
         right_bracket=RightBracket(prefix="\n"),
@@ -420,9 +440,10 @@ def test_parse_list_with_trailing_comma():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
-        items=(SyntaxToken("view_name.field_one"),),
+        items=(SyntaxToken("view_name.field_one", 1),),
         trailing_comma=Comma(),
         right_bracket=RightBracket(),
     )
@@ -443,9 +464,10 @@ def test_parse_list_with_trailing_comma():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
-        items=(SyntaxToken("view_name.field_one", prefix="\n  "),),
+        items=(SyntaxToken("view_name.field_one", 2, prefix="\n  "),),
         trailing_comma=Comma(),
         right_bracket=RightBracket(prefix="\n"),
     )
@@ -465,9 +487,10 @@ def test_parse_list_with_leading_comma():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
-        items=(SyntaxToken("view_name.field_one"),),
+        items=(SyntaxToken("view_name.field_one", 1),),
         right_bracket=RightBracket(),
         leading_comma=Comma(),
     )
@@ -502,7 +525,8 @@ def test_parse_list_with_no_contents():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
         items=tuple(),
         right_bracket=RightBracket(),
@@ -521,7 +545,8 @@ def test_parse_list_with_no_contents():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
         items=tuple(),
         right_bracket=RightBracket(prefix=" "),
@@ -594,9 +619,13 @@ def test_parse_list_with_trailing_comment():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
-        items=(SyntaxToken("view_name.field_one"), SyntaxToken("view_name.field_two")),
+        items=(
+            SyntaxToken("view_name.field_one", 1),
+            SyntaxToken("view_name.field_two", 1),
+        ),
         right_bracket=RightBracket(suffix=" # This is a comment"),
     )
 
@@ -621,12 +650,13 @@ def test_parse_list_with_inner_comment():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
         items=(
-            SyntaxToken("view_name.field_one", prefix="\n  "),
+            SyntaxToken("view_name.field_one", 2, prefix="\n  "),
             SyntaxToken(
-                "view_name.field_two", prefix="\n  ", suffix=" # This is a comment\n"
+                "view_name.field_two", 3, prefix="\n  ", suffix=" # This is a comment\n"
             ),
         ),
         right_bracket=RightBracket(),
@@ -648,7 +678,8 @@ def test_parse_list_with_only_comment():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_list()
     assert result == ListNode(
-        type=SyntaxToken("drill_fields"),
+        type=SyntaxToken("drill_fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
         items=tuple(),
         right_bracket=RightBracket(prefix="\n  # Put some fields here\n"),
@@ -670,8 +701,9 @@ def test_parse_block_with_no_expression():
     parser = lkml.parser.Parser(stream)
     result = parser.parse_block()
     assert result == BlockNode(
-        type=SyntaxToken("dimension"),
-        name=SyntaxToken("dimension_name"),
+        type=SyntaxToken("dimension", 1),
+        name=SyntaxToken("dimension_name", 1),
+        colon=Colon(line_number=1, suffix=" "),
         left_brace=LeftCurlyBrace(prefix=" "),
         container=ContainerNode(items=tuple()),
         right_brace=RightCurlyBrace(suffix=" "),
