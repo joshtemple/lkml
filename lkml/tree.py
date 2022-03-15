@@ -193,8 +193,7 @@ class ListNode(SyntaxNode):
     def children(self,) -> Tuple[PairNode, ...]:
         if self.items and isinstance(self.items[0], PairNode):
             # Assume that all elements are pairs
-            self.items = cast(Tuple[PairNode, ...], self.items)  # type: ignore
-            return self.items
+            return cast(Tuple[PairNode, ...], self.items)
         else:
             return tuple()
 
