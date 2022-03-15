@@ -219,6 +219,56 @@ class ListNode(SyntaxNode):
 
 
 @dataclass(frozen=True)
+class ContainerNode(SyntaxNode):
+    """A sequence of nodes, either at the top level of a document, or within a block.
+
+    Attributes:
+        items: A tuple of the contained nodes.
+        top_level: If the container is the top level of the LookML document.
+
+    Raises:
+        KeyError: If a key already exists in the tree and would be overwritten.
+
+    """
+
+    items: Tuple[Union[BlockNode, PairNode, ListNode], ...]
+    top_level: bool = False
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}()"
+
+    def __post_init__(self):
+        counter = Counter(item.type.value for item in self.items)
+        for key, count in counter.items():
+            if not self.top_level and count > 1 and key not in PLURAL_KEYS:
+                raise KeyError(
+                    f'Key "{key}" already exists in tree and would overwrite the '
+                    "existing value."
+                )
+
+    @property
+    def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode], ...]:
+        return self.items
+
+    def line_number(self) -> Optional[int]:
+        try:
+            first_item = self.items[0]
+        except IndexError:
+            return None
+        else:
+            return first_item.line_number
+
+    def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's container method on itself."""
+        return visitor.visit_container(self)
+
+    def __str__(self) -> str:
+        # TODO: This produces unparseable LookML for unquoted pair values if no suffix
+        # For example, hidden: yes + dimension: ... with no whitespace in between
+        return items_to_str(*self.items)
+
+
+@dataclass(frozen=True)
 class BlockNode(SyntaxNode):
     """A LookML block, enclosed in curly braces. Like ``view`` or ``dimension``.
 
@@ -238,7 +288,7 @@ class BlockNode(SyntaxNode):
     right_brace: RightCurlyBrace
     colon: Optional[Colon] = Colon(suffix=" ")
     name: Optional[SyntaxToken] = None
-    container: Optional[ContainerNode] = None
+    container: ContainerNode = ContainerNode(items=tuple())
 
     def __repr__(self) -> str:
         name = f"name='{self.name.value}'" if self.name else None
@@ -293,56 +343,6 @@ class DocumentNode(SyntaxNode):
 
     def __str__(self) -> str:
         return items_to_str(self.prefix, self.container, self.suffix)
-
-
-@dataclass(frozen=True)
-class ContainerNode(SyntaxNode):
-    """A sequence of nodes, either at the top level of a document, or within a block.
-
-    Attributes:
-        items: A tuple of the contained nodes.
-        top_level: If the container is the top level of the LookML document.
-
-    Raises:
-        KeyError: If a key already exists in the tree and would be overwritten.
-
-    """
-
-    items: Tuple[Union[BlockNode, PairNode, ListNode], ...]
-    top_level: bool = False
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}()"
-
-    def __post_init__(self):
-        counter = Counter(item.type.value for item in self.items)
-        for key, count in counter.items():
-            if not self.top_level and count > 1 and key not in PLURAL_KEYS:
-                raise KeyError(
-                    f'Key "{key}" already exists in tree and would overwrite the '
-                    "existing value."
-                )
-
-    @property
-    def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode], ...]:
-        return self.items
-
-    def line_number(self) -> Optional[int]:
-        try:
-            first_item = self.items[0]
-        except IndexError:
-            return None
-        else:
-            return first_item.line_number
-
-    def accept(self, visitor: Visitor) -> Any:
-        """Accepts a visitor and calls the visitor's container method on itself."""
-        return visitor.visit_container(self)
-
-    def __str__(self) -> str:
-        # TODO: This produces unparseable LookML for unquoted pair values if no suffix
-        # For example, hidden: yes + dimension: ... with no whitespace in between
-        return items_to_str(*self.items)
 
 
 class Visitor(ABC):
