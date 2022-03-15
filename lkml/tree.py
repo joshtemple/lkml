@@ -190,13 +190,13 @@ class ListNode(SyntaxNode):
         return f"{self.__class__.__name__}(type='{self.type.value}')"
 
     @property
-    def children(self,) -> Optional[Tuple[PairNode, ...]]:
-        if isinstance(self.items[0], PairNode):
+    def children(self,) -> Tuple[PairNode, ...]:
+        if self.items and isinstance(self.items[0], PairNode):
             # Assume that all elements are pairs
             self.items = cast(Tuple[PairNode, ...], self.items)  # type: ignore
             return self.items
         else:
-            return None
+            return tuple()
 
     @property
     def line_number(self) -> Optional[int]:
@@ -245,8 +245,8 @@ class BlockNode(SyntaxNode):
         return f"{self.__class__.__name__}(type='{self.type.value}', {name})"
 
     @property
-    def children(self) -> Optional[Tuple[ContainerNode, ...]]:
-        return (self.container,) if self.container else None
+    def children(self) -> Tuple[ContainerNode, ...]:
+        return (self.container,) if self.container else tuple()
 
     @property
     def line_number(self) -> Optional[int]:
@@ -281,7 +281,7 @@ class DocumentNode(SyntaxNode):
 
     @property
     def children(self) -> Tuple[ContainerNode]:
-        return (self.container,)  # type: ignore
+        return (self.container,)
 
     @property
     def line_number(self) -> Optional[int]:
