@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-__version__ = "1.1.2"
+__version__ = "1.3.0b1"
 
 here = Path(__file__).parent.resolve()
 
@@ -34,4 +34,5 @@ setup(
     author="Josh Temple",
     tests_require=["black", "flake8", "isort", "mypy", "pytest", "pytest-cov"],
     author_email="",
+    zip_safe=False,
 )
