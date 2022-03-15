@@ -23,6 +23,13 @@ view: lots_of_sets {
         ]
     }
 
+    set: g2 {
+        fields: [a
+        ,   b
+        ,   c
+        ]
+    }
+
     set: h { 
         fields: [
             , a, b, c
@@ -32,6 +39,30 @@ view: lots_of_sets {
     set: i {
         fields: [
             , a, b, c , 
+        ]
+    }
+
+    measure: j {
+        filters: [a: "b", c: "d"]
+    }
+
+    measure: k {
+        filters: [
+            a: "b",
+            c: "d"
+        ]
+    }
+
+    measure: k {
+        filters: [a: "b" ,
+            c: "d",
+        ]
+    }
+
+    measure: l {
+        filters: [a: "b"
+            , c: "d"
+            , e: "f"
         ]
     }
 }
