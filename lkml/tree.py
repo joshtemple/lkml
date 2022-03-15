@@ -190,13 +190,13 @@ class ListNode(SyntaxNode):
         return f"{self.__class__.__name__}(type='{self.type.value}')"
 
     @property
-    def children(self,) -> Optional[Tuple[PairNode, ...]]:
-        if isinstance(self.items[0], PairNode):
+    def children(self,) -> Tuple[PairNode, ...]:
+        if self.items and isinstance(self.items[0], PairNode):
             # Assume that all elements are pairs
             self.items = cast(Tuple[PairNode, ...], self.items)  # type: ignore
             return self.items
         else:
-            return None
+            return tuple()
 
     @property
     def line_number(self) -> Optional[int]:
@@ -216,83 +216,6 @@ class ListNode(SyntaxNode):
             self.trailing_comma if self.trailing_comma and len(self.items) > 0 else "",
             self.right_bracket,
         )
-
-
-@dataclass(frozen=True)
-class BlockNode(SyntaxNode):
-    """A LookML block, enclosed in curly braces. Like ``view`` or ``dimension``.
-
-    Attributes:
-        type: The field type, the value that precedes the colon.
-        left_brace: A syntax token for the opening brace "{".
-        right_brace: A syntax token for the closing brace "}".
-        colon: An optional Colon SyntaxToken. If not supplied, a default colon is
-            created with a single space suffix after the colon.
-        name: An optional name token, the value that follows the colon.
-        container: A container node that holds the block's child nodes.
-
-    """
-
-    type: SyntaxToken
-    left_brace: LeftCurlyBrace
-    right_brace: RightCurlyBrace
-    colon: Optional[Colon] = Colon(suffix=" ")
-    name: Optional[SyntaxToken] = None
-    container: Optional[ContainerNode] = None
-
-    def __repr__(self) -> str:
-        name = f"name='{self.name.value}'" if self.name else None
-        return f"{self.__class__.__name__}(type='{self.type.value}', {name})"
-
-    @property
-    def children(self) -> Optional[Tuple[ContainerNode, ...]]:
-        return (self.container,) if self.container else None
-
-    @property
-    def line_number(self) -> Optional[int]:
-        return self.type.line_number
-
-    def accept(self, visitor: Visitor) -> Any:
-        """Accepts a visitor and calls the visitor's block method on itself."""
-        return visitor.visit_block(self)
-
-    def __str__(self) -> str:
-        name = self.name or ""
-        container = self.container or ""
-        return items_to_str(
-            self.type, self.colon, name, self.left_brace, container, self.right_brace
-        )
-
-
-@dataclass(frozen=True)
-class DocumentNode(SyntaxNode):
-    """The root node of the parse tree.
-
-    Attributes:
-        container: The top-level container node.
-        prefix: Leading whitespace or comments before the document.
-        suffix: Trailing whitespace or comments after the document.
-
-    """
-
-    container: ContainerNode
-    prefix: str = ""
-    suffix: str = ""
-
-    @property
-    def children(self) -> Tuple[ContainerNode]:
-        return (self.container,)  # type: ignore
-
-    @property
-    def line_number(self) -> Optional[int]:
-        return 1  # Document always starts on the first line
-
-    def accept(self, visitor: Visitor) -> Any:
-        """Accepts a visitor and calls the visitor's visit method on itself."""
-        return visitor.visit(self)
-
-    def __str__(self) -> str:
-        return items_to_str(self.prefix, self.container, self.suffix)
 
 
 @dataclass(frozen=True)
@@ -343,6 +266,83 @@ class ContainerNode(SyntaxNode):
         # TODO: This produces unparseable LookML for unquoted pair values if no suffix
         # For example, hidden: yes + dimension: ... with no whitespace in between
         return items_to_str(*self.items)
+
+
+@dataclass(frozen=True)
+class BlockNode(SyntaxNode):
+    """A LookML block, enclosed in curly braces. Like ``view`` or ``dimension``.
+
+    Attributes:
+        type: The field type, the value that precedes the colon.
+        left_brace: A syntax token for the opening brace "{".
+        right_brace: A syntax token for the closing brace "}".
+        colon: An optional Colon SyntaxToken. If not supplied, a default colon is
+            created with a single space suffix after the colon.
+        name: An optional name token, the value that follows the colon.
+        container: A container node that holds the block's child nodes.
+
+    """
+
+    type: SyntaxToken
+    left_brace: LeftCurlyBrace
+    right_brace: RightCurlyBrace
+    colon: Optional[Colon] = Colon(suffix=" ")
+    name: Optional[SyntaxToken] = None
+    container: ContainerNode = ContainerNode(items=tuple())
+
+    def __repr__(self) -> str:
+        name = f"name='{self.name.value}'" if self.name else None
+        return f"{self.__class__.__name__}(type='{self.type.value}', {name})"
+
+    @property
+    def children(self) -> Tuple[ContainerNode, ...]:
+        return (self.container,) if self.container else tuple()
+
+    @property
+    def line_number(self) -> Optional[int]:
+        return self.type.line_number
+
+    def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's block method on itself."""
+        return visitor.visit_block(self)
+
+    def __str__(self) -> str:
+        name = self.name or ""
+        container = self.container or ""
+        return items_to_str(
+            self.type, self.colon, name, self.left_brace, container, self.right_brace
+        )
+
+
+@dataclass(frozen=True)
+class DocumentNode(SyntaxNode):
+    """The root node of the parse tree.
+
+    Attributes:
+        container: The top-level container node.
+        prefix: Leading whitespace or comments before the document.
+        suffix: Trailing whitespace or comments after the document.
+
+    """
+
+    container: ContainerNode
+    prefix: str = ""
+    suffix: str = ""
+
+    @property
+    def children(self) -> Tuple[ContainerNode]:
+        return (self.container,)
+
+    @property
+    def line_number(self) -> Optional[int]:
+        return 1  # Document always starts on the first line
+
+    def accept(self, visitor: Visitor) -> Any:
+        """Accepts a visitor and calls the visitor's visit method on itself."""
+        return visitor.visit(self)
+
+    def __str__(self) -> str:
+        return items_to_str(self.prefix, self.container, self.suffix)
 
 
 class Visitor(ABC):

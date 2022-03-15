@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-__version__ = "1.1.2"
+__version__ = "1.3.0b2"
 
 here = Path(__file__).parent.resolve()
 
@@ -29,8 +29,10 @@ setup(
     license="MIT",
     entry_points={"console_scripts": ["lkml = lkml.__init__:cli"]},
     packages=find_packages(exclude=["docs", "tests*", "scripts"]),
+    package_data={"lkml": ["py.typed"]},
     include_package_data=True,
     author="Josh Temple",
     tests_require=["black", "flake8", "isort", "mypy", "pytest", "pytest-cov"],
     author_email="",
+    zip_safe=False,
 )
