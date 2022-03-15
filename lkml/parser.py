@@ -335,7 +335,7 @@ class Parser:
         key = self.parse_key()
         if key is None:
             return None
-        value = self.parse_value()
+        value = self.parse_value(parse_prefix=True, parse_suffix=True)
         if value is None:
             return None
 

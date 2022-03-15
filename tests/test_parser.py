@@ -419,10 +419,10 @@ def test_parse_list_with_pairs():
             PairNode(
                 type=SyntaxToken("view_name.field_one", 2, prefix="\n  "),
                 colon=Colon(line_number=2, suffix=" "),
-                value=QuotedSyntaxToken("-0,-1,-8,-9,-99,-NULL,-EMPTY", 2),
+                value=QuotedSyntaxToken("-0,-1,-8,-9,-99,-NULL,-EMPTY", 2, suffix="\n"),
             ),
         ),
-        right_bracket=RightBracket(prefix="\n"),
+        right_bracket=RightBracket(),
     )
 
 
