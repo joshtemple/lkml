@@ -43,6 +43,14 @@ class SyntaxToken:
         """Accepts a visitor and calls the visitor's token method on itself."""
         return visitor.visit_token(self)
 
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        elif isinstance(other, str):
+            return self.value == other
+        else:
+            return NotImplemented
+
     def __str__(self) -> str:
         return items_to_str(self.prefix, self.format_value(), self.suffix)
 
