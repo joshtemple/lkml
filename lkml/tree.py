@@ -291,8 +291,8 @@ class BlockNode(SyntaxNode):
     """
 
     type: SyntaxToken
-    left_brace: LeftCurlyBrace
-    right_brace: RightCurlyBrace
+    left_brace: LeftCurlyBrace = LeftCurlyBrace(suffix="\n")
+    right_brace: RightCurlyBrace = RightCurlyBrace(prefix="\n")
     colon: Optional[Colon] = Colon(suffix=" ")
     name: Optional[SyntaxToken] = None
     container: ContainerNode = ContainerNode(items=tuple())
