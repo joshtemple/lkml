@@ -302,8 +302,8 @@ class BlockNode(SyntaxNode):
         return f"{self.__class__.__name__}(type='{self.type.value}', {name})"
 
     @property
-    def children(self) -> Tuple[ContainerNode, ...]:
-        return (self.container,) if self.container else tuple()
+    def children(self) -> Tuple[Union[BlockNode, PairNode, ListNode], ...]:
+        return self.container.children
 
     @property
     def line_number(self) -> Optional[int]:
