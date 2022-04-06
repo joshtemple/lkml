@@ -198,7 +198,7 @@ class ListNode(SyntaxNode):
         return f"{self.__class__.__name__}(type='{self.type.value}')"
 
     @property
-    def children(self,) -> Tuple[PairNode, ...]:
+    def children(self) -> Tuple[PairNode, ...]:
         if self.items and isinstance(self.items[0], PairNode):
             # Assume that all elements are pairs
             return cast(Tuple[PairNode, ...], self.items)
