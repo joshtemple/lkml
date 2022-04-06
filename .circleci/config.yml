@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: circleci/python:3.7.3
+      - image: cimg/python:3.9.12
 
     steps:
       - checkout
