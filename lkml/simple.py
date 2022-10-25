@@ -6,8 +6,8 @@ to interact with the parse tree.
 
 """
 
-import logging
 import copy
+import logging
 from typing import Any, Dict, List, Optional, Sequence, Type, Union, cast
 
 from lkml.keys import (
