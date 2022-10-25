@@ -7,6 +7,7 @@ to interact with the parse tree.
 """
 
 import logging
+import copy
 from typing import Any, Dict, List, Optional, Sequence, Type, Union, cast
 
 from lkml.keys import (
@@ -306,6 +307,7 @@ class DictParser:
             A generator of serialized string chunks
 
         """
+
         if isinstance(value, str):
             return self.parse_pair(key, value)
         elif isinstance(value, (list, tuple)):
@@ -314,11 +316,12 @@ class DictParser:
             else:
                 return self.parse_list(key, value)
         elif isinstance(value, dict):
+            to_parse = copy.copy(value)
             if key in KEYS_WITH_NAME_FIELDS or "name" not in value.keys():
                 name = None
             else:
-                name = value.pop("name")
-            return self.parse_block(key, value, name)
+                name = to_parse.pop("name")
+            return self.parse_block(key, to_parse, name)
         else:
             raise TypeError("Value must be a string, list, tuple, or dict.")
 
