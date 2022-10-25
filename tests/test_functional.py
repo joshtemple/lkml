@@ -102,3 +102,21 @@ def test_lists_with_comma_configurations():
 def test_reserved_dimension_names():
     parsed = load("block_with_reserved_dimension_names.view.lkml")
     assert parsed is not None
+
+
+def test_repeated_dump_does_not_mutate_input():
+    text = """view: albums {
+        dimension: id {
+            primary_key: yes
+            type: number
+            sql: ${TABLE}.album_id ;;
+        }
+    }
+    """
+
+    tree = lkml.parse(text)
+    visitor = lkml.DictVisitor()
+    parsed: dict = visitor.visit(tree)
+    first = lkml.dump(parsed)
+    second = lkml.dump(parsed)
+    assert first == second
