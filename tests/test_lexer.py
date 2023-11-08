@@ -81,7 +81,9 @@ def test_scan_whitespace():
     text = "\n\t Hello World!"
     lexer = lkml.Lexer(text)
     token = lexer.scan_whitespace()
-    assert token == tokens.WhitespaceToken("\n\t ", 1)
+    assert token == tokens.LinebreakToken("\n", 1)
+    token = lexer.scan_whitespace()
+    assert token == tokens.InlineWhitespaceToken("\t ", 2)
 
 
 def test_scan_comment():
@@ -97,9 +99,10 @@ def test_scan_comment_with_surrounding_whitespace():
     output = lkml.Lexer(text).scan()
     assert output == (
         tokens.StreamStartToken(1),
-        tokens.WhitespaceToken("\n", 1),
+        tokens.LinebreakToken("\n", 1),
         tokens.CommentToken("# A comment", 2),
-        tokens.WhitespaceToken("\n ", 2),
+        tokens.LinebreakToken("\n", 2),
+        tokens.InlineWhitespaceToken(" ", 3),
         tokens.StreamEndToken(3),
     )
 
@@ -173,7 +176,7 @@ def test_scan_with_non_expression_block_starting_with_sql():
         tokens.StreamStartToken(1),
         tokens.LiteralToken("sql_not_reserved_field", 1),
         tokens.ValueToken(1),
-        tokens.WhitespaceToken(" ", 1),
+        tokens.InlineWhitespaceToken(" ", 1),
         tokens.LiteralToken("yes", 1),
         tokens.StreamEndToken(1),
     )
@@ -186,7 +189,7 @@ def test_scan_with_non_expression_block_starting_with_html():
         tokens.StreamStartToken(1),
         tokens.LiteralToken("html_not_reserved_field", 1),
         tokens.ValueToken(1),
-        tokens.WhitespaceToken(" ", 1),
+        tokens.InlineWhitespaceToken(" ", 1),
         tokens.LiteralToken("yes", 1),
         tokens.StreamEndToken(1),
     )

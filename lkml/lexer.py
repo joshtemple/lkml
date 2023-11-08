@@ -1,6 +1,6 @@
 """Splits a LookML string into a sequence of tokens."""
 
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import lkml.tokens as tokens
 from lkml.keys import CHARACTER_TO_TOKEN, EXPR_BLOCK_KEYS
@@ -103,21 +103,28 @@ class Lexer:
         return any(string.startswith(key + ":") for key in EXPR_BLOCK_KEYS)
 
     def scan_whitespace(self) -> tokens.WhitespaceToken:
-        r"""Returns a token from one or more whitespace characters.
+        """Returns a token from one or more whitespace characters.
 
         Example:
             >>> lexer = Lexer("\n\n\t Hello")
             >>> lexer.scan_whitespace()
-            WhitespaceToken('\n\n\t ')
+            LinebreakToken('\n\n', 1)
 
         """
         chars = ""
-        while self.peek() in "\n\t ":
-            if self.peek() == "\n":
-                self.line_number += 1
-            chars += self.consume()
-        return tokens.WhitespaceToken(chars, self.line_number)
-
+        next_char = self.peek()
+        while next_char in "\n\t ":
+            if next_char == "\n":
+                while next_char == "\n":
+                    chars += self.consume()
+                    self.line_number += 1
+                    next_char = self.peek()
+                return tokens.LinebreakToken(chars, self.line_number)
+            else:
+                chars += self.consume()
+                next_char = self.peek()
+        return tokens.InlineWhitespaceToken(chars, self.line_number)
+    
     def scan_comment(self) -> tokens.CommentToken:
         r"""Returns a token from a comment.
 
