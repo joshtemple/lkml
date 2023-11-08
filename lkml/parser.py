@@ -146,7 +146,7 @@ class Parser:
 
     def consume_trivia(self, only_newlines: bool = False) -> str:
         """Returns all continuous trivia values."""
-        valid_tokens = (tokens.CommentToken,)
+        valid_tokens: Tuple[Type[tokens.TriviaToken], ...] = (tokens.CommentToken,)
         if only_newlines:
             valid_tokens += (tokens.LinebreakToken,)
         else:
