@@ -130,6 +130,18 @@ class WhitespaceToken(TriviaToken):
         return f"{self.__class__.__name__}({repr(self.value)})"
 
 
+class LinebreakToken(WhitespaceToken):
+    """Represents a newline character."""
+
+    id = "<linebreak>"
+
+
+class InlineWhitespaceToken(WhitespaceToken):
+    """Represents one or more whitespace characters."""
+
+    id = "<inline whitespace>"
+
+
 class CommentToken(TriviaToken):
     """Represents a comment."""
 

@@ -144,11 +144,17 @@ class Parser:
             raise ValueError("Token %s does not have a consumable value." % token)
         return token.value
 
-    def consume_trivia(self) -> str:
+    def consume_trivia(self, only_newlines: bool = False) -> str:
         """Returns all continuous trivia values."""
+        valid_tokens: Tuple[Type[tokens.TriviaToken], ...] = (tokens.CommentToken,)
+        if only_newlines:
+            valid_tokens += (tokens.LinebreakToken,)
+        else:
+            valid_tokens += (tokens.WhitespaceToken,)
+
         trivia = ""
         while True:
-            if self.check(tokens.CommentToken, tokens.WhitespaceToken):
+            if self.check(*valid_tokens):
                 trivia += self.consume_token_value()
             else:
                 break
@@ -192,7 +198,7 @@ class Parser:
             # Reached the end of the stream
             result = False
         else:
-            if type(token) in token_types:
+            if isinstance(token, token_types):
                 result = True
             else:
                 result = False
@@ -300,7 +306,7 @@ class Parser:
         prefix = self.consume_trivia()
         if self.check(tokens.BlockEndToken):
             self.advance()
-            suffix = self.consume_trivia()
+            suffix = self.consume_trivia(only_newlines=True)
             right_brace = tree.RightCurlyBrace(prefix=prefix, suffix=suffix)
 
             block = tree.BlockNode(

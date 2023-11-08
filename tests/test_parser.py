@@ -706,5 +706,5 @@ def test_parse_block_with_no_expression():
         colon=Colon(line_number=1, suffix=" "),
         left_brace=LeftCurlyBrace(prefix=" "),
         container=ContainerNode(items=tuple()),
-        right_brace=RightCurlyBrace(suffix=" "),
+        right_brace=RightCurlyBrace(),
     )

@@ -107,6 +107,7 @@ QUOTED_LITERAL_KEYS: Tuple[str, ...] = (
     "property_key",
     "property_label_key",
     "else",
+    "interval_trigger",
 )
 
 # These are keys for fields in Looker that have a "name" attribute. Since lkml uses the
