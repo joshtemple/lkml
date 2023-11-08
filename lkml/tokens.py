@@ -120,6 +120,7 @@ class ListEndToken(Token):
 class TriviaToken(ContentToken):
     """Represents a comment or whitespace."""
 
+
 class WhitespaceToken(TriviaToken):
     """Represents one or more whitespace characters."""
 
@@ -128,10 +129,12 @@ class WhitespaceToken(TriviaToken):
     def __repr__(self):
         return f"{self.__class__.__name__}({repr(self.value)})"
 
+
 class LinebreakToken(WhitespaceToken):
     """Represents a newline character."""
 
     id = "<linebreak>"
+
 
 class InlineWhitespaceToken(WhitespaceToken):
     """Represents one or more whitespace characters."""

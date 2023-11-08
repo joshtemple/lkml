@@ -151,7 +151,7 @@ class Parser:
             valid_tokens += (tokens.LinebreakToken,)
         else:
             valid_tokens += (tokens.WhitespaceToken,)
-        
+
         trivia = ""
         while True:
             if self.check(*valid_tokens):

@@ -1,6 +1,6 @@
 """Splits a LookML string into a sequence of tokens."""
 
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import lkml.tokens as tokens
 from lkml.keys import CHARACTER_TO_TOKEN, EXPR_BLOCK_KEYS
@@ -124,7 +124,7 @@ class Lexer:
                 chars += self.consume()
                 next_char = self.peek()
         return tokens.InlineWhitespaceToken(chars, self.line_number)
-    
+
     def scan_comment(self) -> tokens.CommentToken:
         r"""Returns a token from a comment.
 
