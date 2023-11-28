@@ -371,13 +371,15 @@ class Parser:
             return None
 
         prefix = self.consume_trivia()
-        if self.check(tokens.ValueToken):
+
+        colon = None
+        while self.check(tokens.ValueToken):
             token = self.consume()
             suffix = self.consume_trivia()
             colon = tree.Colon(
                 line_number=token.line_number, prefix=prefix, suffix=suffix
             )
-        else:
+        if not colon:
             return None
 
         if self.log_debug:

@@ -215,6 +215,23 @@ def test_parse_key_without_value_token():
     assert result is None
 
 
+def test_parse_key_with_many_value_tokens():
+    stream = (
+        tokens.LiteralToken("label", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ValueToken(1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken("  ", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken("\t", 1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_key()
+    assert result == (SyntaxToken("label", 1), Colon(line_number=1, suffix="\t"))
+
+
 def test_debug_logging_statements_execute_successfully(parser):
     parser.log_debug = True
     parser.parse()
