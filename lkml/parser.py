@@ -406,6 +406,13 @@ class Parser:
 
         if self.check(tokens.LiteralToken):
             token = self.consume()
+            # Handle special case where a hyphen can be preceded by whitspace
+            if token.value == "-" and self.consume_trivia():
+                if self.check(tokens.LiteralToken):
+                    token = self.consume()
+                    token.value = "-" + token.value
+                else:
+                    return None
             suffix = self.consume_trivia() if parse_suffix else ""
             if self.log_debug:
                 logger.debug("%sSuccessfully parsed value.", self.depth * DELIMITER)
