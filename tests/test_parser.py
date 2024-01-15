@@ -703,6 +703,30 @@ def test_parse_list_with_only_comment():
     )
 
 
+def test_parse_list_with_space_delimited_hyphen():
+    stream = (
+        tokens.LiteralToken("fields", 1),
+        tokens.ValueToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.ListStartToken(1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.LiteralToken("-", 1),
+        tokens.WhitespaceToken(" ", 1),
+        tokens.LiteralToken("view.dimension_name", 1),
+        tokens.ListEndToken(1),
+        tokens.StreamEndToken(1),
+    )
+    parser = lkml.parser.Parser(stream)
+    result = parser.parse_list()
+    assert result == ListNode(
+        type=SyntaxToken("fields", 1),
+        colon=Colon(line_number=1, suffix=" "),
+        left_bracket=LeftBracket(),
+        items=(SyntaxToken("-view.dimension_name", 1, prefix=" "),),
+        right_bracket=RightBracket(),
+    )
+
+
 def test_parse_block_with_no_expression():
     stream = (
         tokens.LiteralToken("dimension", 1),
