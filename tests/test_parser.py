@@ -722,7 +722,7 @@ def test_parse_list_with_space_delimited_hyphen():
         type=SyntaxToken("fields", 1),
         colon=Colon(line_number=1, suffix=" "),
         left_bracket=LeftBracket(),
-        items=(SyntaxToken("- view.dimension_name", 1, prefix=" "),),
+        items=(SyntaxToken("-view.dimension_name", 1, prefix=" "),),
         right_bracket=RightBracket(),
     )
 
