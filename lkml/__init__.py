@@ -143,7 +143,8 @@ def cli():
         dump(result, args.file)
         args.file.truncate()
     elif args.lookml:
-        print(dump(result))
+        lookml_string = dump(result)
+        print(lookml_string)
     elif args.json:
         json_string = json.dumps(result, indent=2)
         print(json_string)
