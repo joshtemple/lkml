@@ -4,7 +4,8 @@ import argparse
 import io
 import json
 import logging
-from typing import IO, Optional, Union
+import sys
+from typing import IO, Optional, Sequence, Union
 
 from lkml.lexer import Lexer
 from lkml.parser import Parser
@@ -73,7 +74,7 @@ def dump(obj: dict, file_object: IO = None) -> Optional[str]:
         return result
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(args: Sequence) -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
         description=(
@@ -116,7 +117,7 @@ def parse_args() -> argparse.Namespace:
         help="parse and write back to the LookML file",
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def cli():
@@ -132,7 +133,7 @@ def cli():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-    args = parse_args()
+    args = parse_args(sys.argv[1:])
 
     logging.getLogger().setLevel(args.log_level)
 
