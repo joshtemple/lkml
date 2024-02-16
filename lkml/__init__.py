@@ -84,7 +84,7 @@ def parse_args(args: Sequence) -> argparse.Namespace:
         )
     )
     parser.add_argument(
-        "file", type=argparse.FileType("r"), help="path to the LookML file to parse"
+        "file", type=argparse.FileType("r+"), help="path to the LookML file to parse"
     )
     parser.add_argument(
         "-v",
@@ -94,6 +94,27 @@ def parse_args(args: Sequence) -> argparse.Namespace:
         const=logging.DEBUG,
         default=logging.WARN,
         help="increase logging verbosity to debug",
+    )
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--json",
+        action="store_true",
+        default=True,
+        help="return a JSON string (default)",
+    )
+    group.add_argument(
+        "--lookml",
+        action="store_true",
+        default=False,
+        help="return a LookML string",
+    )
+    group.add_argument(
+        "-f",
+        "--format",
+        action="store_true",
+        default=False,
+        help="parse and write back to the LookML file",
     )
 
     return parser.parse_args(args)
@@ -117,7 +138,15 @@ def cli():
     logging.getLogger().setLevel(args.log_level)
 
     result: dict = load(args.file)
-    args.file.close()
 
-    json_string = json.dumps(result, indent=2)
-    print(json_string)
+    if args.format:
+        args.file.seek(0)
+        dump(result, args.file)
+        args.file.truncate()
+    elif args.lookml:
+        print(dump(result))
+    elif args.json:
+        json_string = json.dumps(result, indent=2)
+        print(json_string)
+
+    args.file.close()
