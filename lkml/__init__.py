@@ -139,15 +139,17 @@ def cli():
 
     result: dict = load(args.file)
 
-    if args.format:
-        args.file.seek(0)
-        dump(result, args.file)
-        args.file.truncate()
-    elif args.lookml:
-        lookml_string = dump(result)
-        print(lookml_string)
-    elif args.json:
-        json_string = json.dumps(result, indent=2)
-        print(json_string)
+    try:
+        if args.format:
+            args.file.seek(0)
+            dump(result, args.file)
+            args.file.truncate()
+        elif args.lookml:
+            lookml_string = dump(result)
+            print(lookml_string)
+        elif args.json:
+            json_string = json.dumps(result, indent=2)
+            print(json_string)
 
-    args.file.close()
+    finally:
+        args.file.close()
