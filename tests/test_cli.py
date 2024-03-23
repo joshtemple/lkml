@@ -28,6 +28,7 @@ def test_absence_of_debug_flag_is_parsed_to_log_level_warn(lookml_path):
 def test_default_option(lookml_path):
     args = lkml.parse_args([lookml_path])
     assert args.json is True
+    assert args.lookml is args.write is False
 
 
 def test_options(lookml_path):
