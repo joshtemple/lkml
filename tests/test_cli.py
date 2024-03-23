@@ -39,6 +39,8 @@ def test_options(lookml_path):
     assert args.write is True
     args = lkml.parse_args([lookml_path, "-w"])
     assert args.write is True
+    with pytest.raises(SystemExit):
+        args = lkml.parse_args([lookml_path, "--json", "--lookml"])
 
 
 @patch("lkml.load")
