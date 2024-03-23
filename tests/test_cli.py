@@ -25,6 +25,25 @@ def test_absence_of_debug_flag_is_parsed_to_log_level_warn(lookml_path):
     assert args.log_level == logging.WARN
 
 
+def test_default_option(lookml_path):
+    args = lkml.parse_args([lookml_path])
+    assert args.json is True
+    assert args.lookml is args.write is False
+
+
+def test_options(lookml_path):
+    args = lkml.parse_args([lookml_path, "--json"])
+    assert args.json is True
+    args = lkml.parse_args([lookml_path, "--lookml"])
+    assert args.lookml is True
+    args = lkml.parse_args([lookml_path, "--write"])
+    assert args.write is True
+    args = lkml.parse_args([lookml_path, "-w"])
+    assert args.write is True
+    with pytest.raises(SystemExit):
+        args = lkml.parse_args([lookml_path, "--json", "--lookml"])
+
+
 @patch("lkml.load")
 @patch("lkml.parse_args")
 def test_run_cli(mock_parse_args, mock_load, lookml_path):
