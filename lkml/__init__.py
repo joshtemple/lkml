@@ -137,9 +137,9 @@ def cli():
 
     logging.getLogger().setLevel(args.log_level)
 
-    result: dict = load(args.file)
-
     try:
+        result: dict = load(args.file)
+
         if args.write:
             args.file.seek(0)
             dump(result, args.file)
