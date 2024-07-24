@@ -84,7 +84,7 @@ def parse_args(args: Sequence) -> argparse.Namespace:
         )
     )
     parser.add_argument(
-        "file", type=argparse.FileType("r+"), help="path to the LookML file to parse"
+        "file", type=argparse.FileType("r"), help="path to the LookML file to parse"
     )
     parser.add_argument(
         "-v",
@@ -108,13 +108,6 @@ def parse_args(args: Sequence) -> argparse.Namespace:
         action="store_true",
         default=False,
         help="return a LookML string",
-    )
-    group.add_argument(
-        "-w",
-        "--write",
-        action="store_true",
-        default=False,
-        help="parse and write back to file",
     )
 
     return parser.parse_args(args)
@@ -140,11 +133,7 @@ def cli():
     try:
         result: dict = load(args.file)
 
-        if args.write:
-            args.file.seek(0)
-            dump(result, args.file)
-            args.file.truncate()
-        elif args.lookml:
+        if args.lookml:
             lookml_string = dump(result)
             print(lookml_string)
         elif args.json:

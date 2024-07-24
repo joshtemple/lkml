@@ -34,18 +34,16 @@ def test_load_with_bad_argument_raises_type_error():
 def test_parse_default_option(lookml_path):
     args = lkml.parse_args([lookml_path])
     assert args.json is True
-    assert args.lookml is args.write is False
+    assert args.lookml is False
 
 
 def test_parse_options(lookml_path):
     args = lkml.parse_args([lookml_path, "--json"])
     assert args.json is True
+
     args = lkml.parse_args([lookml_path, "--lookml"])
     assert args.lookml is True
-    args = lkml.parse_args([lookml_path, "--write"])
-    assert args.write is True
-    args = lkml.parse_args([lookml_path, "-w"])
-    assert args.write is True
+
     with pytest.raises(SystemExit):
         args = lkml.parse_args([lookml_path, "--json", "--lookml"])
 
