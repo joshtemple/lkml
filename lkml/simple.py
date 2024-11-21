@@ -226,7 +226,7 @@ class DictParser:
                 singular_key == "allowed_value"
                 and self.parent_key.rstrip("s") == "access_grant"
             )
-            and not (self.parent_key == "query")
+            and not (self.parent_key == "query" and singular_key != "filters")
         )
 
     def resolve_filters(self, values: List[dict]) -> Union[List[BlockNode], ListNode]:
