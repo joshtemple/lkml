@@ -268,7 +268,7 @@ def test_parse_query(parser):
             {
                 "name": "query_one",
                 "dimensions": ["dimension_one", "dimension_two"],
-                "measures": ["measure_one"]
+                "measures": ["measure_one"],
             }
         ]
     }
@@ -279,6 +279,32 @@ def test_parse_query(parser):
             "query: query_one {",
             "  dimensions: [dimension_one, dimension_two]",
             "  measures: [measure_one]",
+            "}",
+        )
+    )
+
+
+def test_parse_query_with_filters(parser):
+    obj = {
+        "explores": [
+            {
+                "queries": [{"filters__all": [[{"baz": "expression"}, {"qux": "expression"}]], "name": "bar"}],
+                "name": "foo",
+            }
+        ]
+    }
+    node = parser.parse(obj)
+    result = str(node)
+    print(result)
+    assert result == "\n".join(
+        (
+            "explore: foo {",
+            "  query: bar {",
+            "    filters: [",
+            '      baz: "expression",',
+            '      qux: "expression",',
+            "    ]",
+            "  }",
             "}",
         )
     )
