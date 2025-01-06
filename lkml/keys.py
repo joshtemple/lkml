@@ -20,6 +20,7 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "column",
     "constant",
     "datagroup",
+    "remote_dependency",
     "derived_column",
     "dimension",
     "dimension_group",
@@ -141,6 +142,8 @@ def pluralize(key: str) -> str:
         return key + "__all"
     elif key == "query":
         return "queries"
+    elif key == "remote_dependency":
+        return "remote_dependencies"
     else:
         return key + "s"
 
@@ -149,6 +152,8 @@ def singularize(key: str) -> str:
     """Converts a plural key like "explores" to a singular key, e.g. 'explore'."""
     if key == "queries":
         return "query"
+    elif key == "remote_dependencies":
+        return "remote_dependency"
     elif key.endswith("__all"):
         return key[:-5]  # Strip off __all
     elif key.endswith("s"):
