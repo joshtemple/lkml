@@ -21,6 +21,7 @@ PLURAL_KEYS: Tuple[str, ...] = (
     "constant",
     "datagroup",
     "remote_dependency",
+    "local_dependency",
     "derived_column",
     "dimension",
     "dimension_group",
@@ -144,6 +145,8 @@ def pluralize(key: str) -> str:
         return "queries"
     elif key == "remote_dependency":
         return "remote_dependencies"
+    elif key == "local_dependency":
+        return "local_dependencies"
     else:
         return key + "s"
 
@@ -154,6 +157,8 @@ def singularize(key: str) -> str:
         return "query"
     elif key == "remote_dependencies":
         return "remote_dependency"
+    elif key == "local_dependencies":
+        return "local_dependency"
     elif key.endswith("__all"):
         return key[:-5]  # Strip off __all
     elif key.endswith("s"):
