@@ -96,6 +96,20 @@ def parse_args(args: Sequence) -> argparse.Namespace:
         help="increase logging verbosity to debug",
     )
 
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--json",
+        action="store_true",
+        default=True,
+        help="return a JSON string (default)",
+    )
+    group.add_argument(
+        "--lookml",
+        action="store_true",
+        default=False,
+        help="return a LookML string",
+    )
+
     return parser.parse_args(args)
 
 
@@ -116,8 +130,15 @@ def cli():
 
     logging.getLogger().setLevel(args.log_level)
 
-    result: dict = load(args.file)
-    args.file.close()
+    try:
+        result: dict = load(args.file)
 
-    json_string = json.dumps(result, indent=2)
-    print(json_string)
+        if args.lookml:
+            lookml_string = dump(result)
+            print(lookml_string)
+        elif args.json:
+            json_string = json.dumps(result, indent=2)
+            print(json_string)
+
+    finally:
+        args.file.close()
